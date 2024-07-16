@@ -14,14 +14,15 @@ const (
 	statusBorrowFromIndexNode // 执行 borrowFromIndexNode 后
 	statusIXMunus
 	statusError
+	edgeValueNotExist
 	edgeValueInit
 	edgeValueNoChanges
 	edgeValueChanges
-	edgeValueChangesByDelete
+	edgeValueChangesOfBottomByDelete
 	edgeValueUpload
 	edgeValueUnDecided
 	edgeValuePassBottom
-	edgeValueRenew
+	edgeValueOfIndexMustRenew
 	statusDeleteItem
 	statusDeleteNon
 	statusDeProtrude

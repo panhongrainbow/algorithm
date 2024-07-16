@@ -203,7 +203,7 @@ func (data *BpData) _delete(item BpItem) (deleted bool, ix int, edgeValue int64,
 			if len(data.Items) > 0 && edgeValue != data.Items[0].Key {
 				edgeValue = data.Items[0].Key
 				// When the edge value changes, the status changes to edgeValueChanges.
-				status = edgeValueChangesByDelete
+				status = edgeValueChangesOfBottomByDelete
 			}
 		}
 	}

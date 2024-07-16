@@ -50,12 +50,6 @@ func (inode *BpIndex) delFromRoot(item BpItem) (deleted, updated bool, ix int, e
 // If the node is too small, it will clear the entire index. (索引可能失效‼️)
 // 一层 BpData 资料层，加上一个索引切片，就是一个 Bottom
 func (inode *BpIndex) deleteBottomItem(item BpItem) (deleted, updated bool, ix int, edgeValue int64, status int) {
-
-	// Perform an interruption to check the B Plus tree
-	if item.Key == 960 {
-		fmt.Println("Perform An Interruption")
-	}
-
 	// 初始化回传值
 	edgeValue = -1
 
@@ -65,13 +59,8 @@ func (inode *BpIndex) deleteBottomItem(item BpItem) (deleted, updated bool, ix i
 	})
 
 	// Call the delete method on the corresponding DataNode to delete the item.
-	deleted, _, edgeValue, status = inode.DataNodes[ix]._delete(item) // 总是有错误
+	deleted, _, edgeValue, status = inode.DataNodes[ix]._delete(item)
 	// _delete 函式状况会回传 (1) 边界值没改变 (2) 边界值已改变 (3) 边界值为空
-
-	// 这里精简
-	/*if status == edgeValueChangesByDelete { // (1) 边界值已改变
-		status = edgeValuePassBottom // 要通知上传的递归函式，边界值已改变
-	}*/
 
 	if deleted == true { // 如果资料真的删除的反应
 		// The BpDatda node is too small then the index is invalid.
