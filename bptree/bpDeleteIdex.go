@@ -1,6 +1,7 @@
 package bpTree
 
 import (
+	"fmt"
 	"sort"
 )
 
@@ -103,12 +104,6 @@ func (inode *BpIndex) deleteToRight(item BpItem) (deleted, updated bool, edgeVal
 
 			// To make temporary corrections, mainly to identify the problems.
 		} else {
-
-			/*if status != statusBorrowFromIndexNode && inode.IndexNodes[ix].DataNodes != nil {
-				_, _, edgeValue, err, status = inode.borrowFromBottomIndexNode(ix)
-				return
-			}*/
-
 			if inode.IndexNodes[ix].DataNodes != nil && len(inode.IndexNodes[ix].Index) == 0 {
 				_, _, edgeValue, err, status = inode.borrowFromBottomIndexNode(ix)
 				return
@@ -116,6 +111,11 @@ func (inode *BpIndex) deleteToRight(item BpItem) (deleted, updated bool, edgeVal
 
 			if inode.IndexNodes[ix].DataNodes == nil && len(inode.IndexNodes[ix].Index) == 0 {
 				if len(inode.IndexNodes[ix].Index) == 0 {
+
+					if item.Key == 1824 {
+						fmt.Println()
+					}
+
 					inode.IndexNodes[ix].Index = []int64{edgeValue}
 				}
 
@@ -150,6 +150,11 @@ func (inode *BpIndex) deleteToRight(item BpItem) (deleted, updated bool, edgeVal
 
 		// Here, adjustments may be made to IX (IX 在这里可能会被修改) ‼️
 		// var edgeValue int64
+
+		if item.Key == 1824 {
+			fmt.Println()
+		}
+
 		deleted, updated, ix, edgeValue, status = inode.deleteBottomItem(item) // 🖐️ for data node 针对资料节点
 		if ix == 0 && status == edgeValueChangesOfBottomByDelete {             // 当 ix 为 0 时，才要处理边界值的问题 (ix == 0，是特别加入的)
 			status = edgeValueOfIndexMustRenew

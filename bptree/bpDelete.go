@@ -258,6 +258,11 @@ func (inode *BpIndex) borrowFromBottomIndexNode(ix int) (borrowed bool, newIx in
 					// Update inode's index. (ix+1 节点边界值)
 					inode.Index[ix] = inode.IndexNodes[ix+1].DataNodes[0].Items[0].Key
 
+					// Fix 2 !
+					numDataNodeInCurrent := len(inode.IndexNodes[ix].DataNodes)
+					numItemCurrentRightDataNode := len(inode.IndexNodes[ix].DataNodes[numDataNodeInCurrent-1].Items)
+					inode.IndexNodes[ix].Index = []int64{inode.IndexNodes[ix].DataNodes[numDataNodeInCurrent-1].Items[numItemCurrentRightDataNode-1].Key}
+
 					// Update the status.
 					borrowed = true
 
@@ -385,6 +390,11 @@ func (inode *BpIndex) borrowFromBottomIndexNode(ix int) (borrowed bool, newIx in
 
 					// Update inode's index. (ix 节点边界值)
 					inode.Index[ix-1] = inode.IndexNodes[ix].DataNodes[0].Items[0].Key
+
+					// Fix !
+					numDataNodeInCurrent := len(inode.IndexNodes[ix].DataNodes)
+					numItemCurrentRightDataNode := len(inode.IndexNodes[ix].DataNodes[numDataNodeInCurrent-1].Items)
+					inode.IndexNodes[ix].Index = []int64{inode.IndexNodes[ix].DataNodes[numDataNodeInCurrent-1].Items[numItemCurrentRightDataNode-1].Key}
 
 					// Update the status.
 					borrowed = true
