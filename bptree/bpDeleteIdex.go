@@ -19,24 +19,25 @@ func (inode *BpIndex) delAndDir(item BpItem) (deleted, updated bool, ix int, edg
 		return inode.Index[i] > item.Key // 一定要大于，所以会找到最右边 ‼️
 	})
 
+	// FIX !
 	// 决定 ↩️ 是否要向左
 	// Check if deletion should be performed by the leftmost node first.
-	if len(inode.Index) > 0 && len(inode.IndexNodes) > 0 &&
-		(ix-1) >= 1 && len(inode.IndexNodes)-1 >= (ix-1) { // 如果当前节点的左边有邻居
-
-		// If it is continuous data (same value) (5❌ - 5 - 5 - 5 - 5 - 6 - 7 - 8)
-		length := len(inode.IndexNodes[ix-1].Index) // 为了左边邻居节点最后一个索引值
-		if len(inode.IndexNodes) > 0 &&             // 预防 panic 的检查
-			len(inode.IndexNodes[ix].Index) > 0 && len(inode.IndexNodes[ix-1].Index) > 0 && // 预防 panic 的检查
-			length > 0 && inode.IndexNodes[ix].Index[0] == inode.IndexNodes[ix-1].Index[length-1] { // 最后决定，如果最接近的索引节点有相同的索引值 ‼️
-
-			// 搜寻 🔍 (最左边 ⬅️) (一切重来，重头开始向左搜寻)
-			deleted, updated, ix, err = inode.deleteToLeft(item) // Delete to the leftmost node ‼️ (向左砍)
-
-			// 中断了，不再考虑向右搜寻 ⚠️
-			return
-		}
-	}
+	//if len(inode.Index) > 0 && len(inode.IndexNodes) > 0 &&
+	//	(ix-1) >= 1 && len(inode.IndexNodes)-1 >= (ix-1) { // 如果当前节点的左边有邻居
+	//
+	//	// If it is continuous data (same value) (5❌ - 5 - 5 - 5 - 5 - 6 - 7 - 8)
+	//	length := len(inode.IndexNodes[ix-1].Index) // 为了左边邻居节点最后一个索引值
+	//	if len(inode.IndexNodes) > 0 &&             // 预防 panic 的检查
+	//		len(inode.IndexNodes[ix].Index) > 0 && len(inode.IndexNodes[ix-1].Index) > 0 && // 预防 panic 的检查
+	//		length > 0 && inode.IndexNodes[ix].Index[0] == inode.IndexNodes[ix-1].Index[length-1] { // 最后决定，如果最接近的索引节点有相同的索引值 ‼️
+	//
+	//		// 搜寻 🔍 (最左边 ⬅️) (一切重来，重头开始向左搜寻)
+	//		// deleted, updated, ix, err = inode.deleteToLeft(item) // Delete to the leftmost node ‼️ (向左砍)
+	//
+	//		// 中断了，不再考虑向右搜寻 ⚠️
+	//		return
+	//	}
+	//}
 
 	// 搜寻 🔍 (最右边 ➡️)
 	// If it is discontinuous data (different values) (5 - 5 - 5 - 5 - 5❌ - 6 - 7 - 8)
@@ -105,6 +106,9 @@ func (inode *BpIndex) deleteToRight(item BpItem) (deleted, updated bool, edgeVal
 			// To make temporary corrections, mainly to identify the problems.
 		} else {
 			if inode.IndexNodes[ix].DataNodes != nil && len(inode.IndexNodes[ix].Index) == 0 {
+				if item.Key == 1824 {
+					fmt.Println("skip")
+				}
 				_, _, edgeValue, err, status = inode.borrowFromBottomIndexNode(ix)
 				return
 			}
@@ -112,14 +116,19 @@ func (inode *BpIndex) deleteToRight(item BpItem) (deleted, updated bool, edgeVal
 			if inode.IndexNodes[ix].DataNodes == nil && len(inode.IndexNodes[ix].Index) == 0 {
 				if len(inode.IndexNodes[ix].Index) == 0 {
 
+					if edgeValue == 0 {
+						edgeValue = inode.IndexNodes[ix].edgeValue() // Fix !
+					}
+
 					if item.Key == 1824 {
-						fmt.Println()
+						fmt.Println(ix, edgeValue)
+						fmt.Println(">>>>> !")
 					}
 
 					inode.IndexNodes[ix].Index = []int64{edgeValue}
 				}
 
-				ix, edgeValue, status, err = inode.borrowFromIndexNode(ix)
+				ix, edgeValue, status, err = inode.borrowFromIndexNode(ix) // 这里没有及时更新索引
 				if ix == 0 && status == edgeValueChanges {
 					status = edgeValueUpload
 					return
@@ -152,6 +161,7 @@ func (inode *BpIndex) deleteToRight(item BpItem) (deleted, updated bool, edgeVal
 		// var edgeValue int64
 
 		if item.Key == 1824 {
+			fmt.Println(">>>>> !")
 			fmt.Println()
 		}
 
@@ -234,14 +244,6 @@ func (inode *BpIndex) deleteToRight(item BpItem) (deleted, updated bool, edgeVal
 		}
 
 	}
-
-	// Return the results of the deletion.
-	return
-}
-
-// deleteToLeft is a method of the BpIndex type that deletes the leftmost specified BpItem. (由左边删除 👈 ‼️)
-func (inode *BpIndex) deleteToLeft(item BpItem) (deleted, updated bool, ix int, err error) {
-	panic("Currently developing right deletion, not developing left deletion.")
 
 	// Return the results of the deletion.
 	return

@@ -10,10 +10,10 @@ import (
 
 var (
 	// randomQuantity represents the number of elements to be generated for random testing.
-	randomQuantity = 350
+	randomQuantity = 20000
 
 	// randomMax represents the maximum value for generating random numbers.
-	randomMax = 2000
+	randomMax = 150000
 
 	// randomMin represents the minimum value for generating random numbers.
 	randomMin = 10
@@ -100,11 +100,15 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 
 			// Deleting data entries continuously.
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: numbersForDeleting[i]})
+			// deleted, _, _, err := root.RemoveValueLeft(BpItem{Key: numbersForDeleting[i]})
+
 			if deleted == false {
 				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", numbersForDeleting[i], i)
+				panic("Breakpoint: Data deletion not successful.")
 			}
 			if err != nil {
 				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", numbersForDeleting[i], i)
+				panic("Breakpoint: Deletion encountered an error.")
 			}
 		}
 
@@ -119,7 +123,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		var shuffledNumbers = []int64{236, 1571, 671, 1880, 669, 674, 715, 396, 119, 1806, 1758, 388, 363, 1420, 701, 193, 1626, 1777, 863, 691, 1709, 320, 1305, 857, 1196, 1556, 905, 1313, 458, 1234, 1428, 1204, 346, 1071, 151, 249, 918, 947, 1623, 343, 118, 1608, 97, 114, 887, 1618, 1629, 892, 1040, 743, 1171, 1745, 1423, 494, 113, 1925, 1694, 488, 276, 1737, 1658, 1064, 1609, 1240, 1363, 820, 1055, 1977, 611, 1046, 1060, 942, 760, 230, 1881, 1487, 247, 23, 1820, 1600, 1706, 540, 1088, 1738, 1513, 639, 235, 1031, 1190, 1108, 1249, 1263, 1723, 1876, 1462, 222, 1581, 1003, 1557, 1879, 1293, 1368, 1456, 1830, 1392, 34, 1506, 1180, 821, 266, 1441, 314, 940, 587, 1017, 1683, 1212, 1301, 829, 1690, 830, 1764, 1536, 1653, 1183, 1256, 1862, 1091, 262, 502, 1768, 1700, 1341, 1294, 384, 614, 1868, 1013, 205, 419, 1385, 943, 1233, 1804, 435, 1823, 60, 710, 1681, 687, 930, 376, 707, 511, 498, 919, 601, 71, 393, 440, 762, 1418, 958, 1632, 1797, 1320, 1654, 1049, 509, 1499, 591, 1288, 1244, 1194, 446, 1867, 933, 1126, 1105, 584, 367, 1568, 395, 583, 69, 411, 1577, 1161, 473, 1622, 484, 453, 1439, 1066, 1751, 1045, 43, 785, 953, 1592, 530, 1119, 156, 163, 1250, 158, 1944, 291, 527, 621, 879, 409, 870, 1767, 474, 417, 522, 73, 1220, 1425, 115, 1394, 1163, 1036, 736, 1914, 675, 888, 1975, 495, 1362, 362, 1859, 761, 576, 935, 868, 1704, 1739, 1349, 1023, 1552, 969, 1526, 1253, 597, 67, 1913, 765, 351, 1302, 575, 1177, 1325, 103, 605, 1118, 1252, 224, 818, 794, 1962, 1009, 1011, 138, 1945, 1175, 1971, 1152, 1495, 574, 1682, 714, 748, 1807, 624, 521, 677, 1902, 260, 1538, 1398, 1154, 229, 1840, 1616, 1873, 1805, 282, 778, 1229, 567, 652, 1765, 323, 450, 898, 1966, 1703, 1381, 1691, 1888, 874, 1314, 87, 753, 845, 1095, 1328, 439, 330, 1350, 1168, 1197, 1659, 726, 307, 405, 104, 125, 1489, 1217, 279, 1824, 1365, 660, 1601, 1417, 1063, 582, 155, 89, 1665, 1087, 917, 275, 1248, 847, 1891, 211, 1464, 1630, 312, 1535, 1928, 54, 416, 1078, 538, 1831}
 
 		// Initialize B plus tree.
-		root := NewBpTree(5)
+		root := NewBpTree(3)
 
 		// Start inserting data.
 		for i := 0; i < randomQuantity; i++ {
@@ -134,6 +138,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 			value := shuffledNumbers[i]
 			fmt.Println(i, value)
 			if shuffledNumbers[i] == 1824 {
+				fmt.Println(">>>>> !")
 				fmt.Print()
 			}
 
@@ -142,6 +147,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 			}*/
 
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: shuffledNumbers[i]})
+
 			if deleted == false {
 				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", shuffledNumbers[i], i)
 			}
