@@ -2,6 +2,7 @@ package bpTree
 
 import (
 	"fmt"
+	"github.com/panhongrainbow/algorithm/testOracle"
 	"math/rand"
 	"sort"
 	"testing"
@@ -10,10 +11,10 @@ import (
 
 var (
 	// randomQuantity represents the number of elements to be generated for random testing.
-	randomQuantity = 20000
+	randomQuantity = 6000000
 
 	// randomMax represents the maximum value for generating random numbers.
-	randomMax = 150000
+	randomMax = 20000000
 
 	// randomMin represents the minimum value for generating random numbers.
 	randomMin = 10
@@ -66,13 +67,13 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 			num := int64(random.Intn(randomMax-randomMin+1) + randomMin)
 			numbersForAdding[i] = num
 		}*/
-		fmt.Println("Random data for insertion:", numbersForAdding)
+		// fmt.Println("Random data for insertion:", numbersForAdding)
 
 		// Generate random data for deletion.
 		numbersForDeleting := make([]int64, randomQuantity)
 		copy(numbersForDeleting, numbersForAdding)
 		shuffleSlice(numbersForDeleting, random)
-		fmt.Println("Random data for deletion:", numbersForDeleting)
+		// fmt.Println("Random data for deletion:", numbersForDeleting)
 
 		// Generate sorted data.
 		sortedNumbers := make([]int64, randomQuantity)
@@ -80,7 +81,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		sort.Slice(sortedNumbers, func(i, j int) bool {
 			return sortedNumbers[i] < sortedNumbers[j]
 		})
-		fmt.Println("Sorted data:", sortedNumbers)
+		// fmt.Println("Sorted data:", sortedNumbers)
 
 		// Initialize B-tree.
 		root := NewBpTree(5)
@@ -95,25 +96,209 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		for i := 0; i < randomQuantity; i++ {
 
 			// 显示目前的删除值
-			value := numbersForDeleting[i]
-			fmt.Println(i, value)
+			// value := numbersForDeleting[i]
+			// fmt.Println(i, value)
 
 			// Deleting data entries continuously.
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: numbersForDeleting[i]})
-			// deleted, _, _, err := root.RemoveValueLeft(BpItem{Key: numbersForDeleting[i]})
+
+			if err != nil {
+				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", numbersForDeleting[i], i)
+				panic("Breakpoint: Deletion encountered an error.")
+			}
 
 			if deleted == false {
 				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", numbersForDeleting[i], i)
 				panic("Breakpoint: Data deletion not successful.")
 			}
+
+		}
+
+		fmt.Println()
+	})
+	// Automated random testing for B+ tree.
+	t.Run("Automated Testing Section2", func(t *testing.T) {
+		np := testOracle.NewNumberPool()
+
+		// Initialize B-tree.
+		root := NewBpTree(5)
+
+		for i := 0; i < 500; i++ {
+			// root.root.Print()
+
+			insert, remove := np.GenerateNumbers(1, 500000, 50, 40, false)
+			// fmt.Println(insert)
+			// fmt.Println(remove)
+
+			// fmt.Println("开始增")
+
+			// root.root.Print()
+
+			for j := 0; j < len(insert); j++ {
+				// root.root.Print()
+				// fmt.Println("insert", insert[j])
+				root.InsertValue(BpItem{Key: insert[j]})
+				// root.CheckAndSwapRightContinuity()
+				// root.CheckAndSwapLeftContinuity()
+			}
+
+			// fmt.Println("开始删")
+
+			// root.root.Print()
+
+			for k := 0; k < len(remove); k++ {
+				// root.root.Print()
+				// Insert data entries continuously.
+				// fmt.Println("remove", remove[k])
+				deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[k]})
+				// root.CheckAndSwapRightContinuity()
+				// root.CheckAndSwapLeftContinuity()
+				if deleted == false {
+					fmt.Println("坏了")
+					root.root.Print()
+					fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", remove[k])
+					panic("Breakpoint: Data deletion not successful.")
+				}
+				if err != nil {
+					fmt.Println("坏了")
+					root.root.Print()
+					fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", remove[k])
+					fmt.Println(err)
+					panic(err)
+				}
+			}
+		}
+
+		// fmt.Println()
+
+		_, remove := np.GenerateNumbers(1, 500000, 0, 0, true)
+		for i := 0; i < len(remove); i++ {
+			// root.root.Print()
+			// fmt.Println("remove2", remove[i])
+			deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[i]})
+			root.CheckAndSwapRightContinuity()
+			root.CheckAndSwapLeftContinuity()
+			if deleted == false {
+				root.root.Print()
+				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", remove[i])
+				panic("Breakpoint: Data deletion not successful.")
+			}
 			if err != nil {
-				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", numbersForDeleting[i], i)
+				root.root.Print()
+				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", remove[i])
 				panic("Breakpoint: Deletion encountered an error.")
 			}
 		}
 
 		fmt.Println()
 	})
+	t.Run("Automated Testing Section3", func(t *testing.T) {
+		np := testOracle.NewNumberPool()
+
+		// Initialize B-tree.
+		root := NewBpTree(5)
+
+		for i := 0; i < 100000; i++ {
+			// root.root.Print()
+
+			insert, remove := np.GenerateNumbers(1, 500000, 3, 1, false)
+			fmt.Println(insert)
+			fmt.Println(remove)
+
+			fmt.Println("开始增")
+
+			root.root.Print()
+
+			for j := 0; j < len(insert); j++ {
+				// root.root.Print()
+				fmt.Println("insert", insert[j])
+				root.InsertValue(BpItem{Key: insert[j]})
+			}
+
+			fmt.Println("开始删")
+
+			root.root.Print()
+
+			for k := 0; k < len(remove); k++ {
+				// root.root.Print()
+				// Insert data entries continuously.
+				fmt.Println("remove", remove[k])
+				deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[k]})
+				if deleted == false {
+					fmt.Println("坏了")
+					root.root.Print()
+					fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", remove[k])
+					panic("Breakpoint: Data deletion not successful.")
+				}
+				if err != nil {
+					fmt.Println("坏了")
+					root.root.Print()
+					fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", remove[k])
+					fmt.Println(err)
+					panic(err)
+				}
+			}
+		}
+
+		fmt.Println()
+	})
+	t.Run("Automated Testing Section4", func(t *testing.T) {
+		np := testOracle.NewNumberPool()
+		root := NewBpTree(5)
+
+		for i := 0; i < 10; i++ {
+			// root.root.Print()
+
+			insert, remove := np.GenerateNumbers(1, 500000, 50, 40, false)
+
+			for j := 0; j < len(insert); j++ {
+				fmt.Println("@@@@@@@@@@@@@@@@@@@@@@ insert", insert[j])
+				if root.root != nil {
+					root.root.Print()
+				}
+				root.InsertValue(BpItem{Key: insert[j]})
+				fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> check insert")
+				root.root.Print()
+				root.CheckAndSwapRightContinuity()
+				root.CheckAndSwapLeftContinuity()
+			}
+
+			for k := 0; k < len(remove); k++ {
+				fmt.Println("@@@@@@@@@@@@@@@@@@@@@@ remove", remove[k])
+				root.root.Print()
+				fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> check remove")
+				root.root.Print()
+				root.RemoveValue(BpItem{Key: remove[k]})
+				root.CheckAndSwapRightContinuity()
+				root.CheckAndSwapLeftContinuity()
+			}
+		}
+
+		fmt.Println()
+
+		/*_, remove := np.GenerateNumbers(1, 500000, 0, 0, true)
+		fmt.Println("大删除")
+		root.root.Print()
+		fmt.Println(remove)
+		for i := 0; i < len(remove); i++ {
+			// root.root.Print()
+			fmt.Println("remove", remove[i])
+			deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[i]})
+			if deleted == false {
+				root.root.Print()
+				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", remove[i])
+				panic("Breakpoint: Data deletion not successful.")
+			}
+			if err != nil {
+				root.root.Print()
+				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", remove[i])
+				panic("Breakpoint: Deletion encountered an error.")
+			}
+		}*/
+
+		fmt.Println()
+	})
+
 	// Automated random testing for B+ tree.
 	t.Run("Manually Identify B Plus Tree Operation Errors", func(t *testing.T) {
 		// 数量二百的例子
@@ -170,4 +355,59 @@ func shuffleSlice(slice []int64, rng *rand.Rand) {
 		// Swap the elements at indices i and j.
 		slice[i], slice[j] = slice[j], slice[i]
 	}
+}
+
+func Test_Check_inode(t *testing.T) {
+	root := NewBpTree(5)
+
+	// Set up a top-level index node.
+	root.root = &BpIndex{
+		Index: []int64{288794, 339101, 460280},
+		DataNodes: []*BpData{{
+			Previous: nil,
+			Next:     nil,
+			Items:    []BpItem{{Key: 46911}, {Key: 54204}},
+		}, {
+			Previous: nil,
+			Next:     nil,
+			Items:    []BpItem{{Key: 288794}},
+		}, {
+			Previous: nil,
+			Next:     nil,
+			Items:    []BpItem{{Key: 339101}, {Key: 375797}},
+		}, {
+			Previous: nil,
+			Next:     nil,
+			Items:    []BpItem{{Key: 460280}, {Key: 468483}, {Key: 480770}},
+		},
+		},
+	}
+
+	root.InsertValue(BpItem{Key: 234438})
+	root.InsertValue(BpItem{Key: 419488})
+	root.InsertValue(BpItem{Key: 331451})
+
+	root.root.Print()
+}
+
+func Test_Check_Continuity(t *testing.T) {
+	root := NewBpTree(3)
+
+	head := root.root.BpDataHead()
+
+	root.InsertValue(BpItem{Key: 46911})
+	root.InsertValue(BpItem{Key: 54204})
+	root.InsertValue(BpItem{Key: 288794})
+	root.InsertValue(BpItem{Key: 339101})
+	root.InsertValue(BpItem{Key: 375797})
+	root.InsertValue(BpItem{Key: 460280})
+	root.InsertValue(BpItem{Key: 468483})
+	root.InsertValue(BpItem{Key: 480770})
+
+	// head.Items[0].Key = 1
+	head.Next.Next.Next.Items[0].Key = 10
+
+	root.CheckAndSwapRightContinuity()
+
+	root.root.Print()
 }

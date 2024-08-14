@@ -62,6 +62,28 @@ func (data *BpData) insert(item BpItem) {
 
 // insertAmong inserts a BpItem into the existing sorted BpData.
 func (data *BpData) insertAmong(item BpItem) {
+	newSLice := make([]BpItem, len(data.Items))
+	copy(newSLice, data.Items)
+
+	// Use binary search to find the index where the item should be inserted.
+	idx := sort.Search(len(data.Items), func(i int) bool {
+		return data.Items[i].Key >= item.Key
+	})
+
+	// Expand the slice to accommodate the new item.
+	newSLice = append(newSLice, BpItem{})
+
+	// Shift the elements to the right to make space for the new item.
+	copy(newSLice[idx+1:], newSLice[idx:])
+
+	// Insert the new item at the correct position.
+	newSLice[idx] = item
+
+	data.Items = newSLice
+}
+
+// insertAmong inserts a BpItem into the existing sorted BpData.
+func (data *BpData) insertAmong2(item BpItem) {
 	// Use binary search to find the index where the item should be inserted.
 	idx := sort.Search(len(data.Items), func(i int) bool {
 		return data.Items[i].Key >= item.Key

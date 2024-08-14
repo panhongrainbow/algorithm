@@ -66,6 +66,12 @@ func (inode *BpIndex) insertItem(newNode *BpIndex, item BpItem) (popIx int, popK
 			// If there are index nodes, recursively insert the item into the appropriate node.
 			// (这里有递回去找到接近资料切片的地方)
 			popIx, popKey, popNode, status, err = inode.IndexNodes[ix].insertItem(nil, item)
+
+			if ix != 0 {
+				// fmt.Println(inode.Index[ix-1], inode.IndexNodes[ix].edgeValue())
+				inode.Index[ix-1] = inode.IndexNodes[ix].edgeValue()
+			}
+
 			status = statusProtrudeInode
 			if popKey != 0 {
 				err = inode.mergeUpgradedKeyNode(ix, popKey, popNode)
