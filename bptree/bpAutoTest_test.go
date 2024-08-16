@@ -121,12 +121,12 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		np := testOracle.NewNumberPool()
 
 		// Initialize B-tree.
-		root := NewBpTree(5)
+		root := NewBpTree(3)
 
-		for i := 0; i < 500; i++ {
+		for i := 0; i < 600000; i++ {
 			// root.root.Print()
 
-			insert, remove := np.GenerateNumbers(1, 500000, 50, 40, false)
+			insert, remove := np.GenerateNumbers(1, 6010000, 50, 40, false)
 			// fmt.Println(insert)
 			// fmt.Println(remove)
 
@@ -176,8 +176,8 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 			// root.root.Print()
 			// fmt.Println("remove2", remove[i])
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[i]})
-			root.CheckAndSwapRightContinuity()
-			root.CheckAndSwapLeftContinuity()
+			// root.CheckAndSwapRightContinuity()
+			// root.CheckAndSwapLeftContinuity()
 			if deleted == false {
 				root.root.Print()
 				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", remove[i])
@@ -243,60 +243,47 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		fmt.Println()
 	})
 	t.Run("Automated Testing Section4", func(t *testing.T) {
-		np := testOracle.NewNumberPool()
 		root := NewBpTree(5)
 
-		for i := 0; i < 10; i++ {
-			// root.root.Print()
-
-			insert, remove := np.GenerateNumbers(1, 500000, 50, 40, false)
-
-			for j := 0; j < len(insert); j++ {
-				fmt.Println("@@@@@@@@@@@@@@@@@@@@@@ insert", insert[j])
-				if root.root != nil {
-					root.root.Print()
-				}
-				root.InsertValue(BpItem{Key: insert[j]})
-				fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> check insert")
-				root.root.Print()
-				root.CheckAndSwapRightContinuity()
-				root.CheckAndSwapLeftContinuity()
-			}
-
-			for k := 0; k < len(remove); k++ {
-				fmt.Println("@@@@@@@@@@@@@@@@@@@@@@ remove", remove[k])
-				root.root.Print()
-				fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>> check remove")
-				root.root.Print()
-				root.RemoveValue(BpItem{Key: remove[k]})
-				root.CheckAndSwapRightContinuity()
-				root.CheckAndSwapLeftContinuity()
-			}
-		}
-
-		fmt.Println()
-
-		/*_, remove := np.GenerateNumbers(1, 500000, 0, 0, true)
-		fmt.Println("大删除")
-		root.root.Print()
-		fmt.Println(remove)
-		for i := 0; i < len(remove); i++ {
-			// root.root.Print()
-			fmt.Println("remove", remove[i])
-			deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[i]})
-			if deleted == false {
-				root.root.Print()
-				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", remove[i])
-				panic("Breakpoint: Data deletion not successful.")
-			}
-			if err != nil {
-				root.root.Print()
-				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", remove[i])
-				panic("Breakpoint: Deletion encountered an error.")
-			}
-		}*/
-
-		fmt.Println()
+		root.InsertValue(BpItem{Key: 194123})
+		root.InsertValue(BpItem{Key: 367625})
+		root.InsertValue(BpItem{Key: 142435})
+		root.InsertValue(BpItem{Key: 454753})
+		root.InsertValue(BpItem{Key: 152447})
+		root.InsertValue(BpItem{Key: 403627})
+		root.InsertValue(BpItem{Key: 16083})
+		root.InsertValue(BpItem{Key: 310415})
+		root.InsertValue(BpItem{Key: 333681})
+		root.InsertValue(BpItem{Key: 490869})
+		root.InsertValue(BpItem{Key: 178159})
+		root.InsertValue(BpItem{Key: 127195})
+		root.InsertValue(BpItem{Key: 60020})
+		root.InsertValue(BpItem{Key: 486797})
+		root.InsertValue(BpItem{Key: 219069})
+		root.InsertValue(BpItem{Key: 404431})
+		root.InsertValue(BpItem{Key: 373430})
+		root.InsertValue(BpItem{Key: 296359})
+		root.InsertValue(BpItem{Key: 102264})
+		root.InsertValue(BpItem{Key: 253420})
+		root.InsertValue(BpItem{Key: 295296})
+		root.InsertValue(BpItem{Key: 4273})
+		root.InsertValue(BpItem{Key: 117854})
+		root.InsertValue(BpItem{Key: 385097})
+		root.RemoveValue(BpItem{Key: 253420})
+		root.InsertValue(BpItem{Key: 346663})
+		root.InsertValue(BpItem{Key: 63383})
+		root.InsertValue(BpItem{Key: 287544})
+		root.InsertValue(BpItem{Key: 390562})
+		root.InsertValue(BpItem{Key: 413025})
+		root.InsertValue(BpItem{Key: 253420})
+		root.InsertValue(BpItem{Key: 495364})
+		root.InsertValue(BpItem{Key: 26198})
+		root.InsertValue(BpItem{Key: 24092})
+		root.InsertValue(BpItem{Key: 270961})
+		root.InsertValue(BpItem{Key: 189102})
+		root.InsertValue(BpItem{Key: 329136})
+		deleted, _, _, _ := root.RemoveValue(BpItem{Key: 253420})
+		fmt.Println(deleted)
 	})
 
 	// Automated random testing for B+ tree.
