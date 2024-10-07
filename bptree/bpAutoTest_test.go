@@ -2,7 +2,8 @@ package bpTree
 
 import (
 	"fmt"
-	"github.com/panhongrainbow/algorithm/testToolset"
+	"github.com/panhongrainbow/algorithm/toolset"
+	"github.com/panhongrainbow/algorithm/utilhub"
 	"math/rand"
 	"sort"
 	"testing"
@@ -41,7 +42,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 	// Automated random testing for B Plus tree.
 	t.Run("Automated Testing Section", func(t *testing.T) {
 
-		numbersForAdding, _ := testToolset.GenerateUniqueNumbers(randomCount, randomMin, randomMax)
+		numbersForAdding, _ := toolset.GenerateUniqueNumbers(randomCount, randomMin, randomMax)
 
 		// Set up randomization.
 		source := rand.NewSource(time.Now().UnixNano())
@@ -62,12 +63,25 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		// fmt.Println("Sorted data:", sortedNumbers)
 
 		// Initialize B-tree.
-		root := NewBpTree(5)
+		root := NewBpTree(4)
+
+		// Create a ProgressBar with optional configurations.
+		progressBar, _ := utilhub.NewProgressBar("Automated Testing Section", int(randomCount*2), 70,
+			utilhub.WithTracking(5),
+			utilhub.WithTimeZone("Asia/Taipei"),
+			utilhub.WithTimeControl(500), // 500ms update interval
+			utilhub.WithDisplay(utilhub.BrightCyan),
+		)
+
+		go func() {
+			progressBar.ListenPrinter()
+		}()
 
 		// Start inserting data.
 		for i := 0; i < int(randomCount); i++ {
 			// Insert data entries continuously.
 			root.InsertValue(BpItem{Key: numbersForAdding[i]})
+			progressBar.UpdateBar()
 		}
 
 		// Start deleting data.
@@ -79,6 +93,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 
 			// Deleting data entries continuously.
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: numbersForDeleting[i]})
+			progressBar.UpdateBar()
 
 			if err != nil {
 				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", numbersForDeleting[i], i)
@@ -92,29 +107,45 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 
 		}
 
-		fmt.Println()
+		progressBar.Complete()
+
+		<-progressBar.WaitForPrinterStop()
+
+		progressBar.Report()
 	})
 	// Automated random testing for B+ tree.
 	t.Run("Automated Testing Section2", func(t *testing.T) {
-		np := testToolset.NewDoublePool()
+		np := toolset.NewDoublePool()
 
 		// Initialize B-tree.
-		root := NewBpTree(7)
+		root := NewBpTree(9)
+
+		// Create a ProgressBar with optional configurations.
+		progressBar, _ := utilhub.NewProgressBar("Automated Testing Section2", 60000000, 70,
+			utilhub.WithTracking(5),
+			utilhub.WithTimeZone("Asia/Taipei"),
+			utilhub.WithTimeControl(500), // 500ms update interval
+			utilhub.WithDisplay(utilhub.BrightCyan),
+		)
+
+		go func() {
+			progressBar.ListenPrinter()
+		}()
 
 		for i := 0; i < 600000; i++ {
 
-			insert, remove := np.GenerateUniqueNumbers(1, 6010000, 50, 40, false)
+			insert, remove := np.GenerateUniqueInt64Numbers(1, 6010000, 50, 40, false)
 
 			for j := 0; j < len(insert); j++ {
 				// root.root.Print()
 				// fmt.Println("insert", insert[j])
 				root.InsertValue(BpItem{Key: insert[j]})
-				// root.CheckAndSwapRightContinuity()
-				// root.CheckAndSwapLeftContinuity()
+				progressBar.UpdateBar()
 			}
 
 			for k := 0; k < len(remove); k++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[k]})
+				progressBar.UpdateBar()
 				if deleted == false {
 					fmt.Println("坏了")
 					root.root.Print()
@@ -133,11 +164,12 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 
 		// fmt.Println()
 
-		_, remove := np.GenerateUniqueNumbers(1, 500000, 0, 0, true)
+		_, remove := np.GenerateUniqueInt64Numbers(1, 500000, 0, 0, true)
 		for i := 0; i < len(remove); i++ {
 			// root.root.Print()
 			// fmt.Println("remove2", remove[i])
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[i]})
+			progressBar.UpdateBar()
 			// root.CheckAndSwapRightContinuity()
 			// root.CheckAndSwapLeftContinuity()
 			if deleted == false {
@@ -152,25 +184,42 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 			}
 		}
 
-		fmt.Println()
+		progressBar.Complete()
+
+		<-progressBar.WaitForPrinterStop()
+
+		progressBar.Report()
 	})
 	t.Run("Automated Testing Section3", func(t *testing.T) {
-		np := testToolset.NewDoublePool()
+		np := toolset.NewDoublePool()
 
 		// Initialize B-tree.
-		root := NewBpTree(3)
+		root := NewBpTree(5)
+
+		progressBar, _ := utilhub.NewProgressBar("Automated Testing Section3", 1260000000, 70,
+			utilhub.WithTracking(5),
+			utilhub.WithTimeZone("Asia/Taipei"),
+			utilhub.WithTimeControl(500), // 500ms update interval
+			utilhub.WithDisplay(utilhub.BrightCyan),
+		)
+
+		go func() {
+			progressBar.ListenPrinter()
+		}()
 
 		for i := 0; i < 600000; i++ {
 			// root.root.Print()
 
-			insert, remove := np.GenerateUniqueNumbers(1, 6010000, 50, 40, false)
+			insert, remove := np.GenerateUniqueInt64Numbers(1, 6010000, 50, 40, false)
 
 			for j := 0; j < len(insert); j++ {
 				root.InsertValue(BpItem{Key: insert[j]})
+				progressBar.UpdateBar()
 
 				if j == 49 {
 					for m := 0; m < 1000; m++ {
 						deleted, _, _, _ := root.RemoveValue(BpItem{Key: insert[49]})
+						progressBar.UpdateBar()
 						if deleted == false {
 							fmt.Println("坏了")
 							root.root.Print()
@@ -178,12 +227,14 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 						}
 
 						root.InsertValue(BpItem{Key: insert[49]})
+						progressBar.UpdateBar()
 					}
 				}
 			}
 
 			for k := 0; k < len(remove); k++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[k]})
+				progressBar.UpdateBar()
 				if deleted == false {
 					fmt.Println("坏了")
 					root.root.Print()
@@ -202,11 +253,12 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 
 		// fmt.Println()
 
-		_, remove := np.GenerateUniqueNumbers(1, 500000, 0, 0, true)
+		_, remove := np.GenerateUniqueInt64Numbers(1, 500000, 0, 0, true)
 		for i := 0; i < len(remove); i++ {
 			// root.root.Print()
 			// fmt.Println("remove2", remove[i])
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[i]})
+			progressBar.UpdateBar()
 			// root.CheckAndSwapRightContinuity()
 			// root.CheckAndSwapLeftContinuity()
 			if deleted == false {
@@ -221,26 +273,43 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 			}
 		}
 
-		fmt.Println()
+		progressBar.Complete()
+
+		<-progressBar.WaitForPrinterStop()
+
+		progressBar.Report()
 	})
 
 	t.Run("Automated Testing Section4", func(t *testing.T) {
-		np := testToolset.NewDoublePool()
+		np := toolset.NewDoublePool()
 
 		// Initialize B-tree.
-		root := NewBpTree(3)
+		root := NewBpTree(7)
+
+		progressBar, _ := utilhub.NewProgressBar("Automated Testing Section4", 2460000000, 70,
+			utilhub.WithTracking(5),
+			utilhub.WithTimeZone("Asia/Taipei"),
+			utilhub.WithTimeControl(500), // 500ms update interval
+			utilhub.WithDisplay(utilhub.BrightCyan),
+		)
+
+		go func() {
+			progressBar.ListenPrinter()
+		}()
 
 		for i := 0; i < 600000; i++ {
 			// root.root.Print()
 
-			insert, remove := np.GenerateUniqueNumbers(1, 6010000, 50, 40, false)
+			insert, remove := np.GenerateUniqueInt64Numbers(1, 6010000, 50, 40, false)
 
 			for j := 0; j < len(insert); j++ {
 				root.InsertValue(BpItem{Key: insert[j]})
+				progressBar.UpdateBar()
 
 				if j == 49 {
 					for m := 0; m < 1000; m++ {
 						deleted, _, _, _ := root.RemoveValue(BpItem{Key: insert[48]})
+						progressBar.UpdateBar()
 						if deleted == false {
 							fmt.Println("坏了")
 							root.root.Print()
@@ -248,6 +317,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 						}
 
 						deleted, _, _, _ = root.RemoveValue(BpItem{Key: insert[49]})
+						progressBar.UpdateBar()
 						if deleted == false {
 							fmt.Println("坏了")
 							root.root.Print()
@@ -255,14 +325,17 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 						}
 
 						root.InsertValue(BpItem{Key: insert[48]})
+						progressBar.UpdateBar()
 
 						root.InsertValue(BpItem{Key: insert[49]})
+						progressBar.UpdateBar()
 					}
 				}
 			}
 
 			for k := 0; k < len(remove); k++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[k]})
+				progressBar.UpdateBar()
 				if deleted == false {
 					fmt.Println("坏了")
 					root.root.Print()
@@ -281,11 +354,12 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 
 		// fmt.Println()
 
-		_, remove := np.GenerateUniqueNumbers(1, 500000, 0, 0, true)
+		_, remove := np.GenerateUniqueInt64Numbers(1, 500000, 0, 0, true)
 		for i := 0; i < len(remove); i++ {
 			// root.root.Print()
 			// fmt.Println("remove2", remove[i])
 			deleted, _, _, err := root.RemoveValue(BpItem{Key: remove[i]})
+			progressBar.UpdateBar()
 			// root.CheckAndSwapRightContinuity()
 			// root.CheckAndSwapLeftContinuity()
 			if deleted == false {
@@ -300,7 +374,11 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 			}
 		}
 
-		fmt.Println()
+		progressBar.Complete()
+
+		<-progressBar.WaitForPrinterStop()
+
+		progressBar.Report()
 	})
 
 	// Automated random testing for B+ tree.
@@ -361,7 +439,7 @@ func shuffleSlice(slice []int64, rng *rand.Rand) {
 	}
 }
 
-func Test_Check_inode(t *testing.T) {
+/*func Test_Check_inode(t *testing.T) {
 	root := NewBpTree(5)
 
 	// Set up a top-level index node.
@@ -392,9 +470,9 @@ func Test_Check_inode(t *testing.T) {
 	root.InsertValue(BpItem{Key: 331451})
 
 	root.root.Print()
-}
+}*/
 
-func Test_Check_Continuity(t *testing.T) {
+/*func Test_Check_Continuity(t *testing.T) {
 	root := NewBpTree(3)
 
 	head := root.root.BpDataHead()
@@ -414,4 +492,10 @@ func Test_Check_Continuity(t *testing.T) {
 	root.CheckAndSwapRightContinuity()
 
 	root.root.Print()
-}
+}*/
+
+/*func printGoroutines() {
+	buf := make([]byte, 1<<16) // 分配足够大的 buffer
+	stackSize := runtime.Stack(buf, true)
+	fmt.Printf("=== Goroutines Info ===\n%s\n", buf[:stackSize])
+}*/

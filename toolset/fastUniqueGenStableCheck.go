@@ -1,4 +1,4 @@
-package testToolset
+package toolset
 
 import (
 	"math/rand"

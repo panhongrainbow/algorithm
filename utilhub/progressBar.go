@@ -71,8 +71,6 @@ func WithTimeZone(timeZoneName string) BarOption {
 func WithTimeControl(updateInterval int) BarOption {
 	return func(pb *ProgressBar) {
 		pb.updateInterval = updateInterval
-		// pb.ticker.C = time.NewTicker(time.Duration(updateInterval) * time.Millisecond)
-		// pb.ticker = time.After(time.Duration(updateInterval) * time.Millisecond)
 	}
 }
 
