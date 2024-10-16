@@ -66,7 +66,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		root := NewBpTree(4)
 
 		// Create a ProgressBar with optional configurations.
-		progressBar, _ := utilhub.NewProgressBar("Automated Testing Section", int(randomCount*2), 70,
+		progressBar, _ := utilhub.NewProgressBar("Automated Testing Section", uint32(randomCount*2), 70,
 			utilhub.WithTracking(5),
 			utilhub.WithTimeZone("Asia/Taipei"),
 			utilhub.WithTimeControl(500), // 500ms update interval

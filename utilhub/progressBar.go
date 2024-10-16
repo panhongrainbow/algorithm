@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
+	"unsafe"
 )
 
 // =====================================================
@@ -15,13 +18,13 @@ import (
 type ProgressBar struct {
 	// Basic properties
 	name      string // Name of the progress bar.
-	total     int    // Total number of steps or units to track.
+	total     uint32 // Total number of steps or units to track.
 	barLength int    // Visual length of the progress bar.
 
 	// Tracking progress
-	precision        int // Number of decimal places for displaying the progress percentage.
-	currentProcess   int // Current progress value.
-	lastFilledLength int // Tracks the last filled position to avoid redundant updates.
+	precision        int    // Number of decimal places for displaying the progress percentage.
+	currentProcess   uint32 // Current progress value.
+	lastFilledLength int    // Tracks the last filled position to avoid redundant updates.
 
 	// Timezone configuration
 	timezone string         // Timezone for displaying the start time of the progress bar.
@@ -42,6 +45,9 @@ type ProgressBar struct {
 	resetColor   string          // ANSI reset code to revert colors after rendering the progress bar.
 	printChannel chan barMessage // Channel for displaying progress messages, added for testing purposes.
 	finishBar    chan struct{}   // Channel to wait for all messages to finish displaying.
+
+	// Using atomic operations can reduce the dependence on mutexes, thereby improving the performance and concurrency of the program.
+	mu sync.Mutex
 }
 
 // barMessage ⛏️ is used for passing progress updates through channels.
@@ -82,7 +88,7 @@ func WithDisplay(color string) BarOption {
 }
 
 // NewProgressBar ⛏️ initializes and returns a ProgressBar with optional configurations.
-func NewProgressBar(name string, total, barLength int, opts ...BarOption) (*ProgressBar, error) {
+func NewProgressBar(name string, total uint32, barLength int, opts ...BarOption) (*ProgressBar, error) {
 	// Create a default ProgressBar with the required parameters.
 	pb := &ProgressBar{
 		// Basic properties
@@ -195,28 +201,32 @@ func (pb *ProgressBar) WaitForPrinterStop() chan struct{} {
 
 // UpdateBar ⛏️ updates the progress bar based on the current count.
 func (pb *ProgressBar) UpdateBar() {
-	// Return if the progress is already complete.
-	if pb.currentProcess == pb.total {
+	// Return immediately if the progress has already reached completion.
+	if atomic.LoadUint32(&pb.currentProcess) == pb.total {
 		return
 	}
 
-	// Adjust if the current process exceeds the total value.
-	if pb.currentProcess > pb.total {
-		pb.currentProcess = pb.total // Cap currentProcess to total.
+	// If the current process exceeds the total value, cap it to the total.
+	if atomic.LoadUint32(&pb.currentProcess) > pb.total {
+		atomic.StoreUint32(&pb.currentProcess, pb.total) // Limit currentProcess to total.
 		return
 	}
+
+	// Lock the mutex to ensure thread safety during updates.
+	pb.mu.Lock()
 
 	// Increment the current process by one step.
-	pb.currentProcess++
+	atomic.AddUint32(&pb.currentProcess, 1)
+	// pb.currentProcess++
 
 	// Calculate the current progress percentage.
 	progress := float64(pb.currentProcess) / float64(pb.total)
 	filledLength := int(progress * float64(pb.barLength))
 
-	// Format the progress percentage with the specified precision.
+	// Format the progress percentage, ensuring it does not exceed 100%.
 	percentage := progress * 100
 	if percentage > 100 {
-		percentage = 100 // Cap percentage to 100.
+		percentage = 100 // Cap percentage at 100.
 	}
 
 	// Update the progress bar if the filled length has changed.
@@ -224,10 +234,10 @@ func (pb *ProgressBar) UpdateBar() {
 	LOOP:
 		select {
 		case <-pb.ticker:
-			// Send progress update to the print channel.
+			// Send the progress update to the print channel.
 			pb.printChannel <- barMessage{filledLength, percentage}
 
-			// Update the last filled length to avoid redundant updates.
+			// Update the last filled length to prevent redundant updates.
 			pb.lastFilledLength = filledLength
 
 			// Reset the ticker for the next update interval.
@@ -238,10 +248,14 @@ func (pb *ProgressBar) UpdateBar() {
 		}
 	}
 
+	// Unlock the mutex after completing the update.
+	pb.mu.Unlock()
+
 	// If progress is complete, stop the ticker.
-	if pb.currentProcess == pb.total {
+	if atomic.LoadUint32(&pb.currentProcess) == pb.total {
 		// Set ticker to nil to indicate completion.
-		pb.ticker = nil
+		// pb.ticker = nil // Originally could be written this way, but to prevent bugs, we change it to atomic.
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&pb.ticker)), nil)
 	}
 }
 
@@ -250,12 +264,12 @@ func (pb *ProgressBar) Complete() {
 	// Check if the progress bar is already complete.
 	if pb.complete == false {
 		// Ensure the current progress is less than or equal to the total.
-		if pb.currentProcess <= pb.total {
+		if atomic.LoadUint32(&pb.currentProcess) <= pb.total {
 			// Set the end time to the current time in the specified location.
 			pb.endTime = time.Now().In(pb.location)
 
 			// Set the current process to the total to mark it as fully completed.
-			pb.currentProcess = pb.total
+			atomic.StoreUint32(&pb.currentProcess, pb.total)
 
 			// Send a final update to the print channel, indicating completion.
 			pb.printChannel <- barMessage{pb.barLength, 100.0}
