@@ -1,4 +1,4 @@
-package toolset
+package randhub
 
 import (
 	"errors"
@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-// ==================================================
+// =====================================================================================================================
 //                  ⚗️ Functional Testing  (No Pool)
-// ==================================================
+// =====================================================================================================================
 // 🧪 Functional testing focuses on verifying the core functionalities of the system.
 // 🧪 It involves inputting a large volume of data to ensure that all features work
 // as expected and can handle a variety of possible inputs.

@@ -2,18 +2,31 @@ package bpTree
 
 import (
 	"fmt"
-	"github.com/panhongrainbow/algorithm/toolset"
+	"github.com/panhongrainbow/algorithm/randhub"
+	"github.com/panhongrainbow/algorithm/testplan"
 	"github.com/panhongrainbow/algorithm/utilhub"
 	"math/rand"
-	"sort"
 	"testing"
 	"time"
 )
 
+// =====================================================================================================================
+//                  ⚗️ Consistency Integrity Test (B Plus Tree)
+// =====================================================================================================================
+// 🧪 The B Plus Tree unit test is designed to validate the tree’s consistency
+// and integrity through bulk data insertion and deletion.
+// 🧪 The test begins by inserting a large volume of data into the tree,
+// followed by a complete deletion of all data, checking if the tree
+// returns to its initial empty state to verify correctness.
+// 🧪 Indexing errors in the B Plus Tree can lead to serious issues, such as
+// being unable to find specific data or failing to delete data properly.
+// 🧪 The test ensures the accuracy of indexing to prevent inconsistencies
+// that might result in data operation failures.
+
 // ⚗️ This code defines three constants used for generating random numbers in a test.
 const (
-	// 🧪 randomCount represents the number of elements to be generated for random testing.
-	randomCount int64 = 6000000
+	// 🧪 randomTotalCount represents the number of elements to be generated for random testing.
+	randomTotalCount int64 = 6000000
 
 	// 🧪 randomMax represents the maximum value for generating random numbers.
 	randomMax int64 = 20000000
@@ -22,100 +35,96 @@ const (
 	randomMin int64 = 10
 )
 
-/*
-⚗️ B Plus Tree Automated Unit Testing
+func preCalculate() {
 
-To ensure the functionality and robustness of the B Plus Tree implementation, the testing process is divided into three levels:
+}
 
-🧪 Level 1: Starting Point of the Test Program
-At this level, the test program is initialized, ensuring the environment and configurations are correctly set up, laying the groundwork for the subsequent tests.
+// Test_Check_BpTree_ConsistencyIntegrity 🧫 validates consistency and integrity by inserting and then deleting large data volumes
+// to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
+func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
+	// Test case for bulk insert and delete operations on the B+ tree.
+	t.Run("Mode 1: Bulk Insert/Delete", func(t *testing.T) {
+		// Create a test plan for bulk insert and delete operations.
+		choosePlan := testplan.BpTreeProcess{
+			RandomTotalCount: randomTotalCount, // Number of elements to generate for random testing.
+		}
+		testPlan := choosePlan.PlanMaxInsertDelete()
 
-🧪 Level 2: Categorized Testing
-This level categorizes the tests into various checkpoints, with each checkpoint focusing on a specific feature or characteristic of the B+ Tree.
-
-🧪 Level 3: Multi-Mode Testing
-Within each checkpoint, different testing modes are employed to thoroughly verify all scenarios and edge cases related to that checkpoint.
-*/
-
-// Test_Check_BpTree_Automatic is used for automated testing, generating test data with random numbers for B+ tree insertion and deletion.
-func Test_Check_BpTree_Automatic(t *testing.T) {
-	// Automated random testing for B Plus tree.
-	t.Run("Automated Testing Section", func(t *testing.T) {
-
-		numbersForAdding, _ := toolset.GenerateUniqueNumbers(randomCount, randomMin, randomMax)
-
-		// Set up randomization.
+		// Initialize a random number generator.
 		source := rand.NewSource(time.Now().UnixNano())
 		random := rand.New(source)
 
-		// Generate random data for deletion.
-		numbersForDeleting := make([]int64, randomCount)
-		copy(numbersForDeleting, numbersForAdding)
-		shuffleSlice(numbersForDeleting, random)
-		// fmt.Println("Random data for deletion:", numbersForDeleting)
+		// Generate a list of unique numbers for bulk insertion.
+		bulkAdd, err := randhub.GenerateUniqueNumbers(randomTotalCount, randomMin, randomMax)
+		if err != nil {
+			// Panic if an error occurs during number generation.
+			panic(err)
+		}
 
-		// Generate sorted data.
-		sortedNumbers := make([]int64, randomCount)
-		copy(sortedNumbers, numbersForAdding)
-		sort.Slice(sortedNumbers, func(i, j int) bool {
-			return sortedNumbers[i] < sortedNumbers[j]
-		})
-		// fmt.Println("Sorted data:", sortedNumbers)
+		// Create a copy of the bulk insertion list and shuffle it for deletion.
+		bulkDel := make([]int64, testPlan[0].ChangePattern[0])
+		copy(bulkDel, bulkAdd)
+		shuffleSlice(bulkDel, random)
 
-		// Initialize B-tree.
-		root := NewBpTree(4)
-
-		// Create a ProgressBar with optional configurations.
-		progressBar, _ := utilhub.NewProgressBar("Automated Testing Section", uint32(randomCount*2), 70,
-			utilhub.WithTracking(5),
-			utilhub.WithTimeZone("Asia/Taipei"),
-			utilhub.WithTimeControl(500), // 500ms update interval
-			utilhub.WithDisplay(utilhub.BrightCyan),
+		// Create a progress bar with optional configurations.
+		progressBar, _ := utilhub.NewProgressBar(
+			"Mode 1: Bulk Insert/Delete",            // Progress bar title.
+			uint32(randomTotalCount*2),              // Total number of operations.
+			70,                                      // Progress bar width.
+			utilhub.WithTracking(5),                 // Update interval.
+			utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+			utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+			utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 		)
 
+		// Start the progress bar printer in a separate goroutine.
 		go func() {
 			progressBar.ListenPrinter()
 		}()
 
-		// Start inserting data.
-		for i := 0; i < int(randomCount); i++ {
-			// Insert data entries continuously.
-			root.InsertValue(BpItem{Key: numbersForAdding[i]})
+		// Initialize a new B+ tree with a specified order.
+		root := NewBpTree(5)
+
+		// Perform bulk insertion of generated numbers.
+		for i := 0; i < int(randomTotalCount); i++ {
+			// Insert a new value into the B+ tree.
+			root.InsertValue(BpItem{Key: bulkAdd[i]})
+			// Update the progress bar.
 			progressBar.UpdateBar()
 		}
 
-		// Start deleting data.
-		for i := 0; i < int(randomCount); i++ {
-
-			// 显示目前的删除值
-			// value := numbersForDeleting[i]
-			// fmt.Println(i, value)
-
-			// Deleting data entries continuously.
-			deleted, _, _, err := root.RemoveValue(BpItem{Key: numbersForDeleting[i]})
+		// Perform bulk deletion of shuffled numbers.
+		for i := 0; i < int(randomTotalCount); i++ {
+			// Remove a value from the B+ tree.
+			deleted, _, _, err := root.RemoveValue(BpItem{Key: bulkDel[i]})
+			// Update the progress bar.
 			progressBar.UpdateBar()
 
+			// Check for errors during deletion.
 			if err != nil {
-				fmt.Println("Breakpoint: Deletion encountered an error. 💢 The number is ", numbersForDeleting[i], i)
-				panic("Breakpoint: Deletion encountered an error.")
+				// Panic with detailed error message about the failure during deletion.
+				panic(fmt.Sprintf("Error during deletion: Failed to delete number %d at index %d. Error: %v", bulkDel[i], i, err))
 			}
 
+			// Check if deletion was successful.
 			if deleted == false {
-				fmt.Println("Breakpoint: Data deletion not successful. 💢 The number is ", numbersForDeleting[i], i)
-				panic("Breakpoint: Data deletion not successful.")
+				// Panic with detailed error message indicating deletion was not successful.
+				panic(fmt.Sprintf("Error during deletion: Data deletion for number %d at index %d was not successful.", bulkDel[i], i))
 			}
-
 		}
 
+		// Mark the progress bar as complete.
 		progressBar.Complete()
 
+		// Wait for the progress bar printer to stop.
 		<-progressBar.WaitForPrinterStop()
 
+		// Print a final report.
 		progressBar.Report()
 	})
 	// Automated random testing for B+ tree.
 	t.Run("Automated Testing Section2", func(t *testing.T) {
-		np := toolset.NewDoublePool()
+		np := randhub.NewDoublePool()
 
 		// Initialize B-tree.
 		root := NewBpTree(9)
@@ -191,7 +200,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 		progressBar.Report()
 	})
 	t.Run("Automated Testing Section3", func(t *testing.T) {
-		np := toolset.NewDoublePool()
+		np := randhub.NewDoublePool()
 
 		// Initialize B-tree.
 		root := NewBpTree(5)
@@ -281,7 +290,7 @@ func Test_Check_BpTree_Automatic(t *testing.T) {
 	})
 
 	t.Run("Automated Testing Section4", func(t *testing.T) {
-		np := toolset.NewDoublePool()
+		np := randhub.NewDoublePool()
 
 		// Initialize B-tree.
 		root := NewBpTree(7)

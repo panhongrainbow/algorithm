@@ -1,13 +1,13 @@
-package toolset
+package randhub
 
 import (
 	"math/rand"
 	"time"
 )
 
-// =====================================================
+// =====================================================================================================================
 //                  ⚗️ Quick & Simple Testing (FastPool)
-// =====================================================
+// =====================================================================================================================
 // 🧪 This function, `GenerateUniqueNumbers`, is designed for fast and straightforward testing.
 // 🧪 Its simplicity allows you to generate unique random numbers rapidly
 // within a specified range while efficiently removing values from a pool.
