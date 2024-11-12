@@ -1,5 +1,10 @@
 package testplan
 
+import (
+	"math/rand"
+	"strconv"
+)
+
 // =====================================================================================================================
 //                   🧮 BpTree Algorithm Test Plan
 // =====================================================================================================================
@@ -64,7 +69,7 @@ type BpTreeProcess struct {
 
 // Mode 1: Bulk Insert/Delete
 
-// PlanMaxInsertDelete generates a plan for sudden bulk insertion followed by bulk deletion of data in the B+ tree.
+// PlanMaxInsertDelete 🧮 generates a plan for sudden bulk insertion followed by bulk deletion of data in the B Plus tree.
 func (bPlan BpTreeProcess) PlanMaxInsertDelete() []EachBpTestStage {
 	return []EachBpTestStage{
 		{
@@ -80,4 +85,43 @@ func (bPlan BpTreeProcess) PlanMaxInsertDelete() []EachBpTestStage {
 			UseFixedData:   false,
 		},
 	}
+}
+
+// InsertionDeletionLoad 🧮 plans repeated insertion and deletion of data in the B Plus tree.
+func (bPlan BpTreeProcess) InsertionDeletionLoad(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []EachBpTestStage) {
+	// Perform boundary check outside of the loop to ensure valid ranges for removal and insertion
+	if minRemovals >= maxRemovals || minDifference >= maxDifference {
+		panic("max must be greater than min for both removal and insertion ranges")
+	}
+
+	cycleNumber := 0
+	var currentIncrement int64 = 0
+
+	// Continue adding insertion and deletion patterns until reaching the target operation count
+	for currentIncrement < bPlan.RandomTotalCount {
+		// Generate random values within the specified ranges for removals and insertions
+		removals := minRemovals + rand.Int63n(maxRemovals-minRemovals)
+		difference := minDifference + rand.Int63n(maxDifference-minDifference)
+
+		// Add a test stage with the generated insertion and deletion counts
+		testStages = append(testStages, EachBpTestStage{
+			Description:    "Cycle " + strconv.Itoa(cycleNumber),
+			ChangePattern:  []int64{removals + difference, -1 * removals},
+			ExecutionCycle: 1,
+			UseFixedData:   false,
+		})
+
+		// Increment the total count with the number of insertions performed in this cycle
+		currentIncrement += difference
+		cycleNumber++
+	}
+
+	return testStages
+}
+func (bPlan BpTreeProcess) TotalOperation(testStages []EachBpTestStage) int64 {
+	var totalOperation int64
+	for i := 0; i < len(testStages); i++ {
+		totalOperation += testStages[i].ChangePattern[0] * 2
+	}
+	return totalOperation
 }
