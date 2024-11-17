@@ -87,14 +87,17 @@ func (bPlan BpTreeProcess) PlanMaxInsertDelete() []EachBpTestStage {
 	}
 }
 
-// InsertionDeletionLoad 🧮 plans repeated insertion and deletion of data in the B Plus tree.
-func (bPlan BpTreeProcess) InsertionDeletionLoad(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []EachBpTestStage) {
+// RandomizedBoundary 🧮 plans repeated insertion and deletion of data in the boundary of B Plus tree.
+func (bPlan BpTreeProcess) RandomizedBoundary(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []EachBpTestStage) {
 	// Perform boundary check outside of the loop to ensure valid ranges for removal and insertion
 	if minRemovals >= maxRemovals || minDifference >= maxDifference {
 		panic("max must be greater than min for both removal and insertion ranges")
 	}
 
+	// This variable will track the cycle number.
 	cycleNumber := 0
+
+	// This variable will keep track of the total operation count.
 	var currentIncrement int64 = 0
 
 	// Continue adding insertion and deletion patterns until reaching the target operation count
@@ -118,6 +121,43 @@ func (bPlan BpTreeProcess) InsertionDeletionLoad(minRemovals, maxRemovals, minDi
 
 	return testStages
 }
+
+// FixedDataBoundary 🧮 is used to plan a fixed amount of data insertion and deletion in the boundary of B Plus tree.
+func (bPlan BpTreeProcess) FixedDataBoundary(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []EachBpTestStage) {
+	// Perform boundary check outside of the loop to ensure valid ranges for removal and insertion
+	if minRemovals >= maxRemovals || minDifference >= maxDifference {
+		panic("max must be greater than min for both removal and insertion ranges")
+	}
+
+	// This variable will track the cycle number.
+	cycleNumber := 0
+
+	// This variable will keep track of the total operation count.
+	var currentIncrement int64 = 0
+
+	// Generate random values within the specified ranges for removals and insertions
+	removals := minRemovals + rand.Int63n(maxRemovals-minRemovals)
+	difference := minDifference + rand.Int63n(maxDifference-minDifference)
+
+	// Continue adding insertion and deletion patterns until reaching the target operation count
+	for currentIncrement < bPlan.RandomTotalCount {
+
+		// Add a test stage with the generated insertion and deletion counts
+		testStages = append(testStages, EachBpTestStage{
+			Description:    "Cycle " + strconv.Itoa(cycleNumber),
+			ChangePattern:  []int64{removals + difference, -1 * removals},
+			ExecutionCycle: 1,
+			UseFixedData:   false,
+		})
+
+		// Increment the total count with the number of insertions performed in this cycle
+		currentIncrement += difference
+		cycleNumber++
+	}
+
+	return testStages
+}
+
 func (bPlan BpTreeProcess) TotalOperation(testStages []EachBpTestStage) int64 {
 	var totalOperation int64
 	for i := 0; i < len(testStages); i++ {
