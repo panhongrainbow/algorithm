@@ -63,8 +63,13 @@ type EachTestStageStatistic struct {
 
 // BpTreeProcess 🧮 stores common parameters for the process calculator.
 type BpTreeProcess struct {
-	// randomTotalCount represents the number of elements to be generated for random testing.
-	RandomTotalCount int64
+	// BpMaxCapacity represents the maximum number of elements the B Plus tree can hold.
+	BpMaxCapacity int64
+
+	// Random Machine is a function that generates random data for testing.
+	// It takes the expected number of insert and delete operations as input and returns the corresponding keys.
+	// The function is designed to be flexible and can be created using different strategies, such as GenerateNumbers or GenerateUniqueNumbers.
+	RandomMachine func(expectedInsertCount int64, expectedDeleteCount int64, fetchAll bool) (insertedKeys []int64, deletedKeys []int64, err error)
 }
 
 // Mode 1: Bulk Insert/Delete
@@ -74,13 +79,13 @@ func (bPlan BpTreeProcess) PlanMaxInsertDelete() []EachBpTestStage {
 	return []EachBpTestStage{
 		{
 			Description:    "Session 1 : Bulk Insert",
-			ChangePattern:  []int64{bPlan.RandomTotalCount},
+			ChangePattern:  []int64{bPlan.BpMaxCapacity},
 			ExecutionCycle: 1,
 			UseFixedData:   false,
 		},
 		{
 			Description:    "Session 2 : Bulk Delete",
-			ChangePattern:  []int64{-1 * bPlan.RandomTotalCount},
+			ChangePattern:  []int64{-1 * bPlan.BpMaxCapacity},
 			ExecutionCycle: 1,
 			UseFixedData:   false,
 		},
@@ -101,7 +106,7 @@ func (bPlan BpTreeProcess) RandomizedBoundary(minRemovals, maxRemovals, minDiffe
 	var currentIncrement int64 = 0
 
 	// Continue adding insertion and deletion patterns until reaching the target operation count.
-	for currentIncrement < bPlan.RandomTotalCount {
+	for currentIncrement < bPlan.BpMaxCapacity {
 		// Generate random values within the specified ranges for removals and insertions.
 		removals := minRemovals + rand.Int63n(maxRemovals-minRemovals)
 		difference := minDifference + rand.Int63n(maxDifference-minDifference)
@@ -140,7 +145,7 @@ func (bPlan BpTreeProcess) GradualBoundary(minRemovals, maxRemovals, minDifferen
 	difference := minDifference + rand.Int63n(maxDifference-minDifference)
 
 	// Continue adding insertion and deletion patterns until reaching the target operation count.
-	for currentIncrement < bPlan.RandomTotalCount {
+	for currentIncrement < bPlan.BpMaxCapacity {
 
 		// Add a test stage with the generated insertion and deletion counts.
 		testStages = append(testStages, EachBpTestStage{
@@ -176,7 +181,7 @@ func (bPlan BpTreeProcess) RedundantOperation(minRemovals, maxRemovals, minDiffe
 	difference := minDifference + rand.Int63n(maxDifference-minDifference)
 
 	// Continue adding insertion and deletion patterns until reaching the target operation count.
-	for currentIncrement < bPlan.RandomTotalCount {
+	for currentIncrement < bPlan.BpMaxCapacity {
 
 		// Add a test stage with the generated insertion and deletion counts.
 		testStages = append(testStages, EachBpTestStage{
