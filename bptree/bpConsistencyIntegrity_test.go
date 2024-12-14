@@ -2,12 +2,14 @@ package bpTree
 
 import (
 	"fmt"
+	"github.com/panhongrainbow/algorithm/randhub"
 	"github.com/panhongrainbow/algorithm/testplan"
 	"github.com/panhongrainbow/algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"strconv"
 	"testing"
+	"time"
 )
 
 // =====================================================================================================================
@@ -36,10 +38,59 @@ const (
 
 	// 🧪 randomMax represents the maximum value for generating random numbers.
 	randomMax int64 = randomTotalCount/randomHitCollisionPercentage*100 + randomMin
-
-	// 🧪 testWidthRange represents the range of B Plus tree widths to be tested.
-	testWidthRange = 5
 )
+
+var (
+	// UniqueRandomMachine generates a list of unique numbers for bulk insertion and deletion.
+	UniqueRandomMachine = func(expectedInsertCount int64, expectedDeleteCount int64, fetchAll bool) (insertedKeys []int64, deletedKeys []int64, err error) {
+		// Generate a list of unique numbers for bulk insertion.
+		// This function will panic if an error occurs during number generation.
+		bulkAdd, err := randhub.GenerateUniqueNumbers(expectedInsertCount, randomMin, randomMax)
+		if err != nil {
+			// Panic if an error occurs during number generation.
+			panic(err)
+		}
+
+		// Initialize a random number generator with the current time as the seed.
+		source := rand.NewSource(time.Now().UnixNano())
+		random := rand.New(source)
+
+		// Create a copy of the bulk insertion list and shuffle it for deletion.
+		// This is done to simulate random deletion of keys.
+		bulkDel := make([]int64, expectedDeleteCount)
+		copy(bulkDel, bulkAdd)
+		shuffleSlice(bulkDel, random)
+
+		return bulkAdd, bulkDel, nil
+	}
+
+	// UniqueRandomInPoolMachine generates a list of unique numbers for bulk insertion and deletion using a pool.
+	UniqueRandomInPoolMachine = func(expectedInsertCount int64, expectedDeleteCount int64, fetchAll bool) (insertedKeys []int64, deletedKeys []int64, err error) {
+		// Create a new double pool for generating unique numbers.
+		pool := randhub.NewDoublePool()
+
+		// Generate random numbers for bulk insertion and deletion.
+		// The pool will ensure that the numbers are unique.
+		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(randomMin, randomMax, int(expectedInsertCount), intAbs(int(expectedDeleteCount)), fetchAll)
+
+		// Initialize a random number generator with the current time as the seed.
+		source := rand.NewSource(time.Now().UnixNano())
+		random := rand.New(source)
+
+		// Shuffle the bulk insertion and deletion lists to simulate random order.
+		shuffleSlice(batchInsert, random)
+		shuffleSlice(batchRemove, random)
+
+		return batchInsert, batchRemove, nil
+	}
+)
+
+func intAbs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
 
 // Test_Check_BpTree_ConsistencyIntegrity 🧫 validates consistency and integrity by inserting and then deleting large data volumes
 // to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
@@ -47,36 +98,47 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 	t.Run("Mode 1: Bulk Insert/Delete", func(t *testing.T) {
 		// Test case for bulk insert and delete operations on the B Plus tree.
 
-		// The random width is between 3 and 12.
+		// Initialize a random number generator.
+		// source := rand.NewSource(time.Now().UnixNano())
+		// random := rand.New(source)
 
+		// Set the initial width of the B Plus tree.
+		// The width of the B+ tree determines the number of keys that can be stored in each node.
+
+		// The random width is between 3 and 12.
 		// This is done to ensure that the number of keys in each node is varied,
 		// which helps to check for errors in indexing.
-
-		// The test is repeated a number of times specified by the variable {testWidthRange}.
-		// Each iteration increments the width by one, covering both odd and even widths.
+		// The test is repeated five times, each time with an incremented width.
+		// This includes testing with both odd and even widths.
 		bpTreeWidth := rand.Intn(10) + 3
 
 		// Perform tests with varying B Plus tree widths to ensure robustness.
-		for i := 0; i < testWidthRange; i++ {
+		for i := 0; i < 5; i++ {
 
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
 				BpMaxCapacity: randomTotalCount, // Number of elements to generate for random testing.
-				RandomMachine: UniqueRandomMachine{},
+				RandomMachine: UniqueRandomMachine,
 			}
 
-			// Generate unique random numbers for bulk insertion and deletion.
-			bulkAdd, bulkDel, err := choosePlan.RandomMachine.Generate(
-				0,                // action: The action to perform (in this case, 0 for bulk insert/delete).
-				randomTotalCount, // expectedInsertCount: The expected number of elements to generate for insertion.
-				randomTotalCount, // expectedDeleteCount: The expected number of elements to generate for deletion.
-			)
-
-			// Check if an error occurred during number generation.
+			bulkAdd, bulkDel, err := choosePlan.RandomMachine(randomTotalCount, randomTotalCount, false)
 			if err != nil {
-				// Panic if an error occurred, as this is a critical failure.
 				panic(err)
 			}
+
+			// testPlan := choosePlan.PlanMaxInsertDelete()
+
+			// Generate a list of unique numbers for bulk insertion.
+			// bulkAdd, err := randhub.GenerateUniqueNumbers(randomTotalCount, randomMin, randomMax)
+			// if err != nil {
+			// Panic if an error occurs during number generation.
+			// panic(err)
+			// }
+
+			// Create a copy of the bulk insertion list and shuffle it for deletion.
+			// bulkDel := make([]int64, testPlan[0].ChangePattern[0])
+			// copy(bulkDel, bulkAdd)
+			// shuffleSlice(bulkDel, random)
 
 			// Create a progress bar with optional configurations.
 			progressBar, _ := utilhub.NewProgressBar(
@@ -137,24 +199,30 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 		}
 	})
 	t.Run("Mode 2: Randomized Boundary Test", func(t *testing.T) {
-		// Test case for bulk insert and delete operations on the B Plus tree.
+		// By repeatedly performing insert and delete operations, we can assess the system's
+		// stability, performance, correctness, and handling of edge cases when dealing with a dynamic dataset.
+
+		// Initialize a random number generator.
+		// source := rand.NewSource(time.Now().UnixNano())
+		// random := rand.New(source)
+
+		// Set the initial width of the B Plus tree.
+		// The width of the B+ tree determines the number of keys that can be stored in each node.
 
 		// The random width is between 3 and 12.
-
 		// This is done to ensure that the number of keys in each node is varied,
 		// which helps to check for errors in indexing.
-
-		// The test is repeated a number of times specified by the variable {testWidthRange}.
-		// Each iteration increments the width by one, covering both odd and even widths.
+		// The test is repeated five times, each time with an incremented width.
+		// This includes testing with both odd and even widths.
 		bpTreeWidth := rand.Intn(10) + 3
 
 		// Perform tests with varying B Plus tree widths to ensure robustness.
 		// We need at least 2 iterations to cover both odd and even BpTree widths.
-		for i := 0; i < testWidthRange; i++ {
+		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
 				BpMaxCapacity: randomTotalCount, // Number of elements to generate for random testing.
-				RandomMachine: UniqueRandomInPoolMachine{},
+				RandomMachine: UniqueRandomInPoolMachine,
 			}
 			testPlan := choosePlan.RandomizedBoundary(5, 50, 10, 20)
 
@@ -183,10 +251,16 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			// Iterate through the test plan for bulk insert and delete operations in order to test stability and consistency.
 			for j := 0; j < len(testPlan); j++ {
 				// Generate random numbers for bulk insertion and deletion.
-				batchInsert, batchRemove, err := choosePlan.RandomMachine.Generate(random_machine_action_fetch_none, testPlan[j].ChangePattern[0], -1*testPlan[j].ChangePattern[1])
+				// batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(randomMin, randomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
+
+				batchInsert, batchRemove, err := choosePlan.RandomMachine(testPlan[j].ChangePattern[0], -1*testPlan[j].ChangePattern[1], false)
 				if err != nil {
 					panic(err)
 				}
+
+				// Create a copy of the bulk insertion list and shuffle it for deletion.
+				// shuffleSlice(batchInsert, random)
+				// shuffleSlice(batchRemove, random)
 
 				// Perform bulk insertion of generated numbers.
 				for k := 0; k < int(testPlan[j].ChangePattern[0]); k++ {
@@ -218,7 +292,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			}
 
 			// Delete all data from the B Plus tree.
-			_, removeAll, _ := choosePlan.RandomMachine.Generate(random_machine_action_fetch_all, 0, 0)
+			_, removeAll, _ := choosePlan.RandomMachine(0, 0, true)
 			for m := 0; m < len(removeAll); m++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: removeAll[m]})
 				progressBar.UpdateBar()
@@ -244,11 +318,19 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 		}
 	})
 	t.Run("Mode 3: Gradual Boundary Test", func(t *testing.T) {
-		// The random width is between 3 and 12.
+		// By repeatedly performing insert and delete operations, we can assess the system's
+		// stability, performance, correctness, and handling of edge cases when dealing with a dynamic dataset.
 
+		// Initialize a random number generator.
+		// source := rand.NewSource(time.Now().UnixNano())
+		// random := rand.New(source)
+
+		// Set the initial width of the B Plus tree.
+		// The width of the B+ tree determines the number of keys that can be stored in each node.
+
+		// The random width is between 3 and 12.
 		// This is done to ensure that the number of keys in each node is varied,
 		// which helps to check for errors in indexing.
-
 		// The test is repeated five times, each time with an incremented width.
 		// This includes testing with both odd and even widths.
 		bpTreeWidth := rand.Intn(10) + 3
@@ -259,7 +341,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
 				BpMaxCapacity: randomTotalCount, // Number of elements to generate for random testing.
-				RandomMachine: UniqueRandomInPoolMachine{},
+				RandomMachine: UniqueRandomInPoolMachine,
 			}
 			testPlan := choosePlan.GradualBoundary(5, 50, 10, 20)
 
@@ -288,10 +370,16 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			// Iterate through the test plan for bulk insert and delete operations in order to test stability and consistency.
 			for j := 0; j < len(testPlan); j++ {
 				// Generate random numbers for bulk insertion and deletion.
-				batchInsert, batchRemove, err := choosePlan.RandomMachine.Generate(random_machine_action_fetch_none, testPlan[j].ChangePattern[0], -1*testPlan[j].ChangePattern[1])
+				// batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(randomMin, randomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
+
+				batchInsert, batchRemove, err := choosePlan.RandomMachine(testPlan[j].ChangePattern[0], -1*testPlan[j].ChangePattern[1], false)
 				if err != nil {
 					panic(err)
 				}
+
+				// Create a copy of the bulk insertion list and shuffle it for deletion.
+				// shuffleSlice(batchInsert, random)
+				// shuffleSlice(batchRemove, random)
 
 				// Perform bulk insertion of generated numbers.
 				for k := 0; k < int(testPlan[j].ChangePattern[0]); k++ {
@@ -324,7 +412,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 
 			// Delete all data from the B Plus tree.
 			// _, removeAll := pool.GenerateUniqueInt64Numbers(randomMin, randomMax, 0, 0, true)
-			_, removeAll, _ := choosePlan.RandomMachine.Generate(random_machine_action_fetch_all, 0, 0)
+			_, removeAll, _ := choosePlan.RandomMachine(0, 0, true)
 			for m := 0; m < len(removeAll); m++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: removeAll[m]})
 				progressBar.UpdateBar()
@@ -351,11 +439,19 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 	})
 
 	t.Run("Mode 4: Redundant Operation", func(t *testing.T) {
-		// The random width is between 3 and 12.
+		// By repeatedly performing insert and delete operations, we can assess the system's
+		// stability, performance, correctness, and handling of edge cases when dealing with a dynamic dataset.
 
+		// Initialize a random number generator.
+		// source := rand.NewSource(time.Now().UnixNano())
+		// random := rand.New(source)
+
+		// Set the initial width of the B Plus tree.
+		// The width of the B+ tree determines the number of keys that can be stored in each node.
+
+		// The random width is between 3 and 12.
 		// This is done to ensure that the number of keys in each node is varied,
 		// which helps to check for errors in indexing.
-
 		// The test is repeated five times, each time with an incremented width.
 		// This includes testing with both odd and even widths.
 		bpTreeWidth := rand.Intn(10) + 3
@@ -366,7 +462,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
 				BpMaxCapacity: randomTotalCount, // Number of elements to generate for random testing.
-				RandomMachine: UniqueRandomInPoolMachine{},
+				RandomMachine: UniqueRandomInPoolMachine,
 			}
 			testPlan := choosePlan.GradualBoundary(5, 50, 10, 20)
 
@@ -395,10 +491,15 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			// Iterate through the test plan for bulk insert and delete operations in order to test stability and consistency.
 			for j := 0; j < len(testPlan); j++ {
 				// Generate random numbers for bulk insertion and deletion.
-				batchInsert, batchRemove, err := choosePlan.RandomMachine.Generate(random_machine_action_fetch_none, testPlan[j].ChangePattern[0], -1*testPlan[j].ChangePattern[1])
+				// batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(randomMin, randomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
+				batchInsert, batchRemove, err := choosePlan.RandomMachine(testPlan[j].ChangePattern[0], -1*testPlan[j].ChangePattern[1], false)
 				if err != nil {
 					panic(err)
 				}
+
+				// Create a copy of the bulk insertion list and shuffle it for deletion.
+				// shuffleSlice(batchInsert, random)
+				// shuffleSlice(batchRemove, random)
 
 				// Perform bulk insertion of generated numbers.
 				for k := 0; k < int(testPlan[j].ChangePattern[0]); k++ {
@@ -461,7 +562,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 
 			// Delete all data from the B Plus tree.
 			// _, removeAll := pool.GenerateUniqueInt64Numbers(randomMin, randomMax, 0, 0, true)
-			_, removeAll, _ := choosePlan.RandomMachine.Generate(random_machine_action_fetch_all, 0, 0)
+			_, removeAll, _ := choosePlan.RandomMachine(0, 0, true)
 			for m := 0; m < len(removeAll); m++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: removeAll[m]})
 				progressBar.UpdateBar()

@@ -5,10 +5,6 @@ import (
 	"strconv"
 )
 
-type RandomMachineInterface interface {
-	Generate(int, int64, int64) ([]int64, []int64, error)
-}
-
 // =====================================================================================================================
 //                   🧮 BpTree Algorithm Test Plan
 // =====================================================================================================================
@@ -73,7 +69,7 @@ type BpTreeProcess struct {
 	// Random Machine is a function that generates random data for testing.
 	// It takes the expected number of insert and delete operations as input and returns the corresponding keys.
 	// The function is designed to be flexible and can be created using different strategies, such as GenerateNumbers or GenerateUniqueNumbers.
-	RandomMachine RandomMachineInterface
+	RandomMachine func(expectedInsertCount int64, expectedDeleteCount int64, fetchAll bool) (insertedKeys []int64, deletedKeys []int64, err error)
 }
 
 // Mode 1: Bulk Insert/Delete
