@@ -28,7 +28,7 @@ import (
 // ⚗️ This code defines three constants used for generating random numbers in a test.
 const (
 	// 🧪 randomTotalCount represents the number of elements to be generated for random testing.
-	randomTotalCount int64 = 7500000
+	randomTotalCount int64 = 7500000 // 20000000 // 147169280 // 7500000
 
 	// 🧪 randomMin represents the minimum value for generating random numbers.
 	randomMin int64 = 10
@@ -43,7 +43,8 @@ const (
 // Test_Check_BpTree_ConsistencyIntegrity 🧫 validates consistency and integrity by inserting and then deleting large data volumes
 // to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
 func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
-	t.Run("Mode 1: Bulk Insert/Delete", func(t *testing.T) {
+	testMode1Name := "Mode 1: Bulk Insert/Delete"
+	t.Run(testMode1Name, func(t *testing.T) {
 		// Test case for bulk insert and delete operations on the B Plus tree.
 
 		// Initialize a random number generator.
@@ -134,14 +135,15 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			<-progressBar.WaitForPrinterStop()
 
 			// Print a final report.
-			err = progressBar.Report()
+			err = progressBar.Report(len(testMode1Name + "; Width: XX"))
 			assert.NoError(t, err)
 
 			// Print the B Plus tree structure.
 			root.root.Print()
 		}
 	})
-	t.Run("Mode 2: Randomized Boundary Test", func(t *testing.T) {
+	testMode2Name := "Mode 2: Randomized Boundary Test"
+	t.Run(testMode2Name, func(t *testing.T) {
 		// By repeatedly performing insert and delete operations, we can assess the system's
 		// stability, performance, correctness, and handling of edge cases when dealing with a dynamic dataset.
 
@@ -172,11 +174,11 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 2: Randomized Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                             // Total number of operations.
-				70,                                                                      // Progress bar width.
-				utilhub.WithTracking(5),                                                 // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                     // Time zone.
-				utilhub.WithTimeControl(500),                                            // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                                 // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
@@ -250,14 +252,15 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			<-progressBar.WaitForPrinterStop()
 
 			// Print a final report.
-			err := progressBar.Report()
+			err := progressBar.Report(len(testMode2Name + "; Width: XX"))
 			assert.NoError(t, err)
 
 			// Print the B Plus tree structure.
 			root.root.Print()
 		}
 	})
-	t.Run("Mode 3: Gradual Boundary Test", func(t *testing.T) {
+	testMode3Name := "Mode 3: Gradual Boundary Test"
+	t.Run(testMode3Name, func(t *testing.T) {
 		// By repeatedly performing insert and delete operations, we can assess the system's
 		// stability, performance, correctness, and handling of edge cases when dealing with a dynamic dataset.
 
@@ -288,11 +291,11 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 3: Gradual Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                          // Total number of operations.
-				70,                                                                   // Progress bar width.
-				utilhub.WithTracking(5),                                              // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                  // Time zone.
-				utilhub.WithTimeControl(500),                                         // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                              // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
@@ -366,15 +369,15 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			<-progressBar.WaitForPrinterStop()
 
 			// Print a final report.
-			err := progressBar.Report()
+			err := progressBar.Report(len(testMode3Name + "; Width: XX"))
 			assert.NoError(t, err)
 
 			// Print the B Plus tree structure.
 			root.root.Print()
 		}
 	})
-
-	t.Run("Mode 4: Redundant Operation", func(t *testing.T) {
+	testMode4Name := "Mode 4: Redundant Operation"
+	t.Run(testMode4Name, func(t *testing.T) {
 		// By repeatedly performing insert and delete operations, we can assess the system's
 		// stability, performance, correctness, and handling of edge cases when dealing with a dynamic dataset.
 
@@ -405,11 +408,11 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 4: Gradual Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                          // Total number of operations.
-				70,                                                                   // Progress bar width.
-				utilhub.WithTracking(5),                                              // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                  // Time zone.
-				utilhub.WithTimeControl(500),                                         // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                              // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
@@ -513,7 +516,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			<-progressBar.WaitForPrinterStop()
 
 			// Print a final report.
-			err := progressBar.Report()
+			err := progressBar.Report(len(testMode4Name + "; Width: XX"))
 			assert.NoError(t, err)
 
 			// Print the B Plus tree structure.

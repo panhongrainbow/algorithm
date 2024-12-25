@@ -287,7 +287,7 @@ func (pb *ProgressBar) Complete() {
 }
 
 // Report ⛏️ generates and prints a detailed progress report in a formatted table.
-func (pb *ProgressBar) Report() error {
+func (pb *ProgressBar) Report(valueWidth int) error {
 	// If the progress is not finished, return an error message.
 	if !pb.complete {
 		return errors.New("progress is not yet complete")
@@ -298,7 +298,9 @@ func (pb *ProgressBar) Report() error {
 
 	// Define fixed widths for the table's fields and values to ensure proper alignment.
 	fieldWidth := 20
-	valueWidth := 35
+	if valueWidth < 32 {
+		valueWidth = 32 // The valueWidth should be at least 30 because the date and time are included.
+	}
 	totalWidth := fieldWidth + valueWidth + 7
 	// Create a border for the table using a repeated pattern for visual clarity.
 	border := BrightYellow + strings.Repeat("=", totalWidth) + Reset
