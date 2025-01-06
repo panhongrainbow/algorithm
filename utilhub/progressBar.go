@@ -12,6 +12,9 @@ import (
 
 // =====================================================================================================================
 //                  🛠️ Progress Bar (Tool)
+// Progress Bar is a versatile tool for tracking and displaying progress in various contexts,
+// including indexing operations. It is designed to adapt to varying progress rates,
+// such as those encountered during database index, and provide real-time updates.
 // =====================================================================================================================
 
 // ProgressBar ⛏️ struct for managing and tracking progress.
@@ -287,6 +290,7 @@ func (pb *ProgressBar) Complete() {
 }
 
 // Report ⛏️ generates and prints a detailed progress report in a formatted table.
+// valueWidth: The width of the value column in the table. It is based on the longest value length of each row.
 func (pb *ProgressBar) Report(valueWidth int) error {
 	// If the progress is not finished, return an error message.
 	if !pb.complete {

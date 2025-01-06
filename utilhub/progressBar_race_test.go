@@ -17,7 +17,7 @@ import (
 	"testing"
 )
 
-// ...
+// Test_Race_ProgressBar is a race condition test for the ProgressBar class.
 func Test_Race_ProgressBar(t *testing.T) {
 
 	// Subtest 1: Collect progress bar messages using ListPrint.

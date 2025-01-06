@@ -8,7 +8,7 @@ import (
 )
 
 // TestCalculateAllocatableMemory tests the calculateAllocatableMemory function on a real system.
-func TestCalculateAllocatableMemory(t *testing.T) {
+func Test_CalculateAllocatableMemory(t *testing.T) {
 	// Define a slice of test cases, each containing a percentage and an expected error.
 	tests := []struct {
 		percentage  uint64 // The percentage of memory to allocate.
@@ -24,8 +24,8 @@ func TestCalculateAllocatableMemory(t *testing.T) {
 	for _, tt := range tests {
 		// Run a sub-test for each test case, with a descriptive name.
 		t.Run(fmt.Sprintf("Percentage %d", tt.percentage), func(t *testing.T) {
-			// Call the spareSlice function with the test case's percentage.
-			actualSize, actualErr := spareSlice(tt.percentage)
+			// Call the SpareSliceSize function with the test case's percentage.
+			actualSize, actualErr := SpareSliceSize(tt.percentage)
 
 			// Check if an error is expected for this test case.
 			if tt.expectedErr != nil {

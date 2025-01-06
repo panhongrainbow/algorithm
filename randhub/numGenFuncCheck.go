@@ -24,7 +24,7 @@ type Number interface {
 // count: the number of numbers to generate.
 // minNum: the minimum value for the numbers.
 // maxNum: the maximum value for the numbers.
-func GenerateNumbers[T Number](count int64, minNum, maxNum T) ([]T, error) {
+func GenerateNumbers[T Number](count uint64, minNum, maxNum T) ([]T, error) {
 	// Convert minNum and maxNum to float64 for comparison
 	minFloat := float64(minNum)
 	maxFloat := float64(maxNum)
@@ -41,7 +41,7 @@ func GenerateNumbers[T Number](count int64, minNum, maxNum T) ([]T, error) {
 	result := make([]T, 0, count)
 
 	// Generate numbers until the required count is reached.
-	for int64(len(result)) < count {
+	for uint64(len(result)) < count {
 		num := T(minFloat + (maxFloat-minFloat)*rnd.Float64())
 		result = append(result, num)
 	}
@@ -53,7 +53,7 @@ func GenerateNumbers[T Number](count int64, minNum, maxNum T) ([]T, error) {
 // count: the number of unique numbers to generate.
 // minNum: the minimum value for the numbers.
 // maxNum: the maximum value for the numbers.
-func GenerateUniqueNumbers[T Number](count int64, minNum, maxNum T) ([]T, error) {
+func GenerateUniqueNumbers[T Number](count uint64, minNum, maxNum T) ([]T, error) {
 	// Convert minNum and maxNum to float64 for comparison
 	minFloat := float64(minNum)
 	maxFloat := float64(maxNum)
@@ -66,7 +66,7 @@ func GenerateUniqueNumbers[T Number](count int64, minNum, maxNum T) ([]T, error)
 	// Ensure the range [minNum, maxNum] is large enough to generate the required count of unique numbers.
 	switch v := any(maxNum).(type) {
 	case int64:
-		if v-int64(minNum)+1 < count {
+		if v-int64(minNum)+1 < int64(count) {
 			return nil, fmt.Errorf("not enough numbers in the range [%v, %v] to generate %d unique values", minNum, maxNum, count)
 		}
 		// For float64 types, no range validation is performed, as floating-point numbers can represent an infinite range and may involve irrational numbers.
@@ -81,7 +81,7 @@ func GenerateUniqueNumbers[T Number](count int64, minNum, maxNum T) ([]T, error)
 	result := make([]T, 0, count)
 
 	// Generate unique numbers until the required count is reached.
-	for int64(len(result)) < count {
+	for int64(len(result)) < int64(count) {
 		num := T(minFloat + (maxFloat-minFloat)*rnd.Float64())
 		// Check if the number is already in the map (i.e., it's unique).
 		if _, exists := numbers[num]; !exists {
@@ -98,7 +98,7 @@ func GenerateUniqueNumbers[T Number](count int64, minNum, maxNum T) ([]T, error)
 // minNum: the minimum value for the numbers.
 // maxNum: the maximum value for the numbers.
 // unique: a flag indicating whether to generate unique numbers or not.
-func GenerateNumbersWithOption[T Number](count int64, minNum, maxNum T, unique bool) ([]T, error) {
+func GenerateNumbersWithOption[T Number](count uint64, minNum, maxNum T, unique bool) ([]T, error) {
 	// Choose the appropriate function based on the unique flag.
 	if unique {
 		return GenerateUniqueNumbers(count, minNum, maxNum)

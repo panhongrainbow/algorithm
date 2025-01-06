@@ -70,7 +70,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			testPlan := choosePlan.PlanMaxInsertDelete()
 
 			// Generate a list of unique numbers for bulk insertion.
-			bulkAdd, err := randhub.GenerateUniqueNumbers(randomTotalCount, randomMin, randomMax)
+			bulkAdd, err := randhub.GenerateUniqueNumbers(uint64(randomTotalCount), randomMin, randomMax)
 			if err != nil {
 				// Panic if an error occurs during number generation.
 				panic(err)

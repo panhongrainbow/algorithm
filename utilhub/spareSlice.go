@@ -7,15 +7,17 @@ import (
 
 // =====================================================================================================================
 //                  🛠️ Spare Slice (Tool)
+// Spare Slice is a tool for calculating the maximum size of an array that can be allocated
+// based on the specified percentage of available memory.
 // =====================================================================================================================
 
 // memoryDecrementStep is the step size used to decrement the memory allocation size
 // when attempting to allocate memory safely.
 const memoryDecrementStep = 1024
 
-// spareSlice ⛏️ calculates the maximum size of an array that can be allocated based on
+// SpareSliceSize ⛏️ calculates the maximum size of an array that can be allocated based on
 // the specified percentage of available memory.
-func spareSlice(percentage uint64) (uint64, error) {
+func SpareSliceSize(percentage uint64) (uint64, error) {
 	// Check if the specified percentage is valid (between 0 and 100).
 	if percentage > 100 {
 		// If the percentage is invalid, return an error.

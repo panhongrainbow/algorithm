@@ -10,7 +10,7 @@ func Test_GenerateInt64Numbers(t *testing.T) {
 	// Define a list of test cases to cover different scenarios.
 	tests := []struct {
 		name      string // Name of the test case.
-		count     int64  // Number of integers to generate.
+		count     uint64 // Number of integers to generate.
 		minNum    int64  // Minimum value of the integers.
 		maxNum    int64  // Maximum value of the integers.
 		expectErr bool   // Whether an error is expected.
@@ -67,7 +67,7 @@ func Test_GenerateInt64Numbers(t *testing.T) {
 				// If no error is expected, assert that no error was returned.
 				assert.NoError(t, err)
 				// Assert that the length of the result matches the expected count.
-				assert.Equal(t, tt.count, int64(len(result)))
+				assert.Equal(t, tt.count, uint64(len(result)))
 
 				// Check that all numbers in the result are within the specified range.
 				for _, num := range result {
@@ -84,7 +84,7 @@ func Test_GenerateUniqueInt64Numbers(t *testing.T) {
 	// Define a list of test cases to cover different scenarios.
 	tests := []struct {
 		name      string // Name of the test case.
-		count     int64  // Number of unique integers to generate.
+		count     uint64 // Number of unique integers to generate.
 		minNum    int64  // Minimum value of the integers.
 		maxNum    int64  // Maximum value of the integers.
 		expectErr bool   // Whether an error is expected.
@@ -148,7 +148,7 @@ func Test_GenerateUniqueInt64Numbers(t *testing.T) {
 				// If no error is expected, assert that no error was returned.
 				assert.NoError(t, err)
 				// Assert that the length of the result matches the expected count.
-				assert.Equal(t, tt.count, int64(len(result)))
+				assert.Equal(t, tt.count, uint64(len(result)))
 
 				// Create a map to track unique values in the result.
 				uniqueNumbers := make(map[int64]struct{})
@@ -171,7 +171,7 @@ func Test_GenerateUniqueFloat64Numbers(t *testing.T) {
 	// Define a list of test cases to cover different scenarios.
 	tests := []struct {
 		name      string  // Name of the test case.
-		count     int64   // Number of unique float64 numbers to generate.
+		count     uint64  // Number of unique float64 numbers to generate.
 		minNum    float64 // Minimum value of the float64 numbers.
 		maxNum    float64 // Maximum value of the float64 numbers.
 		expectErr bool    // Whether an error is expected.

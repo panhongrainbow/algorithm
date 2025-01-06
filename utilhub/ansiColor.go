@@ -2,6 +2,7 @@ package utilhub
 
 // =====================================================================================================================
 //                  🛠️ ANSI Color (Tool)
+// ANSI color codes for foreground (text color) and background (background color).
 // =====================================================================================================================
 
 // ANSI color codes for foreground (text color).
