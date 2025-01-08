@@ -202,7 +202,6 @@ func (pb *ProgressBar) WaitForPrinterStop() chan struct{} {
 	return finish // Return the channel for external use.
 }
 
-// UpdateBar ⛏️ updates the progress bar based on the current count.
 func (pb *ProgressBar) UpdateBar() {
 	// Return immediately if the progress has already reached completion.
 	if atomic.LoadUint32(&pb.currentProcess) == pb.total {
@@ -286,6 +285,61 @@ func (pb *ProgressBar) Complete() {
 
 		// Close the print channel since no more messages will be sent, allowing the listener to terminate.
 		close(pb.printChannel)
+	}
+}
+
+// AddSpecificTimes ⛏️ adds the progress bar by a specific times.
+func (pb *ProgressBar) AddSpecificTimes(steps uint32) {
+	// Return immediately if the progress has already reached completion.
+	if atomic.LoadUint32(&pb.currentProcess) >= pb.total {
+		atomic.StoreUint32(&pb.currentProcess, pb.total) // Limit currentProcess to total.
+		return
+	}
+
+	// Lock the mutex to ensure thread safety during updates.
+	pb.mu.Lock()
+
+	// Adding the progress by a specific steps.
+	atomic.AddUint32(&pb.currentProcess, steps)
+	// pb.currentProcess += steps
+
+	// Calculate the current progress percentage.
+	progress := float64(pb.currentProcess) / float64(pb.total)
+	filledLength := int(progress * float64(pb.barLength))
+
+	// Format the progress percentage, ensuring it does not exceed 100%.
+	percentage := progress * 100
+	if percentage > 100 {
+		percentage = 100 // Cap percentage at 100.
+	}
+
+	// Update the progress bar if the filled length has changed.
+	if filledLength != pb.lastFilledLength {
+	LOOP:
+		select {
+		case <-pb.ticker:
+			// Send the progress update to the print channel.
+			pb.printChannel <- barMessage{filledLength, percentage}
+
+			// Update the last filled length to prevent redundant updates.
+			pb.lastFilledLength = filledLength
+
+			// Reset the ticker for the next update interval.
+			pb.ticker = time.After(time.Duration(pb.updateInterval) * time.Millisecond)
+		default:
+			// Exit the loop if no ticker event occurs.
+			break LOOP
+		}
+	}
+
+	// Unlock the mutex after completing the update.
+	pb.mu.Unlock()
+
+	// If progress is complete, stop the ticker.
+	if atomic.LoadUint32(&pb.currentProcess) == pb.total {
+		// Set ticker to nil to indicate completion.
+		// pb.ticker = nil // Originally could be written this way, but to prevent bugs, we change it to atomic.
+		atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&pb.ticker)), nil)
 	}
 }
 

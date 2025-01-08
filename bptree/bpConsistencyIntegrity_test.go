@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/panhongrainbow/algorithm/randhub"
 	"github.com/panhongrainbow/algorithm/testplan"
+	bptestModel1 "github.com/panhongrainbow/algorithm/testplan/bptestplan/model1"
 	"github.com/panhongrainbow/algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
@@ -43,6 +44,15 @@ const (
 // Test_Check_BpTree_ConsistencyIntegrity 🧫 validates consistency and integrity by inserting and then deleting large data volumes
 // to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
 func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
+	testMode0Name := "Mode 0: Testing"
+	t.Run(testMode0Name, func(t *testing.T) {
+		model1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
+
+		dataSet, err := model1.GenerateRandomSet(1, 11)
+		assert.NoError(t, err)
+
+		fmt.Println(dataSet[0])
+	})
 	testMode1Name := "Mode 1: Bulk Insert/Delete"
 	t.Run(testMode1Name, func(t *testing.T) {
 		// Test case for bulk insert and delete operations on the B Plus tree.
