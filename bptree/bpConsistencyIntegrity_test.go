@@ -7,6 +7,7 @@ import (
 	bptestModel1 "github.com/panhongrainbow/algorithm/testplan/bptestplan/model1"
 	"github.com/panhongrainbow/algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -48,10 +49,11 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 	t.Run(testMode0Name, func(t *testing.T) {
 		model1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
 
-		dataSet, err := model1.GenerateRandomSet(1, 11)
-		assert.NoError(t, err)
+		dataSet, err := model1.GenerateRandomSet(1, 10)
+		require.NoError(t, err)
 
-		fmt.Println(dataSet[0])
+		err = model1.CheckRandomSet(dataSet)
+		require.NoError(t, err)
 	})
 	testMode1Name := "Mode 1: Bulk Insert/Delete"
 	t.Run(testMode1Name, func(t *testing.T) {
