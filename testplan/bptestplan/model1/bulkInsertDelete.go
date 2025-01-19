@@ -3,6 +3,7 @@ package bptestModel1
 import (
 	"errors"
 	"fmt"
+	"github.com/panhongrainbow/algorithm/costars/slice2tree"
 	"github.com/panhongrainbow/algorithm/randhub"
 	bptestUtilhub "github.com/panhongrainbow/algorithm/testplan/bptestplan/utilhub"
 	"github.com/panhongrainbow/algorithm/utilhub"
@@ -16,7 +17,7 @@ type BpTestModel1 struct {
 
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 1.
 func (model1 *BpTestModel1) GenerateRandomSet(
-	randomMin uint64,                    // randomMin is the minimum value for generating random numbers.
+	randomMin uint64, // randomMin is the minimum value for generating random numbers.
 	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
 ) ([]int64, error) {
 	// Validate RandomTotalCount to ensure it is not zero.
@@ -63,11 +64,11 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 		utilhub.WithDisplay(utilhub.BrightBlue), // Display style.
 	)
 
-	// Start the progress bar printer in a separate goroutine.
+	// ▓▒░ Start the progress bar printer in a separate goroutine.
 	go func() {
 		progressBar.ListenPrinter()
 	}()
-	
+
 	// Copying the generated random numbers, positive ones, to the dataset slice.
 	copy(dataSet, bulkAdd)
 
@@ -96,4 +97,74 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 
 	// Return the generated dataset.
 	return dataSet, nil
+}
+
+// CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers.
+func (model1 *BpTestModel1) CheckRandomSet(dataSet []int64) error {
+	// Check if the length of the data set is even.
+	if len(dataSet)%2 != 0 {
+		return errors.New("dataSet length must be even")
+	}
+
+	// Create two heaps to store the positive and negative numbers.
+	postiveHeap := slice2tree.NewHeap(len(dataSet) / 2)
+	negativeHeap := slice2tree.NewHeap(len(dataSet) / 2)
+
+	// ▓▒░ Creating a progress bar with optional configurations.
+	progressBar, _ := utilhub.NewProgressBar(
+		"Mode 1: Check Test Data   ",             // Progress bar title.
+		uint32(len(dataSet)/2*3),                 // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+	)
+
+	// ▓▒░ Start the progress bar printer in a separate goroutine.
+	go func() {
+		progressBar.ListenPrinter()
+	}()
+
+	// Iterate over the data set and separate the positive and negative numbers into the heaps.
+	for i := 0; i < len(dataSet); i++ {
+		switch {
+		case dataSet[i] > 0:
+			// Push the positive number into the positive heap.
+			postiveHeap.Push(dataSet[i])
+
+			// ▓▒░ Updating the progress bar.
+			progressBar.UpdateBar()
+		case dataSet[i] < 0:
+			// Push the negative number into the negative heap.
+			negativeHeap.Push(-1 * dataSet[i])
+
+			// ▓▒░ Updating the progress bar.
+			progressBar.UpdateBar()
+		default:
+			// Return an error if the data set contains zero.
+			return errors.New("dataSet must not contain 0")
+		}
+	}
+
+	// Compare the positive and negative numbers in the heaps.
+	for i := 0; i < len(dataSet)/2; i++ {
+		// Check if the popped numbers from the heaps are equal.
+		if postiveHeap.Pop() != negativeHeap.Pop() {
+			// Return an error if the numbers are not equal.
+			return errors.New("dataSet is not valid")
+		}
+
+		// ▓▒░ Updating the progress bar.
+		progressBar.UpdateBar()
+	}
+
+	// ▓▒░ Mark the progress bar as complete.
+	progressBar.Complete()
+
+	// ▓▒░ Wait for the progress bar printer to stop.
+	<-progressBar.WaitForPrinterStop()
+
+	// Return nil if the data set is valid.
+	return nil
 }
