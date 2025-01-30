@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"os"
 	"runtime"
+	"strconv"
 	"sync"
 	"testing"
 )
@@ -145,6 +146,7 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 		t.Skip("⏸️ Skipping test on non-Linux OS: " + t.Name())
 	}
 
+	// Define the test cases for the LinuxSpliceStreamWrite function.
 	tests := []struct {
 		name     string      // The name of the test case.
 		filename string      // The path of the file to write data to.
@@ -161,6 +163,7 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 		},
 	}
 
+	// Iterate through the defined test cases.
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Initialize the splice stream writer with the specified file configuration.
@@ -212,7 +215,23 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 
 // Test_LinuxSpliceStreamWrite_Race verifies that LinuxSpliceStreamWrite correctly writes ASCII data (0–255) to a file using concurrent goroutines.
 // It ensures the file content matches the expected pattern and cleans up after the test.
+
+// When testing for race conditions in Go, there are two main ways to verify whether a race condition is happening :
+
+// 1. Using Go's Race Detector
+// Go provides a built-in race detector that can identify when multiple goroutines access shared memory concurrently in an unsafe manner
+// $ Test_LinuxSpliceStreamWrite_Race_Goroutines_Number=20 go test -race -v -run Test_LinuxSpliceStreamWrite_Race
+
+// 2. Verifying Data Integrity
+// Even if the Go race detector doesn't show any issues,
+// I can still check for data integrity manually by verifying that the data written to the file or memory is consistent and correct after concurrent writes.
+// $ Test_LinuxSpliceStreamWrite_Race_Goroutines_Number=100000 go test -v -run Test_LinuxSpliceStreamWrite_Race
 func Test_LinuxSpliceStreamWrite_Race(t *testing.T) {
+	// Skip the test if the operating system is not Linux, as the function is Linux-specific.
+	if runtime.GOOS != "linux" {
+		t.Skip("⏸️ Skipping test on non-Linux OS: " + t.Name())
+	}
+
 	// Define the test cases for the LinuxSpliceStreamWrite function.
 	tests := []struct {
 		name     string      // The name of the test case.
@@ -223,7 +242,7 @@ func Test_LinuxSpliceStreamWrite_Race(t *testing.T) {
 	}{
 		{
 			// Test case: Continuously feed data using ASCII codes.
-			name:     "Feed Stream Data Continuously to LinuxSpliceStreamWrite by using goroutines",
+			name:     "Feed Stream Data Continuously to LinuxSpliceStreamWrite by using Goroutines",
 			filename: "/tmp/test_file.txt",                   // Temporary file for testing.
 			fileFlag: os.O_CREATE | os.O_WRONLY | os.O_TRUNC, // File will be created, write-only, and truncated if exists.
 			filePerm: 0644,                                   // Standard file permissions.
@@ -242,8 +261,22 @@ func Test_LinuxSpliceStreamWrite_Race(t *testing.T) {
 			assert.NoError(t, err) // Assert that no error occurred while setting up the write.
 
 			// Define the number of iterations for the test and the size of each batch of data to write.
-			const iterations = 10
-			// const iterations = 100000
+			iterations := 10
+
+			// The number of GoRoutines will only be increased if strict conditions are met;
+			// otherwise, the original value will be maintained to ensure the system operates safely.
+
+			// Get the value of the environment variable "Test_LinuxSpliceStreamWrite_Race_Goroutines_Number".
+			// This variable determines the number of goroutines to be used for writing data.
+			envVar := os.Getenv("Test_LinuxSpliceStreamWrite_Race_Goroutines_Number")
+
+			// Convert the environment variable value to an integer.
+			specificGoroutines, err := strconv.Atoi(envVar)
+			if err == nil && envVar != "" && specificGoroutines > 10 {
+				// If the conversion is successful and the value is greater than 10, set the number of goroutines to 100000.
+				// Otherwise, keep the original value.
+				iterations = specificGoroutines
+			}
 
 			// Calculate the expected total file size.
 			// The file size is the number of iterations (100,000) multiplied by the batch size (256 bytes).
