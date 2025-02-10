@@ -132,3 +132,105 @@ func Test_BytesToInt64Slice(t *testing.T) {
 		})
 	}
 }
+
+// Test_Int64SliceToBlockBytes tests the Int64SliceToBlockBytes function to ensure it correctly converts slices of int64 into blocks of bytes.
+func Test_Int64SliceToBlockBytes(t *testing.T) {
+	tests := []struct {
+		name       string           // Test case name
+		slice      []int64          // Input slice of int64 numbers
+		order      binary.ByteOrder // Byte order (LittleEndian or BigEndian)
+		startPoint int              // The starting index in the slice
+		length     int              // Number of blocks to be generated
+		width      int              // Number of int64 values per block
+		want       [][]byte         // Expected output blocks
+		wantErr    bool             // Whether an error is expected
+	}{
+		{
+			name:       "LittleEndian Block",
+			slice:      []int64{1, 2, 3, 4, 5, 6, 7, 8},
+			order:      binary.LittleEndian,
+			startPoint: 0,
+			length:     2,
+			width:      4,
+			want: [][]byte{
+				{1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0},
+				{5, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0},
+			},
+			wantErr: false,
+		},
+		{
+			name:       "BigEndian Block",
+			slice:      []int64{1, 2, 3, 4, 5, 6, 7, 8},
+			order:      binary.BigEndian,
+			startPoint: 0,
+			length:     2,
+			width:      4,
+			want: [][]byte{
+				{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 4},
+				{0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 8},
+			},
+			wantErr: false,
+		},
+		{
+			name:       "Partial Block - BigEndian",
+			slice:      []int64{1, 2, 3, 4, 5, 6, 7, 8},
+			order:      binary.BigEndian,
+			startPoint: 5,
+			length:     2,
+			width:      4,
+			want: [][]byte{
+				{0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 8},
+			},
+			wantErr: false,
+		},
+		{
+			name:       "Invalid Length",
+			slice:      []int64{1, 2, 3, 4, 5, 6, 7, 8},
+			order:      binary.BigEndian,
+			startPoint: 0,
+			length:     0, // Invalid: length cannot be zero
+			width:      4,
+			want:       nil,
+			wantErr:    true,
+		},
+		{
+			name:       "Invalid Width",
+			slice:      []int64{1, 2, 3, 4, 5, 6, 7, 8},
+			order:      binary.BigEndian,
+			startPoint: 0,
+			length:     2,
+			width:      0, // Invalid: width cannot be zero
+			want:       nil,
+			wantErr:    true,
+		},
+		{
+			name:       "Start Point Exceeds Slice Length",
+			slice:      []int64{1, 2, 3, 4, 5, 6, 7, 8},
+			order:      binary.BigEndian,
+			startPoint: 10, // Invalid: startPoint is beyond slice length
+			length:     2,
+			width:      4,
+			want:       [][]byte{}, // Expect an empty result
+			wantErr:    false,
+		},
+	}
+
+	// Iterate over all test cases
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Call the function under test
+			got, _, _, err := Int64SliceToBlockBytes(
+				tt.slice, tt.order, tt.startPoint, tt.length, tt.width,
+			)
+
+			// Check if an error was expected
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, got) // Expect nil output on error
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got) // Verify output matches expectation
+			}
+		})
+	}
+}

@@ -1,6 +1,7 @@
 package bpTree
 
 import (
+	"encoding/binary"
 	"fmt"
 	"github.com/panhongrainbow/algorithm/randhub"
 	"github.com/panhongrainbow/algorithm/testplan"
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"math/rand"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -47,12 +49,65 @@ const (
 func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 	testMode0Name := "Mode 0: Testing"
 	t.Run(testMode0Name, func(t *testing.T) {
+		// Create a new instance of BpTestModel1 with the specified random total count.
 		model1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
 
+		// Generate a random data set using the GenerateRandomSet method of BpTestModel1.
+		// This method generates a slice of random data for testing purposes.
 		dataSet, err := model1.GenerateRandomSet(1, 10)
+		// Check if an error occurred during data set generation.
 		require.NoError(t, err)
 
+		// Validate the generated data set using the CheckRandomSet method of BpTestModel1.
+		// This method checks the validity of the data set by comparing the positive and negative numbers.
 		err = model1.CheckRandomSet(dataSet)
+		// Check if an error occurred during data set validation.
+		require.NoError(t, err)
+
+		// Initialize a Linux splice stream writer to write data to a file.
+		// The file is created with write-only permissions and truncated if it already exists.
+		dataChan, finishChan, err := utilhub.LinuxSpliceStreamWrite("/tmp/test_file.txt", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		// Check if an error occurred during writer initialization.
+		require.NoError(t, err)
+
+		// Define constants for block length and width.
+		// These constants determine the size of the blocks used for data writing.
+		const (
+			// The length of each block.
+			blockLength = 10
+			// The width of each block.
+			blockWidth = 10
+		)
+
+		// Initialize the start point for block writing.
+		startPoint := 0
+
+		// Initialize a flag to track whether the writing process is finished.
+		var finished bool
+
+		// Write data to the file in blocks until the entire data set is written.
+		for !finished {
+			// Convert the data set to a block of bytes using the Int64SliceToBlockBytes method in utilhub.
+			// This method converts a slice of int64 values to a block of bytes.
+			var block [][]byte
+			block, startPoint, finished, err = utilhub.Int64SliceToBlockBytes(dataSet, binary.LittleEndian, startPoint, blockLength, blockWidth)
+			// Check if an error occurred during block writing.
+			require.NoError(t, err)
+			// Write the block to the file using the data channel.
+			dataChan <- block
+		}
+
+		// Close the data channel to signal the end of writing.
+		close(dataChan)
+		// Wait for the finish channel to receive the finish signal.
+		<-finishChan
+
+		// Check ...
+		content, _ := os.ReadFile("/tmp/test_file.txt")
+		got, _ := utilhub.BytesToInt64Slice(content, binary.LittleEndian)
+		fmt.Println(got[0:10], got[len(got)/2:len(got)/2+10])
+		fmt.Println(len(got))
+		err = model1.CheckRandomSet(got)
 		require.NoError(t, err)
 	})
 	testMode1Name := "Mode 1: Bulk Insert/Delete"

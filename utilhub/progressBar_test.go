@@ -102,6 +102,7 @@ This table effectively outlines how to set the speed for collecting messages fro
 
 // When calling progressBar.Complete(), it automatically moves to a new line to allow for report generation. (自动换行，以便生成报告)
 
+// Test_ProcessBar tests the progress bar functionality under different scenarios.
 func Test_ProcessBar(t *testing.T) {
 	t.Run("The Update Interval is Faster Than the Working Rate.", func(t *testing.T) {
 		// Initialize a slice to hold the collected progress bar messages.
@@ -183,5 +184,4 @@ func Test_ProcessBar(t *testing.T) {
 		// Use assert to check that the correct number of messages were collected.
 		assert.Equal(t, 1, len(collected), "Expected 10 collected messages, but got %d", len(collected))
 	})
-
 }

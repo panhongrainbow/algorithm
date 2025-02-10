@@ -11,6 +11,8 @@ import (
 // EndianPacking is a collection of functions for handling byte packing and unpacking with different endian formats.
 // =====================================================================================================================
 
+// >>>>> >>>>> One-Dimensional Functions ⛏️
+
 // Int64SliceToBytes ⛏️ converts a slice of int64 values to a byte slice,
 // order: The binary.ByteOrder to use for the conversion (e.g. binary.LittleEndian or binary.BigEndian).
 func Int64SliceToBytes(slice []int64, order binary.ByteOrder) ([]byte, error) {
@@ -85,4 +87,54 @@ func BytesToInt64Slice(data []byte, order binary.ByteOrder) ([]int64, error) {
 
 	// Return the converted slice of int64 values and a nil error if the conversion was successful.
 	return slice, nil
+}
+
+// >>>>> >>>>> Two-Dimensional Functions ⛏️
+
+// Int64SliceToBlockBytes ⛏️ converts a byte slice to a 2 Dimensional slice of int64 values based on the specified byte order.
+// The function reads the input byte slice using the provided binary.ByteOrder (e.g., binary.LittleEndian or binary.BigEndian)
+func Int64SliceToBlockBytes(slice []int64, order binary.ByteOrder, startPoint, length, width int) (sliceBlock [][]byte, endPoint int, finished bool, err error) {
+	// Check for invalid input parameters.
+	if length <= 0 || width <= 0 {
+		return nil, startPoint, false, fmt.Errorf("invalid length or width")
+	}
+
+	// Pre-allocate the sliceBlock to avoid append triggering reallocation.
+	sliceBlock = make([][]byte, 0, length)
+
+	// Iterate over the length to convert the int64 slice to byte blocks.
+	for i := 0; i < length; i++ {
+		// If the end point is equal to the length of the slice, there is no more data.
+		if startPoint >= len(slice) {
+			// Set the finished flag to true and break the loop.
+			finished = true
+			break
+		}
+
+		// Calculate the end point for the current block.
+		var gotData []byte
+		end := startPoint + width
+		if end > len(slice) {
+			// If the end point exceeds the length of the slice, set it to the length of the slice
+			// and set the finished flag to true.
+			end = len(slice)
+			finished = true
+		}
+
+		// Convert the int64 slice to bytes using the provided byte order.
+		gotData, err = Int64SliceToBytes(slice[startPoint:end], order)
+		if err != nil {
+			// Return an error if the conversion fails.
+			return nil, startPoint, false, err
+		}
+
+		// Append the byte block to the sliceBlock.
+		sliceBlock = append(sliceBlock, gotData)
+		// Update the start point for the next block.
+		startPoint = end
+	}
+
+	// Set the end point to the updated start point.
+	endPoint = startPoint
+	return
 }
