@@ -50,17 +50,17 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 	testMode0Name := "Mode 0: Testing"
 	t.Run(testMode0Name, func(t *testing.T) {
 		// Create a new instance of BpTestModel1 with the specified random total count.
-		model1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
+		bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
 
 		// Generate a random data set using the GenerateRandomSet method of BpTestModel1.
 		// This method generates a slice of random data for testing purposes.
-		dataSet, err := model1.GenerateRandomSet(1, 10)
+		testData, err := bptest1.GenerateRandomSet(1, 10)
 		// Check if an error occurred during data set generation.
 		require.NoError(t, err)
 
 		// Validate the generated data set using the CheckRandomSet method of BpTestModel1.
 		// This method checks the validity of the data set by comparing the positive and negative numbers.
-		err = model1.CheckRandomSet(dataSet)
+		err = bptest1.CheckRandomSet(testData)
 		// Check if an error occurred during data set validation.
 		require.NoError(t, err)
 
@@ -90,7 +90,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 			// Convert the data set to a block of bytes using the Int64SliceToBlockBytes method in utilhub.
 			// This method converts a slice of int64 values to a block of bytes.
 			var block [][]byte
-			block, startPoint, finished, err = utilhub.Int64SliceToBlockBytes(dataSet, binary.LittleEndian, startPoint, blockLength, blockWidth)
+			block, startPoint, finished, err = utilhub.Int64SliceToBlockBytes(testData, binary.LittleEndian, startPoint, blockLength, blockWidth)
 			// Check if an error occurred during block writing.
 			require.NoError(t, err)
 			// Write the block to the file using the data channel.
@@ -107,7 +107,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 		got, _ := utilhub.BytesToInt64Slice(content, binary.LittleEndian)
 		fmt.Println(got[0:10], got[len(got)/2:len(got)/2+10])
 		fmt.Println(len(got))
-		err = model1.CheckRandomSet(got)
+		err = bptest1.CheckRandomSet(got)
 		require.NoError(t, err)
 	})
 	testMode1Name := "Mode 1: Bulk Insert/Delete"
