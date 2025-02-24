@@ -1,6 +1,7 @@
 package utilhub
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -166,53 +167,81 @@ func DateTimeTag(ft FileTag) (string, error) {
 	return timestamp, nil
 }
 
-// RemoveDir removes the directory specified by the FileManager's transfer path.
-func (fm *FileManager) RemoveDir() error {
-	// Check if the directory path is empty
-	if fm.transfer == "" {
-		// Return an error if the directory path is empty
-		return fmt.Errorf("directory parameter is empty")
+// List retrieves the directories and files inside a given directory.
+// It returns three values: a slice of directories, a slice of files, and an error.
+func (fm *FileManager) List() (dir []string, file []string, err error) {
+	// Check if a previous error has occurred and return it if so.
+	if fm.err != nil {
+		fm.transfer = ""
+		return nil, nil, err
 	}
 
-	// Get information about the directory
-	info, err := os.Stat(fm.transfer)
-
-	// Check if the directory does not exist
-	if os.IsNotExist(err) {
-		// Return an error if the directory does not exist
-		return fmt.Errorf("directory does not exist: %s", fm.transfer)
+	// Check if the given path exists and is a directory.
+	var info os.FileInfo
+	if info, err = os.Stat(fm.transfer); err != nil {
+		return // Return empty slices and the error.
 	}
 
-	// Check if the path is a directory
+	// Check if the path is a directory.
 	if !info.IsDir() {
-		// Return an error if the path is not a directory
-		return fmt.Errorf("path is not a directory: %s", fm.transfer)
+		err = fmt.Errorf("path is not a directory: %s", fm.transfer)
+		return
 	}
 
-	// Attempt to remove the directory
-	if err := os.Remove(fm.transfer); err != nil {
-		// Return an error if the removal operation fails
-		return fmt.Errorf("failed to remove directory %s: %v", fm.transfer, err)
+	// Open the directory.
+	var dirHandle *os.File
+	if dirHandle, err = os.Open(fm.transfer); err != nil {
+		return // Return empty slices and the error.
+	}
+	defer dirHandle.Close() // Ensure the directory is closed.
+
+	// Read directory contents.
+	var entries []os.FileInfo
+	if entries, err = dirHandle.Readdir(-1); err != nil {
+		return // Return empty slices and the error.
 	}
 
-	// Return nil if the removal operation is successful
-	return nil
+	// Iterate through directory entries.
+	for _, entry := range entries {
+		if entry.IsDir() {
+			dir = append(dir, entry.Name()) // Append to directory slice.
+		} else {
+			file = append(file, entry.Name()) // Append to file slice.
+		}
+	}
+
+	return // Implicit return of named values.
 }
 
-// RemoveFile removes the file specified by the FileManager's transfer path.
-func (fm *FileManager) RemoveFile() error {
-	// Check if the file path is empty
-	if fm.transfer == "" {
-		// Return an error if the file path is empty
-		return fmt.Errorf("file parameter is empty")
+// validateAbsolutePath ensures that the given path is absolute.
+func (fm *FileManager) validateAbsolutePath(paths ...string) (string, error) {
+	var absPath string
+	for _, segment := range paths {
+		absPath = filepath.Join(absPath, segment)
+	}
+
+	// Ensure the path is absolute.
+	if !filepath.IsAbs(absPath) {
+		return "", errors.New("parameter path is not absolute")
+	}
+
+	return absPath, nil
+}
+
+// RemoveFile removes the specified file if it exists and is an absolute path.
+func (fm *FileManager) RemoveFile(paths ...string) error {
+	// Check the given path is absolute.
+	absPath, err := fm.validateAbsolutePath(paths...)
+	if err != nil {
+		return err
 	}
 
 	// Get information about the file
-	info, err := os.Stat(fm.transfer)
+	info, err := os.Stat(absPath)
 	if err != nil {
 		// If the file does not exist, return an error
 		if os.IsNotExist(err) {
-			return fmt.Errorf("file does not exist: %s", fm.transfer)
+			return fmt.Errorf("file does not exist: %s", absPath)
 		}
 		// If there is an error getting the file information, return the error
 		return err
@@ -221,15 +250,42 @@ func (fm *FileManager) RemoveFile() error {
 	// Check if the path is a directory
 	if info.IsDir() {
 		// Return an error if the path is a directory, not a file
-		return fmt.Errorf("path is a directory, not a file: %s", fm.transfer)
+		return fmt.Errorf("path is a directory, not a file: %s", absPath)
 	}
 
 	// Attempt to remove the file
-	if err := os.Remove(fm.transfer); err != nil {
+	if err := os.Remove(absPath); err != nil {
 		// Return an error if the removal operation fails
-		return fmt.Errorf("failed to remove file %s: %v", fm.transfer, err)
+		return fmt.Errorf("failed to remove file %s: %v", absPath, err)
 	}
 
 	// Return nil if the removal operation is successful
+	return nil
+}
+
+// RemoveDir removes the specified directory if it exists and is an absolute path.
+func (fm *FileManager) RemoveDir(paths ...string) error {
+	// Check the given path is absolute.
+	absPath, err := fm.validateAbsolutePath(paths...)
+	if err != nil {
+		return err
+	}
+
+	// Check if the directory exists.
+	info, err := os.Stat(absPath)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("directory does not exist: %s", absPath)
+	}
+
+	// Ensure the path is a directory.
+	if !info.IsDir() {
+		return fmt.Errorf("path is not a directory: %s", absPath)
+	}
+
+	// Attempt to remove the directory.
+	if err := os.Remove(absPath); err != nil {
+		return fmt.Errorf("failed to remove directory %s: %v", absPath, err)
+	}
+
 	return nil
 }

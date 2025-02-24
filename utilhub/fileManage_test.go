@@ -65,8 +65,8 @@ func Test_FileManager_Goto(t *testing.T) {
 // Test_FileManager_Touch tests the Touch method of the FileManager struct.
 func Test_FileManager_Touch(t *testing.T) {
 	// Generate a unique filename and directory name for testing.
-	filename := uuid.New().String() + ".txt"
-	dirname := "/tmp/" + uuid.New().String()
+	fileName := uuid.New().String() + ".txt"
+	dirName := "/tmp/" + uuid.New().String()
 
 	// Define test cases for the Touch method.
 	tests := []struct {
@@ -93,7 +93,7 @@ func Test_FileManager_Touch(t *testing.T) {
 				transfer: "",
 			},
 			dirname:     "/tmp",
-			filename:    filename,
+			filename:    fileName,
 			expectedErr: "",
 		},
 		{
@@ -102,8 +102,8 @@ func Test_FileManager_Touch(t *testing.T) {
 			fileManager: FileManager{
 				transfer: "",
 			},
-			dirname:     dirname,
-			filename:    filename,
+			dirname:     dirName,
+			filename:    fileName,
 			expectedErr: "directory does not exist",
 		},
 		{
@@ -112,8 +112,8 @@ func Test_FileManager_Touch(t *testing.T) {
 			fileManager: FileManager{
 				err: fmt.Errorf("previous error"),
 			},
-			dirname:     dirname,
-			filename:    filename,
+			dirname:     dirName,
+			filename:    fileName,
 			expectedErr: "previous error",
 		},
 	}
@@ -138,7 +138,7 @@ func Test_FileManager_Touch(t *testing.T) {
 
 // Test_DateTimeTag tests the DateTimeTag function for different FileTag configurations.
 // TestDateTimeTag tests the DateTimeTag function for different FileTag configurations.
-func TestDateTimeTag(t *testing.T) {
+func Test_DateTimeTag(t *testing.T) {
 	// Helper function to test the formatted date and time
 	tests := []struct {
 		name   string
@@ -194,6 +194,73 @@ func TestDateTimeTag(t *testing.T) {
 			// Now check if the result matches the expected format
 			_, err = time.Parse(tt.format, result)
 			assert.NoError(t, err, "expected format %s, but got %s, error: %v", tt.format, result, err)
+		})
+	}
+}
+
+// Test_FileManager_validateAbsolutePath tests the validateAbsolutePath method of the FileManager struct.
+// This test ensures that the method correctly handles absolute and relative paths, as well as edge cases such as empty paths.
+func Test_FileManager_validateAbsolutePath(t *testing.T) {
+	// Define a slice of test cases, each representing a different scenario to test.
+	tests := []struct {
+		name       string   // The name of the test case.
+		paths      []string // The input paths to test.
+		wantErr    bool     // Whether an error is expected.
+		expectPath string   // The expected absolute path.
+	}{
+		{
+			name:       "absolute path 1/2",
+			paths:      []string{"/", "path", "to", "file"},
+			wantErr:    false,
+			expectPath: "/path/to/file",
+		},
+		{
+			name:       "absolute path 2/2",
+			paths:      []string{"/////", "///path///", "///to///", "///file"},
+			wantErr:    false,
+			expectPath: "/path/to/file",
+		},
+		{
+			name:       "relative path",
+			paths:      []string{"path", "to", "file"},
+			wantErr:    true,
+			expectPath: "",
+		},
+		{
+			name:       "empty path",
+			paths:      []string{},
+			wantErr:    true,
+			expectPath: "",
+		},
+		{
+			name:       "multiple absolute paths",
+			paths:      []string{"/path/to/file", "/another/path"},
+			wantErr:    false,
+			expectPath: "/path/to/file/another/path",
+		},
+	}
+
+	// Iterate over each test case.
+	for _, tt := range tests {
+		// Run the test case with a descriptive name.
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a new FileManager instance for the test.
+			fm := &FileManager{}
+
+			// Call the validateAbsolutePath method with the input paths.
+			absPath, err := fm.validateAbsolutePath(tt.paths...)
+
+			// If an error is expected, check that one was returned.
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				// If no error is expected, check that none was returned.
+				require.NoError(t, err)
+				// Check that the returned absolute path is not nil.
+				require.NotNil(t, absPath)
+				// Check that the returned absolute path matches the expected path.
+				require.Equal(t, tt.expectPath, absPath)
+			}
 		})
 	}
 }
