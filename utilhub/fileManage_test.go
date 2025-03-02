@@ -35,6 +35,31 @@ func Test_FileManager_MkDir(t *testing.T) {
 	assert.EqualError(t, fm.err, "previous error")
 }
 
+// Test_FileManager_Jump tests the Jump method of the FileManager struct.
+func Test_FileManager_Jump(t *testing.T) {
+	// Create an empty FileManager instance.
+	nodeEmpty := FileManager{}
+
+	// Navigate to the "/tmp" directory.
+	nodeTmp := nodeEmpty.Goto("/tmp")
+
+	// Generate a unique directory name for the first layer.
+	layer1 := uuid.New().String()
+	// Create a new directory at the first layer.
+	nodeLayer1 := nodeTmp.MkDir(layer1)
+
+	// Generate a unique directory name for the second layer.
+	layer2 := uuid.New().String()
+	// Create a new directory at the second layer.
+	nodeLayer2 := nodeLayer1.MkDir(layer2)
+
+	// Jump to the specific directory path using the Jump method.
+	nodeJump := nodeEmpty.Jump("/tmp", layer1, layer2)
+
+	// Verify that the transfer path of nodeJump is equal to the transfer path of nodeLayer2.
+	assert.Equal(t, nodeLayer2.transfer, nodeJump.transfer)
+}
+
 // Test_FileManager_Goto tests the Goto method of the FileManager struct.
 func Test_FileManager_Goto(t *testing.T) {
 	// Create a new instance of the FileManager struct.
