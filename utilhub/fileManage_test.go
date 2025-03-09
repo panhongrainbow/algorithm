@@ -73,15 +73,15 @@ func Test_FileManager_Goto(t *testing.T) {
 	fm.MkDir(dirName)
 	assert.NoError(t, fm.err)
 
-	// Test case: Navigate to a directory that exists
+	// Test case: Navigate to a directory that exists.
 	fm.Goto(dirName)
 	assert.NoError(t, fm.err)
 
-	// Test case: Navigate to a directory that doesn't exist
-	fm.Goto("/tmp/non_existent_dir")
-	assert.ErrorContains(t, fm.err, "directory does not exist:")
+	// Test case: Navigate to a directory that doesn't exist.
+	err := fm.Goto("/tmp/" + uuid.New().String()).Error()
+	assert.ErrorContains(t, err, "directory does not exist:")
 
-	// Test case: Navigate to a directory with an error
+	// Test case: Navigate to a directory with an error.
 	fm.err = fmt.Errorf("previous error")
 	fm.Goto(dirName)
 	assert.EqualError(t, fm.err, "previous error")
@@ -288,4 +288,67 @@ func Test_FileManager_validateAbsolutePath(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_FileManager_RemoveFile tests the RemoveFile method of the FileManager struct.
+// This test case ensures that a file can be successfully removed after creation.
+func Test_FileManager_RemoveFile(t *testing.T) {
+	// Generate a unique filename and directory name for testing.
+	dirName := "/tmp/" + uuid.New().String()
+	fileName := uuid.New().String() + ".txt"
+
+	// Create a new instance of the FileManager struct.
+	fm := FileManager{}
+
+	// Create a new directory and file for testing.
+	err := fm.MkDir(dirName).Touch(fileName)
+	// Assert that no error occurred during directory and file creation.
+	assert.NoError(t, err, "expected no error, got %v", err)
+
+	// Attempt to remove the file.
+	err = fm.RemoveFile(dirName, fileName)
+	// Assert that no error occurred during file removal.
+	assert.NoError(t, err, "expected no error, got %v", err)
+
+	return
+}
+
+// Test_FileManager_RemoveDir tests the RemoveDir method of the FileManager struct.
+// This test case ensures that a directory can be successfully removed after creation.
+func Test_FileManager_RemoveDir(t *testing.T) {
+	// Generate a unique directory name and two unique file names for testing.
+	dirName := "/tmp/" + uuid.New().String()
+	fileName1 := uuid.New().String() + ".txt"
+	fileName2 := uuid.New().String() + ".txt"
+
+	// Print the generated directory and file names for debugging purposes.
+	fmt.Println(dirName, fileName1, fileName2)
+
+	// Create a new instance of the FileManager struct.
+	fm := FileManager{}
+
+	// Create a new directory and two files for testing.
+	err := fm.MkDir(dirName).Touch(fileName1)
+	// Assert that no error occurred during directory and file creation.
+	assert.NoError(t, err, "expected no error, got %v", err)
+
+	err = fm.MkDir(dirName).Touch(fileName2)
+	// Assert that no error occurred during directory and file creation.
+	assert.NoError(t, err, "expected no error, got %v", err)
+
+	// Verify that the directory contains the two created files.
+	_, files, err := fm.Goto(dirName).List()
+	assert.NoError(t, err, "expected no error, got %v", err)
+	assert.Equal(t, 2, len(files), "expected 2 files, got %v", len(files))
+
+	// Attempt to remove the directory.
+	err = fm.RemoveDir(dirName)
+	assert.NoError(t, err, "expected no error, got %v", err)
+
+	// Verify that the directory is empty after removal.
+	_, files, err = fm.Goto(dirName).List()
+	assert.NoError(t, err, "expected no error, got %v", err)
+	assert.Equal(t, 0, len(files), "expected 0 files, got %v", len(files))
+
+	return
 }

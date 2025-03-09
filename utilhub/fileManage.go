@@ -21,6 +21,12 @@ type FileManager struct {
 	err error
 }
 
+// Error returns the error state of the FileManager instance.
+func (fm FileManager) Error() error {
+	// Return the error state of the FileManager instance.
+	return fm.err
+}
+
 // MkDir creates a new directory at the specified path.
 func (fm FileManager) MkDir(path string) FileManager {
 	// Check if a previous error has occurred and return it if so.
@@ -29,21 +35,21 @@ func (fm FileManager) MkDir(path string) FileManager {
 		return fm
 	}
 
+	// Update the transfer path to include the newly created directory.
+	fm.transfer = filepath.Join(fm.transfer, path)
+
 	// Check if the directory already exists.
-	if _, err := os.Stat(path); err == nil {
+	if _, err := os.Stat(fm.transfer); err == nil {
 		// Directory already exists, return immediately without error.
 		return fm
 	}
 
 	// Attempt to create the directory with the specified permissions.
-	if err := os.MkdirAll(path, dirPermission); err != nil {
+	if err := os.MkdirAll(fm.transfer, dirPermission); err != nil {
 		// Return an error if directory creation fails.
 		fm.err = fmt.Errorf("failed to create directory %s: %v", path, err)
 		return fm
 	}
-
-	// Update the transfer path to include the newly created directory.
-	fm.transfer = filepath.Join(fm.transfer, path)
 
 	// Return nil to indicate successful directory creation.
 	return fm
@@ -238,6 +244,7 @@ func (fm FileManager) List() (dir []string, file []string, err error) {
 
 // validateAbsolutePath ensures that the given path is absolute.
 func (fm FileManager) validateAbsolutePath(paths ...string) (string, error) {
+	// Check the given path is absolute.
 	var absPath string
 	for _, segment := range paths {
 		absPath = filepath.Join(absPath, segment)
@@ -253,36 +260,41 @@ func (fm FileManager) validateAbsolutePath(paths ...string) (string, error) {
 
 // RemoveFile removes the specified file if it exists and is an absolute path.
 func (fm FileManager) RemoveFile(paths ...string) error {
+	// Check if a previous error has occurred and return it if so.
+	if fm.err != nil {
+		return fm.err
+	}
+
 	// Check the given path is absolute.
 	absPath, err := fm.validateAbsolutePath(paths...)
 	if err != nil {
 		return err
 	}
 
-	// Get information about the file
+	// Get information about the file.
 	info, err := os.Stat(absPath)
 	if err != nil {
-		// If the file does not exist, return an error
+		// If the file does not exist, return an error.
 		if os.IsNotExist(err) {
 			return fmt.Errorf("file does not exist: %s", absPath)
 		}
-		// If there is an error getting the file information, return the error
+		// If there is an error getting the file information, return the error.
 		return err
 	}
 
-	// Check if the path is a directory
+	// Check if the path is a directory.
 	if info.IsDir() {
-		// Return an error if the path is a directory, not a file
+		// Return an error if the path is a directory, not a file.
 		return fmt.Errorf("path is a directory, not a file: %s", absPath)
 	}
 
-	// Attempt to remove the file
+	// Attempt to remove the file.
 	if err := os.Remove(absPath); err != nil {
-		// Return an error if the removal operation fails
+		// Return an error if the removal operation fails.
 		return fmt.Errorf("failed to remove file %s: %v", absPath, err)
 	}
 
-	// Return nil if the removal operation is successful
+	// Return nil if the removal operation is successful.
 	return nil
 }
 
@@ -306,7 +318,7 @@ func (fm FileManager) RemoveDir(paths ...string) error {
 	}
 
 	// Attempt to remove the directory.
-	if err := os.Remove(absPath); err != nil {
+	if err := os.RemoveAll(absPath); err != nil {
 		return fmt.Errorf("failed to remove directory %s: %v", absPath, err)
 	}
 
