@@ -13,22 +13,22 @@ const (
 	filePermission = 0644
 )
 
-// FileManager represents a file manager that can create directories and track errors.
-type FileManager struct {
+// FileNode represents a file manager that can create directories and track errors.
+type FileNode struct {
 	// transfer stores the current directory path being transferred.
 	transfer string
 	// err stores any errors that occur during file operations.
 	err error
 }
 
-// Error returns the error state of the FileManager instance.
-func (fm FileManager) Error() error {
-	// Return the error state of the FileManager instance.
+// Error returns the error state of the FileNode instance.
+func (fm FileNode) Error() error {
+	// Return the error state of the FileNode instance.
 	return fm.err
 }
 
 // MkDir creates a new directory at the specified path.
-func (fm FileManager) MkDir(path string) FileManager {
+func (fm FileNode) MkDir(path string) FileNode {
 	// Check if a previous error has occurred and return it if so.
 	if fm.err != nil {
 		fm.transfer = ""
@@ -56,7 +56,7 @@ func (fm FileManager) MkDir(path string) FileManager {
 }
 
 // Goto navigates to a specific directory path.
-func (fm FileManager) Goto(path string) FileManager {
+func (fm FileNode) Goto(path string) FileNode {
 	// Check if a previous error has occurred and return it if so.
 	if fm.err != nil {
 		fm.transfer = ""
@@ -79,8 +79,21 @@ func (fm FileManager) Goto(path string) FileManager {
 	return fm
 }
 
+// Path returns the current file path managed by the FileNode.
+func (fm FileNode) Path() string {
+	// Check if a previous error has occurred, indicating an invalid state.
+	// If so, reset the transfer path to an empty string.
+	if fm.err != nil {
+		// Reset the transfer path to prevent stale data.
+		fm.transfer = ""
+	}
+
+	// Return the current transfer path, or an empty string if an error occurred.
+	return fm.transfer
+}
+
 // Jump navigates to a specific directory path by joining the provided paths to the current transfer path.
-func (fm FileManager) Jump(paths ...string) FileManager {
+func (fm FileNode) Jump(paths ...string) FileNode {
 	// Check if a previous error has occurred and return it if so.
 	if fm.err != nil {
 		fm.transfer = ""
@@ -98,13 +111,13 @@ func (fm FileManager) Jump(paths ...string) FileManager {
 		return fm
 	}
 
-	// If the directory exists, return the updated FileManager instance.
+	// If the directory exists, return the updated FileNode instance.
 	return fm
 }
 
 // Touch creates a new empty file or truncates an existing file to zero length.
 // If the file does not exist, it is created. If the file exists, its contents are cleared.
-func (fm FileManager) Touch(filename string) error {
+func (fm FileNode) Touch(filename string) error {
 	// Check if a previous error has occurred and return it immediately.
 	if fm.err != nil {
 		fm.transfer = ""
@@ -198,7 +211,7 @@ func DateTimeTag(ft FileTag) (string, error) {
 
 // List retrieves the directories and files inside a given directory.
 // It returns three values: a slice of directories, a slice of files, and an error.
-func (fm FileManager) List() (dir []string, file []string, err error) {
+func (fm FileNode) List() (dir []string, file []string, err error) {
 	// Check if a previous error has occurred and return it if so.
 	if fm.err != nil {
 		fm.transfer = ""
@@ -222,7 +235,7 @@ func (fm FileManager) List() (dir []string, file []string, err error) {
 	if dirHandle, err = os.Open(fm.transfer); err != nil {
 		return // Return empty slices and the error.
 	}
-	defer dirHandle.Close() // Ensure the directory is closed.
+	defer func() { _ = dirHandle.Close() }() // Ensure the directory is closed.
 
 	// Read directory contents.
 	var entries []os.FileInfo
@@ -243,7 +256,7 @@ func (fm FileManager) List() (dir []string, file []string, err error) {
 }
 
 // validateAbsolutePath ensures that the given path is absolute.
-func (fm FileManager) validateAbsolutePath(paths ...string) (string, error) {
+func (fm FileNode) validateAbsolutePath(paths ...string) (string, error) {
 	// Check the given path is absolute.
 	var absPath string
 	for _, segment := range paths {
@@ -259,7 +272,7 @@ func (fm FileManager) validateAbsolutePath(paths ...string) (string, error) {
 }
 
 // RemoveFile removes the specified file if it exists and is an absolute path.
-func (fm FileManager) RemoveFile(paths ...string) error {
+func (fm FileNode) RemoveFile(paths ...string) error {
 	// Check if a previous error has occurred and return it if so.
 	if fm.err != nil {
 		return fm.err
@@ -299,7 +312,7 @@ func (fm FileManager) RemoveFile(paths ...string) error {
 }
 
 // RemoveDir removes the specified directory if it exists and is an absolute path.
-func (fm FileManager) RemoveDir(paths ...string) error {
+func (fm FileNode) RemoveDir(paths ...string) error {
 	// Check the given path is absolute.
 	absPath, err := fm.validateAbsolutePath(paths...)
 	if err != nil {

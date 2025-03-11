@@ -1,6 +1,7 @@
 package utilhub
 
 import (
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -9,10 +10,10 @@ import (
 	"time"
 )
 
-// Test_FileManager_MkDir tests the MkDir method of the FileManager struct.
-func Test_FileManager_MkDir(t *testing.T) {
-	// Create a new instance of the FileManager struct.
-	fm := FileManager{}
+// Test_FileNode_MkDir tests the MkDir method of the FileNode struct.
+func Test_FileNode_MkDir(t *testing.T) {
+	// Create a new instance of the FileNode struct.
+	fm := FileNode{}
 
 	// Generate a unique directory name using uuid.New().String().
 	dirName := "/tmp/" + uuid.New().String()
@@ -28,17 +29,17 @@ func Test_FileManager_MkDir(t *testing.T) {
 	assert.NoError(t, fm.err)
 
 	// Test case: Create a directory with an error
-	// Set the error field of the FileManager struct to "previous error".
+	// Set the error field of the FileNode struct to "previous error".
 	fm.err = fmt.Errorf("previous error")
 	// Verify that the error returned when creating a directory is "previous error".
 	fm.MkDir(dirName)
 	assert.EqualError(t, fm.err, "previous error")
 }
 
-// Test_FileManager_Jump tests the Jump method of the FileManager struct.
-func Test_FileManager_Jump(t *testing.T) {
-	// Create an empty FileManager instance.
-	nodeEmpty := FileManager{}
+// Test_FileNode_Jump tests the Jump method of the FileNode struct.
+func Test_FileNode_Jump(t *testing.T) {
+	// Create an empty FileNode instance.
+	nodeEmpty := FileNode{}
 
 	// Navigate to the "/tmp" directory.
 	nodeTmp := nodeEmpty.Goto("/tmp")
@@ -60,10 +61,42 @@ func Test_FileManager_Jump(t *testing.T) {
 	assert.Equal(t, nodeLayer2.transfer, nodeJump.transfer)
 }
 
-// Test_FileManager_Goto tests the Goto method of the FileManager struct.
-func Test_FileManager_Goto(t *testing.T) {
-	// Create a new instance of the FileManager struct.
-	fm := FileManager{}
+// Test_FileNode_Path tests the Path method of the FileNode.
+func Test_FileNode_Path(t *testing.T) {
+	tests := []struct {
+		name     string
+		FileNode FileNode
+		want     string
+	}{
+		{
+			name: "no error",
+			FileNode: FileNode{
+				transfer: "/path/to/file",
+				err:      nil,
+			},
+			want: "/path/to/file",
+		},
+		{
+			name: "with error",
+			FileNode: FileNode{
+				transfer: "/path/to/file",
+				err:      errors.New("test error"),
+			},
+			want: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.FileNode.Path())
+		})
+	}
+}
+
+// Test_FileNode_Goto tests the Goto method of the FileNode struct.
+func Test_FileNode_Goto(t *testing.T) {
+	// Create a new instance of the FileNode struct.
+	fm := FileNode{}
 
 	// Generate a unique directory name using uuid.New().String().
 	dirName := "/tmp/" + uuid.New().String()
@@ -87,8 +120,8 @@ func Test_FileManager_Goto(t *testing.T) {
 	assert.EqualError(t, fm.err, "previous error")
 }
 
-// Test_FileManager_Touch tests the Touch method of the FileManager struct.
-func Test_FileManager_Touch(t *testing.T) {
+// Test_FileNode_Touch tests the Touch method of the FileNode struct.
+func Test_FileNode_Touch(t *testing.T) {
 	// Generate a unique filename and directory name for testing.
 	fileName := uuid.New().String() + ".txt"
 	dirName := "/tmp/" + uuid.New().String()
@@ -96,7 +129,7 @@ func Test_FileManager_Touch(t *testing.T) {
 	// Define test cases for the Touch method.
 	tests := []struct {
 		name        string
-		fileManager FileManager
+		FileNode    FileNode
 		dirname     string
 		filename    string
 		expectedErr string
@@ -104,7 +137,7 @@ func Test_FileManager_Touch(t *testing.T) {
 		{
 			// Test case: No filename provided.
 			name: "no filename provided",
-			fileManager: FileManager{
+			FileNode: FileNode{
 				transfer: "",
 			},
 			dirname:     "/tmp",
@@ -114,7 +147,7 @@ func Test_FileManager_Touch(t *testing.T) {
 		{
 			// Test case: Create new file in existing directory.
 			name: "create new file in existing directory",
-			fileManager: FileManager{
+			FileNode: FileNode{
 				transfer: "",
 			},
 			dirname:     "/tmp",
@@ -124,7 +157,7 @@ func Test_FileManager_Touch(t *testing.T) {
 		{
 			// Test case: Create new file in non-existing directory.
 			name: "create new file in non-existing directory",
-			fileManager: FileManager{
+			FileNode: FileNode{
 				transfer: "",
 			},
 			dirname:     dirName,
@@ -134,7 +167,7 @@ func Test_FileManager_Touch(t *testing.T) {
 		{
 			// Test case: Return previous error.
 			name: "return previous error",
-			fileManager: FileManager{
+			FileNode: FileNode{
 				err: fmt.Errorf("previous error"),
 			},
 			dirname:     dirName,
@@ -147,7 +180,7 @@ func Test_FileManager_Touch(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// Call the Touch method and store the error.
-			err := test.fileManager.Goto(test.dirname).Touch(test.filename)
+			err := test.FileNode.Goto(test.dirname).Touch(test.filename)
 
 			// Check if an error is expected.
 			if test.expectedErr != "" {
@@ -223,9 +256,9 @@ func Test_DateTimeTag(t *testing.T) {
 	}
 }
 
-// Test_FileManager_validateAbsolutePath tests the validateAbsolutePath method of the FileManager struct.
+// Test_FileNode_validateAbsolutePath tests the validateAbsolutePath method of the FileNode struct.
 // This test ensures that the method correctly handles absolute and relative paths, as well as edge cases such as empty paths.
-func Test_FileManager_validateAbsolutePath(t *testing.T) {
+func Test_FileNode_validateAbsolutePath(t *testing.T) {
 	// Define a slice of test cases, each representing a different scenario to test.
 	tests := []struct {
 		name       string   // The name of the test case.
@@ -269,8 +302,8 @@ func Test_FileManager_validateAbsolutePath(t *testing.T) {
 	for _, tt := range tests {
 		// Run the test case with a descriptive name.
 		t.Run(tt.name, func(t *testing.T) {
-			// Create a new FileManager instance for the test.
-			fm := &FileManager{}
+			// Create a new FileNode instance for the test.
+			fm := &FileNode{}
 
 			// Call the validateAbsolutePath method with the input paths.
 			absPath, err := fm.validateAbsolutePath(tt.paths...)
@@ -290,15 +323,15 @@ func Test_FileManager_validateAbsolutePath(t *testing.T) {
 	}
 }
 
-// Test_FileManager_RemoveFile tests the RemoveFile method of the FileManager struct.
+// Test_FileNode_RemoveFile tests the RemoveFile method of the FileNode struct.
 // This test case ensures that a file can be successfully removed after creation.
-func Test_FileManager_RemoveFile(t *testing.T) {
+func Test_FileNode_RemoveFile(t *testing.T) {
 	// Generate a unique filename and directory name for testing.
 	dirName := "/tmp/" + uuid.New().String()
 	fileName := uuid.New().String() + ".txt"
 
-	// Create a new instance of the FileManager struct.
-	fm := FileManager{}
+	// Create a new instance of the FileNode struct.
+	fm := FileNode{}
 
 	// Create a new directory and file for testing.
 	err := fm.MkDir(dirName).Touch(fileName)
@@ -313,9 +346,9 @@ func Test_FileManager_RemoveFile(t *testing.T) {
 	return
 }
 
-// Test_FileManager_RemoveDir tests the RemoveDir method of the FileManager struct.
+// Test_FileNode_RemoveDir tests the RemoveDir method of the FileNode struct.
 // This test case ensures that a directory can be successfully removed after creation.
-func Test_FileManager_RemoveDir(t *testing.T) {
+func Test_FileNode_RemoveDir(t *testing.T) {
 	// Generate a unique directory name and two unique file names for testing.
 	dirName := "/tmp/" + uuid.New().String()
 	fileName1 := uuid.New().String() + ".txt"
@@ -324,8 +357,8 @@ func Test_FileManager_RemoveDir(t *testing.T) {
 	// Print the generated directory and file names for debugging purposes.
 	fmt.Println(dirName, fileName1, fileName2)
 
-	// Create a new instance of the FileManager struct.
-	fm := FileManager{}
+	// Create a new instance of the FileNode struct.
+	fm := FileNode{}
 
 	// Create a new directory and two files for testing.
 	err := fm.MkDir(dirName).Touch(fileName1)
