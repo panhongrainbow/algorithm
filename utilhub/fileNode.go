@@ -22,113 +22,113 @@ type FileNode struct {
 }
 
 // Error returns the error state of the FileNode instance.
-func (fm FileNode) Error() error {
+func (fn FileNode) Error() error {
 	// Return the error state of the FileNode instance.
-	return fm.err
+	return fn.err
 }
 
 // MkDir creates a new directory at the specified path.
-func (fm FileNode) MkDir(path string) FileNode {
+func (fn FileNode) MkDir(path string) FileNode {
 	// Check if a previous error has occurred and return it if so.
-	if fm.err != nil {
-		fm.transfer = ""
-		return fm
+	if fn.err != nil {
+		fn.transfer = ""
+		return fn
 	}
 
 	// Update the transfer path to include the newly created directory.
-	fm.transfer = filepath.Join(fm.transfer, path)
+	fn.transfer = filepath.Join(fn.transfer, path)
 
 	// Check if the directory already exists.
-	if _, err := os.Stat(fm.transfer); err == nil {
+	if _, err := os.Stat(fn.transfer); err == nil {
 		// Directory already exists, return immediately without error.
-		return fm
+		return fn
 	}
 
 	// Attempt to create the directory with the specified permissions.
-	if err := os.MkdirAll(fm.transfer, dirPermission); err != nil {
+	if err := os.MkdirAll(fn.transfer, dirPermission); err != nil {
 		// Return an error if directory creation fails.
-		fm.err = fmt.Errorf("failed to create directory %s: %v", path, err)
-		return fm
+		fn.err = fmt.Errorf("failed to create directory %s: %v", path, err)
+		return fn
 	}
 
 	// Return nil to indicate successful directory creation.
-	return fm
+	return fn
 }
 
 // Goto navigates to a specific directory path.
-func (fm FileNode) Goto(path string) FileNode {
+func (fn FileNode) Goto(path string) FileNode {
 	// Check if a previous error has occurred and return it if so.
-	if fm.err != nil {
-		fm.transfer = ""
-		return fm
+	if fn.err != nil {
+		fn.transfer = ""
+		return fn
 	}
 
 	// Check if the directory exists.
 	// os.Stat returns a FileInfo describing the file, or an error if the file does not exist.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		// If the directory does not exist, return an error with a descriptive message.
-		fm.err = fmt.Errorf("directory does not exist: %s", path)
-		return fm
+		fn.err = fmt.Errorf("directory does not exist: %s", path)
+		return fn
 	}
 
 	// Update the transfer path to include the specified directory.
 	// filepath.Join is used to join the current transfer path with the new path.
-	fm.transfer = filepath.Join(fm.transfer, path)
+	fn.transfer = filepath.Join(fn.transfer, path)
 
 	// Return nil to indicate successful navigation to the directory.
-	return fm
+	return fn
 }
 
 // Path returns the current file path managed by the FileNode.
-func (fm FileNode) Path() string {
+func (fn FileNode) Path() string {
 	// Check if a previous error has occurred, indicating an invalid state.
 	// If so, reset the transfer path to an empty string.
-	if fm.err != nil {
+	if fn.err != nil {
 		// Reset the transfer path to prevent stale data.
-		fm.transfer = ""
+		fn.transfer = ""
 	}
 
 	// Return the current transfer path, or an empty string if an error occurred.
-	return fm.transfer
+	return fn.transfer
 }
 
 // Jump navigates to a specific directory path by joining the provided paths to the current transfer path.
-func (fm FileNode) Jump(paths ...string) FileNode {
+func (fn FileNode) Jump(paths ...string) FileNode {
 	// Check if a previous error has occurred and return it if so.
-	if fm.err != nil {
-		fm.transfer = ""
-		return fm
+	if fn.err != nil {
+		fn.transfer = ""
+		return fn
 	}
 
 	// Join the provided paths to the current transfer path using filepath.Join.
-	fm.transfer = filepath.Join(fm.transfer, filepath.Join(paths...))
+	fn.transfer = filepath.Join(fn.transfer, filepath.Join(paths...))
 
 	// Check if the resulting directory exists using os.Stat.
 	// If the directory does not exist, os.Stat returns an error.
-	if _, err := os.Stat(fm.transfer); os.IsNotExist(err) {
+	if _, err := os.Stat(fn.transfer); os.IsNotExist(err) {
 		// If the directory does not exist, return an error with a descriptive message.
-		fm.err = fmt.Errorf("directory does not exist: %s", fm.transfer)
-		return fm
+		fn.err = fmt.Errorf("directory does not exist: %s", fn.transfer)
+		return fn
 	}
 
 	// If the directory exists, return the updated FileNode instance.
-	return fm
+	return fn
 }
 
 // Touch creates a new empty file or truncates an existing file to zero length.
 // If the file does not exist, it is created. If the file exists, its contents are cleared.
-func (fm FileNode) Touch(filename string) error {
+func (fn FileNode) Touch(filename string) error {
 	// Check if a previous error has occurred and return it immediately.
-	if fm.err != nil {
-		fm.transfer = ""
-		return fm.err
+	if fn.err != nil {
+		fn.transfer = ""
+		return fn.err
 	}
 
 	// Initialize the file path if it's not already set.
-	if fm.transfer == "" {
-		fm.transfer = filepath.Join("./", filename)
+	if fn.transfer == "" {
+		fn.transfer = filepath.Join("./", filename)
 	} else {
-		fm.transfer = filepath.Join(fm.transfer, filename)
+		fn.transfer = filepath.Join(fn.transfer, filename)
 	}
 
 	// filename cannot be empty.
@@ -137,17 +137,17 @@ func (fm FileNode) Touch(filename string) error {
 	}
 
 	// Check if the file exists.
-	if _, err := os.Stat(fm.transfer); os.IsNotExist(err) {
+	if _, err := os.Stat(fn.transfer); os.IsNotExist(err) {
 		// File does not exist, create a new empty file.
-		_, err := os.Create(fm.transfer)
+		_, err := os.Create(fn.transfer)
 		if err != nil {
-			return fmt.Errorf("failed to create file %s: %v", fm.transfer, err)
+			return fmt.Errorf("failed to create file %s: %v", fn.transfer, err)
 		}
 	} else {
 		// File exists, truncate its contents to zero length.
-		err := os.WriteFile(fm.transfer, []byte(""), filePermission)
+		err := os.WriteFile(fn.transfer, []byte(""), filePermission)
 		if err != nil {
-			return fmt.Errorf("failed to empty file %s: %v", fm.transfer, err)
+			return fmt.Errorf("failed to empty file %s: %v", fn.transfer, err)
 		}
 	}
 
@@ -211,28 +211,28 @@ func DateTimeTag(ft FileTag) (string, error) {
 
 // List retrieves the directories and files inside a given directory.
 // It returns three values: a slice of directories, a slice of files, and an error.
-func (fm FileNode) List() (dir []string, file []string, err error) {
+func (fn FileNode) List() (dir []string, file []string, err error) {
 	// Check if a previous error has occurred and return it if so.
-	if fm.err != nil {
-		fm.transfer = ""
+	if fn.err != nil {
+		fn.transfer = ""
 		return nil, nil, err
 	}
 
 	// Check if the given path exists and is a directory.
 	var info os.FileInfo
-	if info, err = os.Stat(fm.transfer); err != nil {
+	if info, err = os.Stat(fn.transfer); err != nil {
 		return // Return empty slices and the error.
 	}
 
 	// Check if the path is a directory.
 	if !info.IsDir() {
-		err = fmt.Errorf("path is not a directory: %s", fm.transfer)
+		err = fmt.Errorf("path is not a directory: %s", fn.transfer)
 		return
 	}
 
 	// Open the directory.
 	var dirHandle *os.File
-	if dirHandle, err = os.Open(fm.transfer); err != nil {
+	if dirHandle, err = os.Open(fn.transfer); err != nil {
 		return // Return empty slices and the error.
 	}
 	defer func() { _ = dirHandle.Close() }() // Ensure the directory is closed.
@@ -256,7 +256,7 @@ func (fm FileNode) List() (dir []string, file []string, err error) {
 }
 
 // validateAbsolutePath ensures that the given path is absolute.
-func (fm FileNode) validateAbsolutePath(paths ...string) (string, error) {
+func (fn FileNode) validateAbsolutePath(paths ...string) (string, error) {
 	// Check the given path is absolute.
 	var absPath string
 	for _, segment := range paths {
@@ -272,14 +272,14 @@ func (fm FileNode) validateAbsolutePath(paths ...string) (string, error) {
 }
 
 // RemoveFile removes the specified file if it exists and is an absolute path.
-func (fm FileNode) RemoveFile(paths ...string) error {
+func (fn FileNode) RemoveFile(paths ...string) error {
 	// Check if a previous error has occurred and return it if so.
-	if fm.err != nil {
-		return fm.err
+	if fn.err != nil {
+		return fn.err
 	}
 
 	// Check the given path is absolute.
-	absPath, err := fm.validateAbsolutePath(paths...)
+	absPath, err := fn.validateAbsolutePath(paths...)
 	if err != nil {
 		return err
 	}
@@ -312,9 +312,9 @@ func (fm FileNode) RemoveFile(paths ...string) error {
 }
 
 // RemoveDir removes the specified directory if it exists and is an absolute path.
-func (fm FileNode) RemoveDir(paths ...string) error {
+func (fn FileNode) RemoveDir(paths ...string) error {
 	// Check the given path is absolute.
-	absPath, err := fm.validateAbsolutePath(paths...)
+	absPath, err := fn.validateAbsolutePath(paths...)
 	if err != nil {
 		return err
 	}

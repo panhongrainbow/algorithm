@@ -29,6 +29,12 @@ import (
 // 🧪 The test ensures the accuracy of indexing to prevent inconsistencies
 // that might result in data operation failures.
 
+// ⚗️ This code defines basic constants used in the test.
+const (
+	// 🧪 recordPath is the path to store test records.
+	recordPath = "/home/tmp"
+)
+
 // ⚗️ This code defines three constants used for generating random numbers in a test.
 const (
 	// 🧪 randomTotalCount represents the number of elements to be generated for random testing.
@@ -47,8 +53,24 @@ const (
 // Test_Check_BpTree_ConsistencyIntegrity 🧫 validates consistency and integrity by inserting and then deleting large data volumes
 // to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
 func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
+	// Navigate to the record path and create a new directory for the current date.
+	recordNode := utilhub.FileNode{}
+	recordNode = recordNode.Goto(recordPath)
+	require.NotEqual(t, "", recordNode.Path(), "record path could not be created; please check the path.")
+
+	// Create a new directory for the current date under the record path.
+	recordDateNode := recordNode.MkDir(time.Now().Format("2006-01-02"))
+	require.NotEqual(t, "", recordDateNode.Path(), "record sub path could not be created; please check the path.")
+
+	// Define a test mode for testing.
 	testMode0Name := "Mode 0: Testing"
+
+	// Run the test mode.
 	t.Run(testMode0Name, func(t *testing.T) {
+		// Create a new empty file named "mode0.do_not_open" under the record date path.
+		err := recordDateNode.Touch("mode0.do_not_open")
+		require.NoError(t, err, "record file could not be created; please check the path.")
+
 		// Create a new instance of BpTestModel1 with the specified random total count.
 		bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
 
@@ -66,7 +88,8 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 
 		// Initialize a Linux splice stream writer to write data to a file.
 		// The file is created with write-only permissions and truncated if it already exists.
-		dataChan, finishChan, err := utilhub.LinuxSpliceStreamWrite("/tmp/test_file.txt", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		dataChan, finishChan, err := recordDateNode.LinuxSpliceStreamWrite("mode0.do_not_open", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+
 		// Check if an error occurred during writer initialization.
 		require.NoError(t, err)
 
@@ -103,7 +126,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 		<-finishChan
 
 		// Check ...
-		content, _ := os.ReadFile("/tmp/test_file.txt")
+		content, _ := os.ReadFile("/home/tmp/" + time.Now().Format("2006-01-02") + "/mode0.do_not_open")
 		got, _ := utilhub.BytesToInt64Slice(content, binary.LittleEndian)
 		fmt.Println(got[0:10], got[len(got)/2:len(got)/2+10])
 		fmt.Println(len(got))
