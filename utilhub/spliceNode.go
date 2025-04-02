@@ -27,7 +27,7 @@ func (fn FileNode) LinuxSpliceStreamWrite(filename string, fileFlag int, filePer
 	return LinuxSpliceStreamWrite(absPath, fileFlag, filePerm)
 }
 
-// The function uses a goroutine to perform the file reading, allowing it to run concurrently with the main program flow.
+// ReadBytesInChunks uses a goroutine to perform the file reading, allowing it to run concurrently with the main program flow.
 func (fn FileNode) ReadBytesInChunks(filename string, chunkSize int) (<-chan []byte, <-chan error) {
 	// Create channels to hold the chunked data and errors.
 	dataChan := make(chan []byte)

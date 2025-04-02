@@ -1,16 +1,13 @@
 package bpTree
 
 import (
-	"encoding/binary"
 	"fmt"
 	"github.com/panhongrainbow/algorithm/randhub"
 	"github.com/panhongrainbow/algorithm/testplan"
-	bptestModel1 "github.com/panhongrainbow/algorithm/testplan/bptestplan/model1"
 	"github.com/panhongrainbow/algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"math/rand"
-	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -50,89 +47,38 @@ const (
 	randomMax = randomTotalCount/randomHitCollisionPercentage*100 + randomMin
 )
 
-// Test_Check_BpTree_ConsistencyIntegrity 🧫 validates consistency and integrity by inserting and then deleting large data volumes
-// to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
-func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
+// #################################################################################################
+// 🛠 Decide the record path to store test records.
+// There is a const variable recordPath defined at the top of this file.
+// Then combine the record path with the current time to generate a unique record path.
+// #################################################################################################
+var (
 	// Navigate to the record path and create a new directory for the current date.
-	recordNode := utilhub.FileNode{}
-	recordNode = recordNode.Goto(recordPath)
-	require.NotEqual(t, "", recordNode.Path(), "record path could not be created; please check the path.")
+	recordNode1 = utilhub.FileNode{}
+	recordNode  = recordNode1.Goto(recordPath)
 
 	// Create a new directory for the current date under the record path.
-	recordDateNode := recordNode.MkDir(time.Now().Format("2006-01-02"))
+	recordDateNode = recordNode.MkDir(time.Now().Format("2006-01-02"))
+)
+
+// #################################################################################################
+// 🛠 Test_Check_BpTree_Accuracies is the most important test in the entire project.
+// It checks the consistency and integrity of the B Plus Tree by inserting and then deleting large data volumes.
+// To run the test, run the following command:
+// `cd /home/panhong/go/src/github.com/panhongrainbow/algorithm/bptree; go clean -cache; go test -v . -timeout=0`
+//
+// #################################################################################################
+
+// Test_Check_BpTree_Accuracy 🧫 validates consistency and integrity by inserting and then deleting large data volumes
+// to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
+func Test_Check_BpTree_Accuracies(t *testing.T) {
+
+	require.NotEqual(t, "", recordNode.Path(), "record path could not be created; please check the path.")
+
 	require.NotEqual(t, "", recordDateNode.Path(), "record sub path could not be created; please check the path.")
 
-	// Define a test mode for testing.
-	testMode0Name := "Mode 0: Testing"
+	Test_Check_BpTree_Accuracy_mode1_preparation(t)
 
-	// Run the test mode.
-	t.Run(testMode0Name, func(t *testing.T) {
-		// Create a new empty file named "mode0.do_not_open" under the record date path.
-		err := recordDateNode.Touch("mode0.do_not_open")
-		require.NoError(t, err, "record file could not be created; please check the path.")
-
-		// Create a new instance of BpTestModel1 with the specified random total count.
-		bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
-
-		// Generate a random data set using the GenerateRandomSet method of BpTestModel1.
-		// This method generates a slice of random data for testing purposes.
-		testData, err := bptest1.GenerateRandomSet(1, 10)
-		// Check if an error occurred during data set generation.
-		require.NoError(t, err)
-
-		// Validate the generated data set using the CheckRandomSet method of BpTestModel1.
-		// This method checks the validity of the data set by comparing the positive and negative numbers.
-		err = bptest1.CheckRandomSet(testData)
-		// Check if an error occurred during data set validation.
-		require.NoError(t, err)
-
-		// Initialize a Linux splice stream writer to write data to a file.
-		// The file is created with write-only permissions and truncated if it already exists.
-		dataChan, finishChan, err := recordDateNode.LinuxSpliceStreamWrite("mode0.do_not_open", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
-
-		// Check if an error occurred during writer initialization.
-		require.NoError(t, err)
-
-		// Define constants for block length and width.
-		// These constants determine the size of the blocks used for data writing.
-		const (
-			// The length of each block.
-			blockLength = 10
-			// The width of each block.
-			blockWidth = 10
-		)
-
-		// Initialize the start point for block writing.
-		startPoint := 0
-
-		// Initialize a flag to track whether the writing process is finished.
-		var finished bool
-
-		// Write data to the file in blocks until the entire data set is written.
-		for !finished {
-			// Convert the data set to a block of bytes using the Int64SliceToBlockBytes method in utilhub.
-			// This method converts a slice of int64 values to a block of bytes.
-			var block [][]byte
-			block, startPoint, finished, err = utilhub.Int64SliceToBlockBytes(testData, binary.LittleEndian, startPoint, blockLength, blockWidth)
-			// Check if an error occurred during block writing.
-			require.NoError(t, err)
-			// Write the block to the file using the data channel.
-			dataChan <- block
-		}
-
-		// Close the data channel to signal the end of writing.
-		close(dataChan)
-		// Wait for the finish channel to receive the finish signal.
-		<-finishChan
-
-		// Check ...
-		content, _ := os.ReadFile("/home/tmp/" + time.Now().Format("2006-01-02") + "/mode0.do_not_open")
-		got, _ := utilhub.BytesToInt64Slice(content, binary.LittleEndian)
-		fmt.Println(got[0:10], got[len(got)/2:len(got)/2+10])
-		fmt.Println(len(got))
-		err = bptest1.CheckRandomSet(got)
-		require.NoError(t, err)
-	})
 	testMode1Name := "Mode 1: Bulk Insert/Delete"
 	t.Run(testMode1Name, func(t *testing.T) {
 		// Test case for bulk insert and delete operations on the B Plus tree.
@@ -142,7 +88,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 		random := rand.New(source)
 
 		// Set the initial width of the B Plus tree.
-		// The width of the B+ tree determines the number of keys that can be stored in each node.
+		// The width of the B Plus Tree determines the number of keys that can be stored in each node.
 
 		// The random width is between 3 and 12.
 		// This is done to ensure that the number of keys in each node is varied,
@@ -242,7 +188,7 @@ func Test_Check_BpTree_ConsistencyIntegrity(t *testing.T) {
 		random := rand.New(source)
 
 		// Set the initial width of the B Plus tree.
-		// The width of the B+ tree determines the number of keys that can be stored in each node.
+		// The width of the B Plus tree determines the number of keys that can be stored in each node.
 
 		// The random width is between 3 and 12.
 		// This is done to ensure that the number of keys in each node is varied,

@@ -76,8 +76,14 @@ func BytesToInt64Slice(data []byte, order binary.ByteOrder) ([]int64, error) {
 		var v int64
 
 		// Attempt to read the next int64 value from the byte slice using the specified byte order.
-		if err := binary.Read(buf, order, &v); err != nil {
+		err := binary.Read(buf, order, &v)
+		if err != nil && err.Error() != "EOF" {
 			// If an error occurs, break out of the loop as the reading is complete.
+			// break
+			return []int64{}, err
+		}
+
+		if err != nil && err.Error() == "EOF" {
 			break
 		}
 

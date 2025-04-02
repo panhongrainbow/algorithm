@@ -9,8 +9,8 @@ import (
 	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
-// BpTestModel1 🧮 represents a test model for B Plus tree testing.
-// It emulates a scenario where random numbers are generated and inserted into a B Plus tree and then deleted.
+// BpTestModel1 🧮 represents a test model for B Plus Tree testing.
+// It emulates a scenario where random numbers are generated and inserted into a B Plus Tree and then deleted.
 type BpTestModel1 struct {
 	RandomTotalCount uint64 // RandomTotalCount is the total number of random numbers to be kept for testing.
 }
