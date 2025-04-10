@@ -76,7 +76,6 @@ func (fn FileNode) ReadBytesInChunks(filename string, chunkSize int) (<-chan []b
 		for {
 			// Read a chunk of data from the file.
 			n, err := reader.Read(buffer)
-			fmt.Println("n", n)
 			// If data was read, send it on the dataChan.
 			if n > 0 {
 				dataChan <- buffer[:n]
