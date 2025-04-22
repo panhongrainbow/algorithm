@@ -72,9 +72,14 @@ func Test_Check_BpTree_Accuracy_mode1_preparation(t *testing.T) {
 	// #################################################################################################
 
 	err = recordDateNode.LinuxSpliceProgressStreamWrite(
-		"Mode 1: Bulk Insert/Delete - Backup", utilhub.BrightCyan, // 这只是准备工作
-		"mode0.do_not_open", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
-		testDataSet, binary.LittleEndian, spliceBlockLength, spliceBlockWidth)
+		testDataSet,         // 原始数据，知道数据数量
+		"mode0.do_not_open", // 要写入的文件名
+		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
+		binary.LittleEndian, spliceBlockLength, spliceBlockWidth,
+		"Mode 1: Bulk Insert/Delete - Backup", // 进度条的标题
+		utilhub.BrightCyan,                    // 进度条的颜色
+		70,                                    // 进度条的显示长度
+	)
 
 	require.NoError(t, err)
 
@@ -84,9 +89,16 @@ func Test_Check_BpTree_Accuracy_mode1_preparation(t *testing.T) {
 // Test_Check_BpTree_Accuracy_mode1_execution 🧫 executes the test cases for Mode 1.
 func Test_Check_BpTree_Accuracy_mode1_execution(t *testing.T) {
 
-	test, _ := recordDateNode.ReadBytesInChunksWithProgress(
-		"Mode 1: Bulk Insert/Delete - Reading", utilhub.BrightCyan, 70, uint32(randomTotalCount), "mode0.do_not_open", 800, binary.LittleEndian,
+	test, err := recordDateNode.ReadBytesInChunksWithProgress(
+		uint32(randomTotalCount),
+		"mode0.do_not_open", 800,
+		binary.LittleEndian,
+		"Mode 1: Bulk Insert/Delete - Reading", // 进度条的标题
+		utilhub.BrightCyan,                     // 进度条的颜色
+		70,                                     // 要读取的文件名
 	)
+
+	require.NoError(t, err)
 
 	fmt.Println(len(test))
 

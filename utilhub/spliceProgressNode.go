@@ -17,11 +17,14 @@ import (
 
 // LinuxSpliceProgressStreamWrite is a function that writes data to a file using Linux splicing and displays a progress bar.
 func (fn FileNode) LinuxSpliceProgressStreamWrite(
-// [Inputs]
-	barTitle, barColor string,                                       // <----- for ProgressBar function.
-	filename string, fileFlag int, filePerm os.FileMode,             // <----- for LinuxSpliceStreamWrite function.
-	testDataSet []int64,                                             // <----- for Int64SliceToBlockBytes function.
-	order binary.ByteOrder, spliceBlockLength, spliceBlockWidth int, // <----- for Int64SliceToBlockBytes function.
+	// [Inputs]
+	// <----- original data
+	testDataSet []int64, // 原始资料
+	// <----- parameters for writing
+	filename string, fileFlag int, filePerm os.FileMode, // 写入资料要用到的参数
+	order binary.ByteOrder, spliceBlockLength, spliceBlockWidth int,
+	// <----- for ProgressBar function
+	barTitle, barColor string, barLength int, // 进度条参数
 ) error { // [Outputs]
 
 	// #################################################################################################
@@ -49,7 +52,7 @@ func (fn FileNode) LinuxSpliceProgressStreamWrite(
 	progressBar, err := NewProgressBar(
 		barTitle,                    // Progress bar title.
 		uint32(len(testDataSet)),    // Total number of operations.
-		70,                          // Progress bar width.
+		barLength,                   // Progress bar width.
 		WithTracking(5),             // Update interval.
 		WithTimeZone("Asia/Taipei"), // Time zone.
 		WithTimeControl(500),        // Update interval in milliseconds.
@@ -114,14 +117,19 @@ func (fn FileNode) LinuxSpliceProgressStreamWrite(
 
 // ReadBytesInChunksWithProgress is a function that reads data from a file by chunks and displays a progress bar.
 func (fn FileNode) ReadBytesInChunksWithProgress(
-// [Inputs]
-	barTitle, barColor string, barLength int, dataLength uint32, // <----- for ProgressBar function.
-	filename string, chunkSize int,                              // <----- for ReadBytesInChunks function.
-	order binary.ByteOrder,                                      // <----- for Int64SliceToBlockBytes function.
+	// [Inputs]
+	// <----- original data
+	dataLength uint32, // 资料长度
+	// <----- parameters for reading
+	filename string, // 档名
+	chunkSize int, // 快取大小
+	order binary.ByteOrder, // 端序
+	// <----- parameters for progress bar
+	barTitle, barColor string, barLength int,
 ) (
-// [Outputs]
-	testDataSet []int64, // <----- for testing.
-	err error,           // <----- for checking error.
+	// [Outputs]
+	testDataSet []int64,
+	err error,
 ) {
 	// #################################################################################################
 	// Initialize the progress bar. (准备进度条)

@@ -53,6 +53,8 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	// Creating a new slice to store the dataset, which will be tested.
 	dataSet := make([]int64, randomEvenCount, randomEvenCount)
 
+	fmt.Println("dataSet", len(dataSet))
+
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 1: Generate Test Data",            // Progress bar title.

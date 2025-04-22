@@ -14,25 +14,25 @@ import (
 )
 
 // =====================================================================================================================
-//                  ⚗️ Consistency Integrity Test (B Plus Tree)
+//                  ⚗️ Consistency Integrity Test ( [B Plus Tree] ) - B加树 主要测试
 // =====================================================================================================================
-// 🧪 The B Plus Tree unit test is designed to validate the tree’s consistency
-// and integrity through bulk data insertion and deletion.
+// 🧪 The [B Plus Tree] unit test is designed to validate the tree’s consistency
+// and integrity through bulk data insertion and deletion. (大量新增删除)
 // 🧪 The test begins by inserting a large volume of data into the tree,
 // followed by a complete deletion of all data, checking if the tree
-// returns to its initial empty state to verify correctness.
-// 🧪 Indexing errors in the B Plus Tree can lead to serious issues, such as
-// being unable to find specific data or failing to delete data properly.
-// 🧪 The test ensures the accuracy of indexing to prevent inconsistencies
-// that might result in data operation failures.
+// returns to its initial empty state to verify correctness. (最后树都要回到空状态)
+// 🧪 [Indexing errors] in the [B Plus Tree] can lead to serious issues, such as
+// being unable to find specific data or failing to delete data properly. (索引很重要)
+// 🧪 The test ensures the [accuracy] of indexing to prevent inconsistencies
+// that might result in data operation failures. (测试正确性)
 
-// ⚗️ This code defines basic constants used in the test.
+// ⚗️ This code defines basic constants used in the test. (一些基本设定)
 const (
 	// 🧪 recordPath is the path to store test records.
 	recordPath = "/home/tmp"
 )
 
-// ⚗️ This code defines three constants used for generating random numbers in a test.
+// ⚗️ This code defines three constants used for generating random numbers in a test. (测试参数调整)
 const (
 	// 🧪 randomTotalCount represents the number of elements to be generated for random testing.
 	randomTotalCount int64 = 7500000 // 20000000 // 147169280 // 7500000
@@ -64,8 +64,12 @@ var (
 // #################################################################################################
 // 🛠 Test_Check_BpTree_Accuracies is the most important test in the entire project.
 // It checks the consistency and integrity of the B Plus Tree by inserting and then deleting large data volumes.
+//
 // To run the test, run the following command:
-// `cd /home/panhong/go/src/github.com/panhongrainbow/algorithm/bptree; go clean -cache; go test -v . -timeout=0`
+//
+// cd /home/panhong/go/src/github.com/panhongrainbow/algorithm/bptree
+// go clean -cache
+// go test -v . -timeout=0 -run Test_Check_BpTree_Accuracies
 //
 // #################################################################################################
 
@@ -73,12 +77,16 @@ var (
 // to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
 func Test_Check_BpTree_Accuracies(t *testing.T) {
 
+	// Ensure that the path for the record node is not empty. If it is, an error message is provided to check the path creation process. (锚定不能为空)
 	require.NotEqual(t, "", recordNode.Path(), "record path could not be created; please check the path.")
 
+	// Ensure that the path for the record date node is not empty. If it is, an error message is provided to check the path creation process.
 	require.NotEqual(t, "", recordDateNode.Path(), "record sub path could not be created; please check the path.")
 
+	// Call the preparation function for checking B Plus Tree accuracy in mode 1.
 	Test_Check_BpTree_Accuracy_mode1_preparation(t)
 
+	// Call the execution function for checking B+ Tree accuracy in mode 1.
 	Test_Check_BpTree_Accuracy_mode1_execution(t)
 
 	testMode1Name := "Mode 1: Bulk Insert/Delete"
