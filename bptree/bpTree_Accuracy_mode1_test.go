@@ -13,8 +13,8 @@ import (
 // =====================================================================================================================
 //                  ⚗️ BpTree Accuracy Mode 1 (Test Mode)
 // These test cases are classified as preparation and execution.
-// Test_Check_BpTree_Accuracy_mode1_preparation prepares the test data for Mode 1. (这是准备)
-// Test_Check_BpTree_Accuracy_mode1_execution executes the test cases for Mode 1. (这是执行)
+// [Test_Check_BpTree_Accuracy_mode1_preparation] prepares the test data for [Mode 1]. (这是准备)
+// [Test_Check_BpTree_Accuracy_mode1_execution] executes the test cases for [Mode 1]. (这是执行)
 // =====================================================================================================================
 
 // Test_Check_BpTree_Accuracy_mode1_preparation 🧫 prepares the test data for Mode 1.
@@ -37,13 +37,14 @@ func Test_Check_BpTree_Accuracy_mode1_preparation(t *testing.T) {
 
 	// #################################################################################################
 	// Generate and validate test data. (产生测试数据)
-	// This is the most simple test case for testing the consistency and integrity of the B Plus Tree.
-	// The half of the data is positive numbers and the other half is negative numbers.
+	// This is the simplest test case for testing the consistency and integrity of the [B Plus Tree].
+	// The half of the data is [positive numbers], and the other half is [negative numbers]. (一半为正，一半为负)
 	// #################################################################################################
 
 	// Generate a random data set using the GenerateRandomSet method of BpTestModel1.
 	// This method generates a slice of random data for testing purposes.
-	// The half of the data is positive numbers and the other half is negative numbers.
+	// The half of the data is positive numbers, and the other half is negative numbers.
+	// 公式为: 最大值 max = 测试总数 total / 冲撞比例 collision_rate * 100 + 最小值 min
 	testDataSet, err := bptest1.GenerateRandomSet(1, 10)
 	require.NoError(t, err, "test data set could not be generated; please check the parameters.")
 
@@ -104,9 +105,9 @@ func Test_Check_BpTree_Accuracy_mode1_execution(t *testing.T) {
 
 	// #################################################################################################
 	// Decide the test method to execute.
-	// Mode Identifier Number : 0
-	// Mode Identifier Name   : Testing
-	// Mode Description       : Make a bulk insert and bulk delete to test the consistency and integrity of the B Plus Tree.
+	// Mode Identifier Number: 0
+	// Mode Identifier Name: Testing
+	// Mode Description: Make a bulk insert and bulk delete to test the consistency and integrity of the B Plus Tree.
 	// #################################################################################################
 
 	// Define a test mode for testing.

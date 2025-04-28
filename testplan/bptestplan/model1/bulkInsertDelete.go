@@ -21,7 +21,7 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
 ) ([]int64, error) {
 	// Validate RandomTotalCount to ensure it is not zero.
-	// I make sure that RandomTotalCount is not zero to order to enough data for testing.
+	// I make sure that RandomTotalCount is not zero to enough data for testing.
 	if model1.RandomTotalCount == 0 {
 		// Return an error if RandomTotalCount is zero.
 		return nil, errors.New("BpTestModel1.RandomTotalCount cannot be zero")
