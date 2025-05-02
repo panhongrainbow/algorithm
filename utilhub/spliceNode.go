@@ -78,16 +78,18 @@ func (fn FileNode) ReadBytesInChunks(filename string, chunkSize int) (<-chan []b
 			n, err := reader.Read(buffer)
 			// If data was read, send it on the dataChan.
 			if n > 0 {
-				dataChan <- buffer[:n]
+				// Read n bytes from some source into the buffer.
+				copied := make([]byte, n) // Create a new byte slice with length n.
+				copy(copied, buffer[:n])  // Copy the contents of buffer[:n] into the new slice to ensure data is independent.
+				dataChan <- copied        // Send the copied data into the channel to prevent future buffer modifications from affecting it.
+
+				// dataChan <- buffer[:n] // ❌ Incorrect: this sends a slice referencing the original buffer.
+				// If the buffer is reused (e.g., inside a loop),
+				// the data sent into the channel will be overwritten later, causing data corruption.
 			}
 			// Check for errors.
 			if err != nil && err.Error() == "EOF" {
 				// If the end of the file was reached, send the error on the errChan and return.
-				errChan <- err
-				return
-			}
-			if err != nil && err.Error() != "EOF" {
-				// If an error occurred while reading, send it on the errChan and return.
 				errChan <- err
 				return
 			}
