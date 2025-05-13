@@ -12,13 +12,14 @@ import (
 
 // =====================================================================================================================
 //                  ⚗️ BpTree Accuracy Mode 1 (Test Mode)
-// These test cases are classified as preparation and execution.
-// [Test_Check_BpTree_Accuracy_mode1_preparation] prepares the test data for [Mode 1]. (这是准备)
-// [Test_Check_BpTree_Accuracy_mode1_execution] executes the test cases for [Mode 1]. (这是执行)
+// These test cases are divided into three phases: preparation, Validating and execution.
+// [Test_Check_BpTree_Accuracy_mode1_generation] is responsible for generating the test data for [Mode 1]. (Preparation 产生)
+// [Test_Check_BpTree_Accuracy_mode1_check_test_data] verifies the integrity and correctness of the test data for [Mode 1]. (Validation 检查)
+// [Test_Check_BpTree_Accuracy_mode1_execution] runs the actual test cases for [Mode 1]. (Execution 执行)
 // =====================================================================================================================
 
-// Test_Check_BpTree_Accuracy_mode1_preparation 🧫 prepares the test data for Mode 1.
-func Test_Check_BpTree_Accuracy_mode1_preparation(t *testing.T) {
+// Test_Check_BpTree_Accuracy_mode1_generation 🧫 prepares the test data for [Mode 1].
+func Test_Check_BpTree_Accuracy_mode1_generation(t *testing.T) {
 
 	// #################################################################################################
 	// Create some new instances for generating test data, showing progress, and writing test records. (初始化)
@@ -41,20 +42,16 @@ func Test_Check_BpTree_Accuracy_mode1_preparation(t *testing.T) {
 	// The half of the data is [positive numbers], and the other half is [negative numbers]. (一半为正，一半为负)
 	// #################################################################################################
 
-	// Generate a random data set using the GenerateRandomSet method of BpTestModel1.
+	// Generate a random data set using the [GenerateRandomSet] method of BpTestModel1.
 	// This method generates a slice of random data for testing purposes.
 	// The half of the data is positive numbers, and the other half is negative numbers.
 	// 公式为: 最大值 max = 测试总数 total / 冲撞比例 collision_rate * 100 + 最小值 min
+	// Then Check [MaxInt64] to avoid overflow.
 	testDataSet, err := bptest1.GenerateRandomSet(1, 10)
 	require.NoError(t, err, "test data set could not be generated; please check the parameters.")
 
-	// Validate the generated data set using the CheckRandomSet method of BpTestModel1.
-	// This method checks the validity of the data set by comparing the positive and negative numbers.
-	err = bptest1.CheckRandomSet(testDataSet)
-	require.NoError(t, err, "test data set could not be validated; please check the data set.")
-
 	// #################################################################################################
-	// Set up some parameters for Linux Splicing and Data Writing. (设定写入参数)
+	// Set up some parameters for [Linux Splicing] and Data Writing. (设定写入参数)
 	// #################################################################################################
 
 	// -----> for setting up parameters.
@@ -69,7 +66,7 @@ func Test_Check_BpTree_Accuracy_mode1_preparation(t *testing.T) {
 	)
 
 	// #################################################################################################
-	// Initialize linux splice stream writer and show progress. (开始 SPLICE 写入)
+	// Initialize [Linux Splice Stream Writer] and show progress. (开始 SPLICE 写入)
 	// #################################################################################################
 
 	err = recordDateNode.LinuxSpliceProgressStreamWrite(
@@ -84,86 +81,84 @@ func Test_Check_BpTree_Accuracy_mode1_preparation(t *testing.T) {
 
 	require.NoError(t, err)
 
-	// Finish Writing and Reading in the next test case. (下一个测试再读取)
+	// Finish Checking the test data in the next test case. (下一个测试再檢查)
 }
 
-// Test_Check_BpTree_Accuracy_mode1_execution 🧫 executes the test cases for Mode 1.
-func Test_Check_BpTree_Accuracy_mode1_execution(t *testing.T) {
+// Test_Check_BpTree_Accuracy_mode1_check_test_data 🧫 checks the test data set for [Mode 1].
+func Test_Check_BpTree_Accuracy_mode1_check_test_data(t *testing.T) {
 
-	test, err := recordDateNode.ReadBytesInChunksWithProgress(
+	testDataSet, err := recordDateNode.ReadAllBytesWithProgress(
 		uint32(randomTotalCount),
 		"mode0.do_not_open", 800,
 		binary.LittleEndian,
-		"Mode 1: Bulk Insert/Delete - Reading", // 进度条的标题
-		utilhub.BrightCyan,                     // 进度条的颜色
-		70,                                     // 要读取的文件名
+		"Mode 1: Bulk Insert/Delete - check Test Data", // 进度条的标题
+		utilhub.BrightCyan,                             // 进度条的颜色
+		70,                                             // 要读取的文件名
 	)
 
-	require.NoError(t, err)
+	// -----> for Generating test data.
 
-	fmt.Println(len(test))
+	// Create a new instance of BpTestModel1 with the specified random total count.
+	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
 
-	// #################################################################################################
-	// Decide the test method to execute.
-	// Mode Identifier Number: 0
-	// Mode Identifier Name: Testing
-	// Mode Description: Make a bulk insert and bulk delete to test the consistency and integrity of the B Plus Tree.
-	// #################################################################################################
+	fmt.Println(len(testDataSet))
 
-	// Define a test mode for testing.
-	// testMode0Name := "Mode 0: Testing"
+	// Validate the generated data set using the [CheckRandomSet] method of BpTestModel1.
+	// This method checks the validity of the data set by comparing the positive and negative numbers.
+	err = bptest1.CheckRandomSet(testDataSet)
+	require.NoError(t, err, "test data set could not be validated; please check the data set.")
+}
 
-	// #################################################################################################
-	// 🛠 The main test execution starts here.
-	// #################################################################################################
+// Test_Check_BpTree_Accuracy_mode1_execution 🧫 runs the actual test cases for [Mode 1].
+func Test_Check_BpTree_Accuracy_mode1_execution(t *testing.T) {
+	dtatChan, errChan, finsishChan := recordDateNode.ReadBytesInChunksWithProgress("mode0.do_not_open", 8, binary.LittleEndian)
 
-	// Run the test mode.
-	// t.Run(testMode0Name, func(t *testing.T) {
+	root := NewBpTree(5)
 
-	// #################################################################################################
-	// 🛠
-	// #################################################################################################
+	// ▓▒░ Creating a progress bar with optional configurations.
+	progressBar, _ := utilhub.NewProgressBar(
+		"Mode 1: Execution   ",                   // Progress bar title.
+		uint32(randomTotalCount),                 // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+	)
 
-	/*
-			var result []int64
+	// ▓▒░ Start the progress bar printer in a separate goroutine.
+	go func() {
+		progressBar.ListenPrinter()
+	}()
 
-			dataChan2, errChan2 := recordDateNode.ReadBytesInChunks("mode0.do_not_open", 800)
-		Loop:
-			for {
-				select {
-				case err := <-errChan2:
-					if err == io.EOF {
-						break Loop
-					}
-					if err != nil && err != io.EOF {
-						assert.NoError(t, err)
-					}
-				case data := <-dataChan2:
-					data2, _ := utilhub.BytesToInt64Slice(data, binary.LittleEndian)
-					result = append(result, data2...)
-					fmt.Println(len(result))
+Loop:
+	for {
+		select {
+		case data := <-dtatChan:
+			for i := 0; i < len(data); i++ {
+				if data[i] >= 0 {
+					root.InsertValue(BpItem{Key: data[i]})
+					progressBar.UpdateBar()
+				}
+				if data[i] < 0 {
+					deleted, _, _, err := root.RemoveValue(BpItem{Key: -1 * data[i]})
+					require.True(t, deleted)
+					require.NoError(t, err)
+					progressBar.UpdateBar()
 				}
 			}
-
-			fmt.Println(result[0])
-	*/
-
-	/*
-		for i := 0; i < 10; i++ {
-			data, err := utilhub.BytesToInt64Slice(<-dataChan2, binary.LittleEndian)
-			require.NoError(t, err)
-			result = append(result, data...)
+		case err := <-errChan:
+			fmt.Println(err)
+		case <-finsishChan:
+			break Loop
 		}
-		fmt.Println(<-errChan2)
-	*/
+	}
 
-	// Check ...
-	// content, _ := os.ReadFile("/home/tmp/" + time.Now().Format("2006-01-02") + "/mode0.do_not_open")
-	// got, err := utilhub.BytesToInt64Slice(content[0:33], binary.LittleEndian)
-	// fmt.Println(got, err)
-	// fmt.Println(got[0:10], got[len(got)/2:len(got)/2+10])
-	// fmt.Println(len(got))
-	// err = bptest1.CheckRandomSet(got)
-	// require.NoError(t, err)
-	// })
+	// ▓▒░ Mark the progress bar as complete.
+	progressBar.Complete()
+
+	// ▓▒░ Wait for the progress bar printer to stop.
+	<-progressBar.WaitForPrinterStop()
+
+	root.root.Print()
 }

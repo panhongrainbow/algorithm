@@ -7,6 +7,7 @@ import (
 	"github.com/panhongrainbow/algorithm/randhub"
 	bptestUtilhub "github.com/panhongrainbow/algorithm/testplan/bptestplan/utilhub"
 	"github.com/panhongrainbow/algorithm/utilhub"
+	"math"
 )
 
 // BpTestModel1 🧮 represents a test model for B Plus Tree testing.
@@ -32,6 +33,12 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	if err != nil {
 		// Return a wrapped error if CalculateRandomMax fails.
 		return nil, fmt.Errorf("failed to calculate random max: %w", err)
+	}
+
+	// Ensure randomMax is within valid limits to prevent overflow.
+	// This check is necessary to ensure the generated numbers can be represented as int64. (检查是否溢出)
+	if randomMax > math.MaxInt64 {
+		return nil, fmt.Errorf("randomMax must be less than %d, got: %d", math.MaxInt64, randomMax)
 	}
 
 	// Ensure randomEvenCount is at least 2 to maintain data integrity.

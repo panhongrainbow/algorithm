@@ -12,7 +12,8 @@ import (
 // [SpliceProgressNode] are tools that combine [SpliceNode Package] and [ProgressBar Package]. (混合工具，锚钉文件 和 进度条 合拼)
 // These functions are classified into two types, one for writing data to a file using Linux splicing and another for reading data from a file by chunks.
 // LinuxSpliceProgressStreamWrite is for writing data to a file using Linux splicing and displaying a progress bar. (这是写入部份)
-// ReadBytesInChunksWithProgress is for reading data from a file by chunks and displaying a progress bar. (这是读取部份)
+// ReadAllBytesWithProgress reads the entire content of a file into memory and displays a progress bar indicating the read progress.
+// ReadBytesInChunksWithProgress reads data from a file in chunks, displaying a progress bar as it processes each chunk.
 // =====================================================================================================================
 
 // LinuxSpliceProgressStreamWrite is a function that writes data to a file using Linux splicing and displays a progress bar.
@@ -115,8 +116,8 @@ func (fn FileNode) LinuxSpliceProgressStreamWrite(
 	return nil
 }
 
-// ReadBytesInChunksWithProgress is a function that reads data from a file by chunks and displays a progress bar.
-func (fn FileNode) ReadBytesInChunksWithProgress(
+// ReadAllBytesWithProgress is a function that reads the entire content of a file into memory and displays a progress bar indicating the read progress.
+func (fn FileNode) ReadAllBytesWithProgress(
 	// [Inputs]
 	// <----- original data
 	dataLength uint32, // 资料长度
@@ -201,4 +202,53 @@ Loop:
 
 	// Return the result if there is no error.
 	return result, nil
+}
+
+// ReadBytesInChunksWithProgress is a function that reads data from a file by chunks.
+func (fn FileNode) ReadBytesInChunksWithProgress(
+	// [Inputs]
+	// <----- parameters for reading
+	filename string, // 档名
+	chunkSize int, // 快取大小
+	order binary.ByteOrder, // 端序
+) (
+	// [Outputs]
+	output chan []int64,
+	errOutput chan error,
+	finishChan chan struct{},
+) {
+	output = make(chan []int64, chunkSize/8)
+	errOutput = make(chan error)
+	finishChan = make(chan struct{})
+
+	dataChan, errChan := fn.ReadBytesInChunks(filename, chunkSize)
+
+	// Continuously read data from the file until the entire data set is read.
+	go func() {
+	Loop:
+		for {
+			// Select from the data and error channels to handle incoming data or errors.
+			select {
+			case err := <-errChan:
+				// If an EOF error is received, break out of the loop to indicate the end of the data set.
+				if err == io.EOF {
+					finishChan <- struct{}{}
+					break Loop
+				}
+				// If a non-EOF error occurs, return an error to indicate an unexpected issue during reading.
+				if err != nil && err != io.EOF {
+					errOutput <- fmt.Errorf("unexpected error while reading: %w", err)
+				}
+			case rawData := <-dataChan:
+				// Convert the raw data to a slice of int64 values using the provided byte order.
+				data, _ := BytesToInt64Slice(rawData, order)
+
+				// Append the converted data to the result slice.
+				output <- data
+			}
+		}
+	}()
+
+	// Return the result if there is no error.
+	return
 }

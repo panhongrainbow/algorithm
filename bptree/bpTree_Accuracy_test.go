@@ -84,10 +84,14 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 	require.NotEqual(t, "", recordDateNode.Path(), "record sub path could not be created; please check the path.")
 
 	// Call the preparation function for checking B Plus Tree accuracy in mode 1.
-	Test_Check_BpTree_Accuracy_mode1_preparation(t)
+	Test_Check_BpTree_Accuracy_mode1_generation(t)
 
-	// Call the execution function for checking B+ Tree accuracy in mode 1.
+	// Call the execution function for checking B Plus Tree accuracy in mode 1.
+	Test_Check_BpTree_Accuracy_mode1_check_test_data(t)
+
 	Test_Check_BpTree_Accuracy_mode1_execution(t)
+
+	// return
 
 	testMode1Name := "Mode 1: Bulk Insert/Delete"
 	t.Run(testMode1Name, func(t *testing.T) {
@@ -220,11 +224,11 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 2: Randomized Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                             // Total number of operations.
-				70,                                                                      // Progress bar width.
-				utilhub.WithTracking(5),                                                 // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                     // Time zone.
-				utilhub.WithTimeControl(500),                                            // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                                 // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
@@ -337,11 +341,11 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 3: Gradual Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                          // Total number of operations.
-				70,                                                                   // Progress bar width.
-				utilhub.WithTracking(5),                                              // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                  // Time zone.
-				utilhub.WithTimeControl(500),                                         // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                              // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
@@ -454,11 +458,11 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 4: Gradual Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                          // Total number of operations.
-				70,                                                                   // Progress bar width.
-				utilhub.WithTracking(5),                                              // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                  // Time zone.
-				utilhub.WithTimeControl(500),                                         // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                              // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
