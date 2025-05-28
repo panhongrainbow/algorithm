@@ -73,8 +73,14 @@ func setFieldValue(field reflect.Value, value string) error {
 	}
 
 	switch field.Kind() {
-	case reflect.String:
-		field.SetString(value)
+	case reflect.Invalid:
+		return errors.New("invalid field kind")
+	case reflect.Bool:
+		boolVal, err := strconv.ParseBool(value)
+		if err != nil {
+			return err
+		}
+		field.SetBool(boolVal)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		intVal, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
@@ -93,12 +99,25 @@ func setFieldValue(field reflect.Value, value string) error {
 			return err
 		}
 		field.SetFloat(floatVal)
-	case reflect.Bool:
-		boolVal, err := strconv.ParseBool(value)
-		if err != nil {
-			return err
-		}
-		field.SetBool(boolVal)
+	case reflect.Complex64, reflect.Complex128:
+		return errors.New("unsupported field type: complex")
+	case reflect.Array:
+		return errors.New("unsupported field type: array")
+	case reflect.Chan:
+		return errors.New("unsupported field type: channel")
+	case reflect.Func:
+		return errors.New("unsupported field type: function")
+	case reflect.Interface:
+		return errors.New("unsupported field type: interface")
+	case reflect.Map:
+		return errors.New("unsupported field type: map")
+	case reflect.Pointer:
+		return errors.New("unsupported field type: pointer")
+	case reflect.Struct:
+		return errors.New("unsupported field type: struct")
+	case reflect.UnsafePointer:
+	case reflect.String:
+		field.SetString(value)
 	case reflect.Slice:
 		items := strings.Split(value, ",")
 		slice := reflect.MakeSlice(field.Type(), len(items), len(items))
