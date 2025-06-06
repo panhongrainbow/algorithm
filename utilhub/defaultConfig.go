@@ -36,6 +36,58 @@ func Load(filePath string, cfg DefaultConfig) error {
 	return nil
 }
 
+func OverWrite(filePath string, cfg DefaultConfig) error {
+	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
+		return errors.New("config must be a pointer to a struct")
+	}
+
+	if err := applyDefaults(cfg); err != nil {
+		return err
+	}
+
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+	
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func loadDefaults(cfg interface{}) error {
+	v := reflect.ValueOf(cfg).Elem()
+	t := v.Type()
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldType := t.Field(i)
+
+		if field.Kind() == reflect.Struct {
+			if err := applyDefaults(field.Addr().Interface()); err != nil {
+				return err
+			}
+			continue
+		}
+
+		defaultTag := fieldType.Tag.Get("default")
+		if defaultTag == "" {
+			continue
+		}
+
+		if !reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()) {
+			continue
+		}
+
+		if err := setFieldValue(field, defaultTag); err != nil {
+			return fmt.Errorf("field %s: %v", fieldType.Name, err)
+		}
+	}
+	return nil
+}
+
 func applyDefaults(cfg interface{}) error {
 	v := reflect.ValueOf(cfg).Elem()
 	t := v.Type()
@@ -102,7 +154,16 @@ func setFieldValue(field reflect.Value, value string) error {
 	case reflect.Complex64, reflect.Complex128:
 		return errors.New("unsupported field type: complex")
 	case reflect.Array:
-		return errors.New("unsupported field type: array")
+		items := strings.Split(value, ",")
+		if len(items) != field.Len() {
+			return fmt.Errorf("array length mismatch: expected %d, got %d", field.Len(), len(items))
+		}
+		for i := 0; i < field.Len(); i++ {
+			item := strings.TrimSpace(items[i])
+			if err := setFieldValue(field.Index(i), item); err != nil {
+				return err
+			}
+		}
 	case reflect.Chan:
 		return errors.New("unsupported field type: channel")
 	case reflect.Func:
