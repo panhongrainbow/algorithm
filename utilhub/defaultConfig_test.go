@@ -8,24 +8,11 @@ import (
 )
 
 func TestDefaultConfig(t *testing.T) {
-	type appConfig struct {
-		Server struct {
-			Host string `json:"host" default:"localhost"`
-			Port int    `json:"port" default:"8080"`
-		} `json:"server"`
-		Database struct {
-			URL      string `json:"url" default:"postgres1://localhost:5432/mydb"`
-			Username string `json:"username" default:"admin"`
-			Password string `json:"password" default:"password"`
-			PoolSize int    `json:"pool_size" default:"10"`
-		} `json:"database"`
-		Features []string `json:"features" default:"feature1,feature2,feature3"`
-	}
 
-	cfg := &appConfig{}
+	cfg := &testConfig{}
 
 	// 加载配置
-	if err := Load("/home/panhong/go/src/github.com/panhongrainbow/algorithm/utilhub/default_config2.json", cfg); err != nil {
+	if err := ParseDefault("/home/panhong/go/src/github.com/panhongrainbow/algorithm/utilhub/default_config2.json", cfg); err != nil {
 		panic(err)
 	}
 
