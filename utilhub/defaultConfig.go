@@ -10,150 +10,131 @@ import (
 	"strings"
 )
 
-type DefaultConfig interface{}
+// =====================================================================================================================
+//                  🛠️ Default Config (Tool)
+// Default Config is a tool that tags struct fields with default values.
+// (DefaultConfig是一个工具,用于标记结构体字段的默认值)
+// =====================================================================================================================
 
-func Load(filePath string, cfg DefaultConfig) error {
+// ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
+// Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
+func ParseDefault(filePath string, cfg DefaultConfig) error {
+	// Check if the config is a pointer to a struct.
 	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
 		return errors.New("config must be a pointer to a struct")
 	}
 
-	if err := applyDefaults(cfg); err != nil {
-		return err
-	}
-
+	// Read the default configuration from the file.
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil
+			// Do nothing; the tag will be handled later by applyDefaults. (之后由 applyDefaults 取 tag 决定)
 		}
 		return err
 	}
 
+	// Unmarshal the JSON data into the provided config and overwrite the default values.
 	if err := json.Unmarshal(file, cfg); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func OverWrite(filePath string, cfg DefaultConfig) error {
-	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
-		return errors.New("config must be a pointer to a struct")
-	}
-
+	// [applyDefaults] applies the default values from struct tags to the provided config. (主要逻辑)
 	if err := applyDefaults(cfg); err != nil {
 		return err
 	}
 
-	data, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		return err
-	}
-	
-	if err := os.WriteFile(filePath, data, 0644); err != nil {
-		return err
-	}
-
+	// No error occurred, return nil.
 	return nil
 }
 
-func loadDefaults(cfg interface{}) error {
-	v := reflect.ValueOf(cfg).Elem()
-	t := v.Type()
-
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		fieldType := t.Field(i)
-
-		if field.Kind() == reflect.Struct {
-			if err := applyDefaults(field.Addr().Interface()); err != nil {
-				return err
-			}
-			continue
-		}
-
-		defaultTag := fieldType.Tag.Get("default")
-		if defaultTag == "" {
-			continue
-		}
-
-		if !reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()) {
-			continue
-		}
-
-		if err := setFieldValue(field, defaultTag); err != nil {
-			return fmt.Errorf("field %s: %v", fieldType.Name, err)
-		}
-	}
-	return nil
-}
-
+// applyDefaults ⛏️ applies the default values from struct tags to the provided config.
 func applyDefaults(cfg interface{}) error {
+	// Get the reflect.Value of the passed-in struct and dereference it.
 	v := reflect.ValueOf(cfg).Elem()
+
+	// Get the type information of the struct.
 	t := v.Type()
 
+	// Iterate through all fields in the struct.
 	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		fieldType := t.Field(i)
+		field := v.Field(i)     // This will be used later to get the actual value of the field. (在这里获取实际值)
+		fieldType := t.Field(i) // This will be used later to get the default tag value. (在这里获取预设值)
 
+		// If the field is a struct, recursively apply defaults to it.
 		if field.Kind() == reflect.Struct {
-			if err := applyDefaults(field.Addr().Interface()); err != nil {
+			if err := applyDefaults(field.Addr().Interface()); err != nil { // (这里是递归)
 				return err
 			}
 			continue
 		}
 
+		// Get the "default" tag value from the field.
 		defaultTag := fieldType.Tag.Get("default")
 		if defaultTag == "" {
 			continue
 		}
 
+		// Skip setting the value with defaultTag if it has already been loaded from the config file.
+		// (如果之前已经从配置文件中读取到了值，就跳过，不再使用 defaultTag 设置)
 		if !reflect.DeepEqual(field.Interface(), reflect.Zero(field.Type()).Interface()) {
 			continue
 		}
 
+		// Set the field to the default value from the tag.
 		if err := setFieldValue(field, defaultTag); err != nil {
 			return fmt.Errorf("field %s: %v", fieldType.Name, err)
 		}
 	}
+
+	// No error occurred, return nil.
 	return nil
 }
 
+// setFieldValue ⛏️ sets the value of a field based on its type.
 func setFieldValue(field reflect.Value, value string) error {
+	// Return an error if the field cannot be set.
 	if !field.CanSet() {
 		return errors.New("cannot set field value")
 	}
 
+	// Determine the kind of the field and handle accordingly.
 	switch field.Kind() {
 	case reflect.Invalid:
+		// Return an error if the field kind is invalid.
 		return errors.New("invalid field kind")
 	case reflect.Bool:
+		// Parse and set a boolean value.
 		boolVal, err := strconv.ParseBool(value)
 		if err != nil {
 			return err
 		}
 		field.SetBool(boolVal)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		// Parse and set an integer value.
 		intVal, err := strconv.ParseInt(value, 10, 64)
 		if err != nil {
 			return err
 		}
 		field.SetInt(intVal)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		// Parse and set an unsigned integer value.
 		uintVal, err := strconv.ParseUint(value, 10, 64)
 		if err != nil {
 			return err
 		}
 		field.SetUint(uintVal)
 	case reflect.Float32, reflect.Float64:
+		// Parse and set a floating-point number.
 		floatVal, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return err
 		}
 		field.SetFloat(floatVal)
 	case reflect.Complex64, reflect.Complex128:
-		return errors.New("unsupported field type: complex")
+		// Complex numbers are not supported.
+		return errors.New("unsupported field type: complex") // (先不管 复数)
 	case reflect.Array:
+		// Split the string into items and set each array element.
 		items := strings.Split(value, ",")
 		if len(items) != field.Len() {
 			return fmt.Errorf("array length mismatch: expected %d, got %d", field.Len(), len(items))
@@ -165,21 +146,31 @@ func setFieldValue(field reflect.Value, value string) error {
 			}
 		}
 	case reflect.Chan:
+		// Channels are not supported.
 		return errors.New("unsupported field type: channel")
 	case reflect.Func:
+		// Functions are not supported.
 		return errors.New("unsupported field type: function")
 	case reflect.Interface:
+		// Interfaces are not supported.
 		return errors.New("unsupported field type: interface")
 	case reflect.Map:
+		// Maps are not supported.
 		return errors.New("unsupported field type: map")
 	case reflect.Pointer:
+		// Pointers are not supported.
 		return errors.New("unsupported field type: pointer")
 	case reflect.Struct:
+		// Structs are not supported.
 		return errors.New("unsupported field type: struct")
 	case reflect.UnsafePointer:
+		// UnsafePointer are not supported.
+		return errors.New("unsupported field type: UnsafePointer")
 	case reflect.String:
+		// Set a string value.
 		field.SetString(value)
 	case reflect.Slice:
+		// Split the string into items and set each slice element.
 		items := strings.Split(value, ",")
 		slice := reflect.MakeSlice(field.Type(), len(items), len(items))
 		for i, item := range items {
@@ -190,7 +181,36 @@ func setFieldValue(field reflect.Value, value string) error {
 		}
 		field.Set(slice)
 	default:
+		// Return an error for unsupported field types.
 		return fmt.Errorf("unsupported field type: %s", field.Kind())
 	}
+	// Return nil to indicate the value was successfully set.
+	return nil
+}
+
+// OverWrite2file ⛏️ overwrites the default configuration from struct tags and applies it to the file.
+func OverWrite2file(filePath string, cfg DefaultConfig) error {
+	// Check if the config is a pointer to a struct.
+	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
+		return errors.New("config must be a pointer to a struct")
+	}
+
+	// Apply default values to any unset fields in the config.
+	if err := applyDefaults(cfg); err != nil {
+		return err
+	}
+
+	// Marshal the config into indented JSON format.
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	// Write the JSON data to the specified file path.
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		return err
+	}
+
+	// Return nil to indicate the operation completed successfully.
 	return nil
 }
