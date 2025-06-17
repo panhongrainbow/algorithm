@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -16,9 +18,25 @@ import (
 // (DefaultConfig是一个工具,用于标记结构体字段的默认值)
 // =====================================================================================================================
 
-// ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
+func ParseDefault(cfg DefaultConfig) error {
+	// Get the default configuration directory.
+	path, err := GetDefaultConfigDir()
+	if err != nil {
+		return err
+	}
+
+	// Get the struct name to use as the filename.
+	file, err := GetDefaultStructName(&cfg)
+	if err != nil {
+		return err
+	}
+
+	return _ParseDefault(filepath.Join(path, file+".json"), cfg)
+}
+
+// _ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
 // Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
-func ParseDefault(filePath string, cfg DefaultConfig) error {
+func _ParseDefault(filePath string, cfg DefaultConfig) error {
 	// Check if the config is a pointer to a struct.
 	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
 		return errors.New("config must be a pointer to a struct")
@@ -188,8 +206,26 @@ func setFieldValue(field reflect.Value, value string) error {
 	return nil
 }
 
-// OverWrite2file ⛏️ overwrites the default configuration from struct tags and applies it to the file.
-func OverWrite2file(filePath string, cfg DefaultConfig) error {
+// defaultConfig2file ⛏️ saves the default configuration to a JSON file.
+func defaultConfig2file(cfg DefaultConfig, overwrite bool) error {
+	// Get the default configuration directory.
+	path, err := GetDefaultConfigDir()
+	if err != nil {
+		return err
+	}
+
+	// Get the struct name to use as the filename.
+	file, err := GetDefaultStructName(&cfg)
+	if err != nil {
+		return err
+	}
+
+	// Construct the full file path and save the configuration.
+	return _defaultConfig2file(cfg, filepath.Join(path, file+".json"), overwrite)
+}
+
+// _defaultConfig2file ⛏️ overwrites the default configuration from struct tags and applies it to the specific file.
+func _defaultConfig2file(cfg DefaultConfig, filePath string, overwrite bool) error {
 	// Check if the config is a pointer to a struct.
 	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
 		return errors.New("config must be a pointer to a struct")
@@ -206,11 +242,47 @@ func OverWrite2file(filePath string, cfg DefaultConfig) error {
 		return err
 	}
 
-	// Write the JSON data to the specified file path.
-	if err := os.WriteFile(filePath, data, 0644); err != nil {
-		return err
+	// If overwrite is true, write the JSON data to the specified file path.
+	if overwrite {
+		// Write the JSON data to the specified file path.
+		if err := os.WriteFile(filePath, data, 0644); err != nil {
+			return err
+		}
 	}
 
 	// Return nil to indicate the operation completed successfully.
 	return nil
+}
+
+// GetDefaultStructName ⛏️ retrieves the name of the struct.
+func GetDefaultStructName(cfg DefaultConfig) (string, error) {
+	// Check if the config is a pointer to a struct.
+	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
+		return "", errors.New("config must be a pointer to a struct")
+	}
+
+	// Get the name of the struct.
+	v := reflect.ValueOf(cfg).Elem()
+
+	// Return the name of the struct.
+	return v.Type().Name(), nil
+}
+
+// GetDefaultConfigDir ⛏️ retrieves the absolute path to the algorithm configuration directory
+func GetDefaultConfigDir() (string, error) {
+	// Get the caller's file path (this file).
+	_, callerPath, _, _ := runtime.Caller(0)
+
+	// Convert to absolute path.
+	utilhubPath, err := filepath.Abs(callerPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path: %w", err)
+	}
+
+	// Split path to find algorithm root and join with config directory.
+	paths := strings.Split(utilhubPath, "algorithm")
+	configPath := filepath.Join(paths[0], "algorithm", "config")
+
+	// Return absolute config path.
+	return configPath, nil
 }

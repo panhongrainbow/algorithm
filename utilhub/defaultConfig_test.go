@@ -9,18 +9,14 @@ import (
 
 func TestDefaultConfig(t *testing.T) {
 
-	cfg := &testConfig{}
+	cfg := &BptreeUnitTestConfig{}
 
 	// 加载配置
-	if err := ParseDefault("/home/panhong/go/src/github.com/panhongrainbow/algorithm/utilhub/default_config2.json", cfg); err != nil {
+	if err := ParseDefault(cfg); err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Server: %s:%d\n", cfg.Server.Host, cfg.Server.Port)
-	fmt.Printf("Database: %s (pool: %d)\n", cfg.Database.URL, cfg.Database.PoolSize)
-	fmt.Printf("Features: %v\n", cfg.Features)
-
-	OverWrite("/home/panhong/go/src/github.com/panhongrainbow/algorithm/utilhub/default_config1.json", cfg)
+	fmt.Println(cfg)
 }
 
 func Test_SetFieldValue(t *testing.T) {
