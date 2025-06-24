@@ -18,9 +18,10 @@ import (
 // (DefaultConfig是一个工具,用于标记结构体字段的默认值)
 // =====================================================================================================================
 
+// ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
 func ParseDefault(cfg DefaultConfig) error {
 	// Get the default configuration directory.
-	path, err := GetDefaultConfigDir()
+	path, err := GetProjectDir(ProjectName + "config")
 	if err != nil {
 		return err
 	}
@@ -31,6 +32,7 @@ func ParseDefault(cfg DefaultConfig) error {
 		return err
 	}
 
+	// Return the result of _ParseDefault.
 	return _ParseDefault(filepath.Join(path, file+".json"), cfg)
 }
 
@@ -209,7 +211,7 @@ func setFieldValue(field reflect.Value, value string) error {
 // defaultConfig2file ⛏️ saves the default configuration to a JSON file.
 func defaultConfig2file(cfg DefaultConfig, overwrite bool) error {
 	// Get the default configuration directory.
-	path, err := GetDefaultConfigDir()
+	path, err := GetProjectDir("algorithm/config")
 	if err != nil {
 		return err
 	}
@@ -268,12 +270,12 @@ func GetDefaultStructName(cfg DefaultConfig) (string, error) {
 	return v.Type().Name(), nil
 }
 
-// GetDefaultConfigDir ⛏️ retrieves the absolute path to the algorithm configuration directory
-func GetDefaultConfigDir() (string, error) {
+// GetProjectDir ⛏️ retrieves the absolute path to the algorithm project's subdirectory.
+func GetProjectDir(subDirs string) (string, error) {
 	// Get the caller's file path (this file).
 	_, callerPath, _, _ := runtime.Caller(0)
 
-	// Convert to absolute path.
+	// Convert to an absolute path.
 	utilhubPath, err := filepath.Abs(callerPath)
 	if err != nil {
 		return "", fmt.Errorf("failed to get absolute path: %w", err)
@@ -281,8 +283,8 @@ func GetDefaultConfigDir() (string, error) {
 
 	// Split path to find algorithm root and join with config directory.
 	paths := strings.Split(utilhubPath, "algorithm")
-	configPath := filepath.Join(paths[0], "algorithm", "config")
+	configPath := filepath.Join(paths[0], subDirs)
 
-	// Return absolute config path.
+	// Return an absolute config path.
 	return configPath, nil
 }
