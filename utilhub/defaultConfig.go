@@ -32,13 +32,13 @@ func ParseDefault(cfg DefaultConfig) error {
 		return err
 	}
 
-	// Return the result of _ParseDefault.
-	return _ParseDefault(filepath.Join(path, file+".json"), cfg)
+	// Return the result of _parseDefault.
+	return _parseDefault(filepath.Join(path, file+".json"), cfg)
 }
 
-// _ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
+// _parseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
 // Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
-func _ParseDefault(filePath string, cfg DefaultConfig) error {
+func _parseDefault(filePath string, cfg DefaultConfig) error {
 	// Check if the config is a pointer to a struct.
 	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
 		return errors.New("config must be a pointer to a struct")
