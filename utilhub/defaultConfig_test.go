@@ -1,7 +1,6 @@
 package utilhub
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/require"
 	"path/filepath"
 	"reflect"
@@ -109,28 +108,144 @@ func Test_SetFieldValue(t *testing.T) {
 	}
 }
 
+// Test_DefaultConfig validates configuration loading logic by:
+// (1) Generating default configs to JSON,
+// (2) Verifying file parsing into structs,
+// (3) Checking field-level defaults, and
+// (4) Testing value overrides. The mock _parseDefault isolates file operations,
+// while ParseDefault's production-ready version would handle advanced binding.
 func Test_DefaultConfig(t *testing.T) {
-	cfg := &BptreeUnitTestConfig{}
+	cfg := &testConfig{}
 
-	// Get the default configuration directory.
-	path, err := GetProjectDir(filepath.Join(ProjectName, "/utilhub/test_defaultConfig"))
+	// Retrieve the default configuration directory path.
+	defaultPath, err := GetProjectDir(filepath.Join(ProjectName, "/temp/test_defaultConfig"))
 	require.NoError(t, err)
 
-	// Get the struct name to use as the filename.
-	file, err := GetDefaultStructName(cfg)
+	// Retrieve the modified configuration directory path.
+	modifiedPath, err := GetProjectDir(filepath.Join(ProjectName, "/temp/test_modified_defaultConfig"))
 	require.NoError(t, err)
 
-	err = _defaultConfig2file(cfg, filepath.Join(path, file+".json"), true)
+	// Get the struct name to be used as the filename.
+	fileName, err := GetDefaultStructName(cfg)
 	require.NoError(t, err)
 
-	return
-
-	err = _ParseDefault(path+"/"+file+".json", cfg)
+	// Save the default configuration to a JSON file in the specified test directory.
+	err = _defaultConfig2file(cfg, filepath.Join(defaultPath, fileName+".json"), true)
 	require.NoError(t, err)
 
-	if err := ParseDefault(cfg); err != nil {
-		panic(err)
-	}
+	// Initialize a FileNode instance for directory operations.
+	fm := FileNode{}
+	// Create the default directory if it doesn't exist.
+	err = fm.MkDir(defaultPath).Error()
+	// Navigate to the default directory.
+	fm = fm.Goto(defaultPath)
+	require.NoError(t, err)
+	// List all files in the default directory.
+	_, fileList, err := fm.List()
+	require.NoError(t, err)
+	// Verify only the expected JSON file exists in the directory.
+	require.Equal(t, []string{fileName + ".json"}, fileList)
 
-	fmt.Println(cfg)
+	/*
+		_parseDefault is an internal mock version of ParseDefault, used exclusively in test environments.
+		The ParseDefault function provides a convenient way to automatically associate a struct with its configuration file and
+		load default values upon initialization.
+
+		_parseDefault 是 ParseDefault 在测试环境下的模拟实现，主要用于单元测试隔离。
+		ParseDefault 作为配置加载的核心方法，支持声明式配置绑定 - 只需传入结构体实例，即可自动关联同名配置文件并完成默认值注入。
+	*/
+
+	// Parse the default configuration from the JSON file into the struct.
+	err = _parseDefault(defaultPath+"/"+fileName+".json", cfg) //
+	require.NoError(t, err)
+
+	/*
+		This comment block shows the expected JSON structure.
+		The configuration includes server, database, and features sections.
+		Each section contains specific fields with default values.
+	*/
+
+	/*
+		{
+		  "server": {
+		    "host": "localhost",
+		    "port": 8080
+		  },
+		  "database": {
+		    "url": "postgres1://localhost:5432/mydb",
+		    "username": "admin",
+		    "password": "password",
+		    "pool_size": 10
+		  },
+		  "features": [
+		    "feature1",
+		    "feature2",
+		    "feature3"
+		  ]
+		}
+	*/
+
+	// Reparse the same configuration file to ensure consistency.
+	err = _parseDefault(defaultPath+"/"+fileName+".json", cfg)
+	require.NoError(t, err)
+
+	// Validate all server-related fields match expected defaults.
+	require.Equal(t, "localhost", cfg.Server.Host)
+	require.Equal(t, 8080, cfg.Server.Port)
+	// Validate all database-related fields match expected defaults.
+	require.Equal(t, "postgres1://localhost:5432/mydb", cfg.Database.URL)
+	require.Equal(t, "admin", cfg.Database.Username)
+	require.Equal(t, "password", cfg.Database.Password)
+	require.Equal(t, 10, cfg.Database.PoolSize)
+	// Validate the feature list matches expected defaults.
+	require.Equal(t, []string{"feature1", "feature2", "feature3"}, cfg.Features)
+
+	/*
+		This comment block shows the modified JSON structure.
+		The modified configuration contains different values for most fields.
+		Note the pool_size field is intentionally omitted to use the default value.
+	*/
+
+	/*
+		{
+		  "server": {
+		    "host": "product",
+		    "port": 8085
+		  },
+		  "database": {
+		    "url": "postgres2://localhost:5432/newdb",
+		    "username": "user",
+		    "password": "12345"
+			"pool_size": 20 // Remove this field in the modified json file to use the default value.
+		  },
+		  "features": [
+		    "feature5",
+		    "feature6",
+		    "feature7"
+		  ]
+		}
+	*/
+
+	// Parse the modified configuration from its JSON file.
+	err = _parseDefault(modifiedPath+"/"+fileName+".json", cfg)
+	require.NoError(t, err)
+
+	// Validate server fields now reflect the modified values.
+	require.Equal(t, "product", cfg.Server.Host)
+	require.Equal(t, 8085, cfg.Server.Port)
+	// Validate database fields reflect modifications while pool size remains default.
+	require.Equal(t, "postgres2://localhost:5432/newdb", cfg.Database.URL)
+	require.Equal(t, "user", cfg.Database.Username)
+	require.Equal(t, "12345", cfg.Database.Password)
+	require.Equal(t, 10, cfg.Database.PoolSize)
+	// Validate the feature list now shows modified values.
+	require.Equal(t, []string{"feature5", "feature6", "feature7"}, cfg.Features)
+
+	// Clean up by removing the test JSON file.
+	err = fm.RemoveFile(defaultPath, fileName+".json")
+	require.NoError(t, err)
+	// Verify the directory is now empty.
+	_, fileList, err = fm.List()
+	require.NoError(t, err)
+	require.Equal(t, []string(nil), fileList)
 }

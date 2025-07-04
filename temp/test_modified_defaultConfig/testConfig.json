@@ -1,0 +1,16 @@
+{
+  "server": {
+    "host": "product",
+    "port": 8085
+  },
+  "database": {
+    "url": "postgres2://localhost:5432/newdb",
+    "username": "user",
+    "password": "12345"
+  },
+  "features": [
+    "feature5",
+    "feature6",
+    "feature7"
+  ]
+}
