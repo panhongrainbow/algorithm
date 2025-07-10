@@ -28,8 +28,8 @@ import (
 
 // ⚗️ This code defines basic constants used in the test. (一些基本设定)
 const (
-	// 🧪 recordPath is the path to store test records.
-	recordPath = "/home/tmp"
+// 🧪 recordPath is the path to store test records.
+// recordPath = "/home/tmp"
 )
 
 // ⚗️ This code defines three constants used for generating random numbers in a test. (测试参数调整)
@@ -53,11 +53,15 @@ const (
 // Then combine the record path with the current time to generate a unique record path.
 // #################################################################################################
 var (
-	// Navigate to the record path and create a new directory for the current date.
-	recordNode1 = utilhub.FileNode{}
-	recordNode  = recordNode1.Goto(recordPath)
+	// 🧪 create an bptreeUnitTestConfig struct to store the configuration for the B Plus Tree unit test.
+	bptreeUnitTestcfg = utilhub.BptreeUnitTestConfig{}
+	err               = utilhub.ParseDefault(&bptreeUnitTestcfg)
 
-	// Create a new directory for the current date under the record path.
+	// 🧪 Navigate to the record path and create a new directory for the current date.
+	recordNode1 = utilhub.FileNode{}
+	recordNode  = recordNode1.Goto(bptreeUnitTestcfg.Record.TestRecordPath)
+
+	// 🧪 Create a new directory for the current date under the record path.
 	recordDateNode = recordNode.MkDir(time.Now().Format("2006-01-02"))
 )
 
@@ -76,7 +80,6 @@ var (
 // Test_Check_BpTree_Accuracy 🧫 validates consistency and integrity by inserting and then deleting large data volumes
 // to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
 func Test_Check_BpTree_Accuracies(t *testing.T) {
-
 	// Ensure that the path for the record node is not empty. If it is, an error message is provided to check the path creation process. (锚定不能为空)
 	require.NotEqual(t, "", recordNode.Path(), "record path could not be created; please check the path.")
 

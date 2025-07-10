@@ -1,5 +1,12 @@
 {
-  "randomMin": 11,
-  "randomHitCollisionPercentage": 70,
-  "randomMax": 10714295
+  "record": {
+    "testRecordPath": "/temp/test_record",
+    "isInsideProject": true
+  },
+  "parameters": {
+    "randomTotalCount": 7500000,
+    "randomMin": 10,
+    "randomHitCollisionPercentage": 70,
+    "randomMax": 10714295
+  }
 }

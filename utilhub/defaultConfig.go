@@ -13,7 +13,7 @@ import (
 )
 
 // =====================================================================================================================
-//                  🛠️ Default Config (Tool)
+//	🛠️ Default Config (Tool)
 // Default Config is a tool that tags struct fields with default values.
 // (DefaultConfig是一个工具,用于标记结构体字段的默认值)
 // =====================================================================================================================
@@ -21,7 +21,7 @@ import (
 // ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
 func ParseDefault(cfg DefaultConfig) error {
 	// Get the default configuration directory.
-	path, err := GetProjectDir(ProjectName + "config")
+	projectPath, err := GetProjectDir(filepath.Join(ProjectName))
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,20 @@ func ParseDefault(cfg DefaultConfig) error {
 	}
 
 	// Return the result of _parseDefault.
-	return _parseDefault(filepath.Join(path, file+".json"), cfg)
+	err = _parseDefault(filepath.Join(projectPath, "config", file+".json"), cfg)
+	if err != nil {
+		return err
+	}
+
+	// If the record is configured to be inside the project directory,
+	// prepend the project path to the test record path
+	if cfg.(*BptreeUnitTestConfig).Record.IsInsideProject == true {
+		cfg.(*BptreeUnitTestConfig).Record.TestRecordPath = filepath.Join(projectPath, cfg.(*BptreeUnitTestConfig).Record.TestRecordPath)
+	}
+
+	// Return nil to indicate the operation completed successfully.
+	return nil
+
 }
 
 // _parseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
