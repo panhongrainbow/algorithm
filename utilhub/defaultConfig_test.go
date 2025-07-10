@@ -115,6 +115,7 @@ func Test_SetFieldValue(t *testing.T) {
 // (4) Testing value overrides. The mock _parseDefault isolates file operations,
 // while ParseDefault's production-ready version would handle advanced binding.
 func Test_DefaultConfig(t *testing.T) {
+	// Create a test config struct.
 	cfg := &testConfig{}
 
 	// Retrieve the default configuration directory path.
@@ -248,4 +249,14 @@ func Test_DefaultConfig(t *testing.T) {
 	_, fileList, err = fm.List()
 	require.NoError(t, err)
 	require.Equal(t, []string(nil), fileList)
+}
+
+// Test_RestoreDefaultConfig demonstrates saving the default configuration to a JSON file.
+// The second parameter (overwrite) is set to 'true', which means:
+// - When true: The configuration will actually be written to the physical file
+// - When false: The configuration is prepared but not written to disk
+func Test_RestoreDefaultConfig(t *testing.T) {
+	// Setting it to true ensures the configuration is persisted to the filesystem.
+	err := defaultConfig2file(&BptreeUnitTestConfig{}, false)
+	require.NoError(t, err)
 }
