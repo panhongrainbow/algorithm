@@ -28,7 +28,7 @@ func Test_Check_BpTree_Accuracy_mode1_generation(t *testing.T) {
 	// -----> for Generating test data.
 
 	// Create a new instance of BpTestModel1 with the specified random total count.
-	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
+	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(bptreeUnitTestcfg.Parameters.RandomTotalCount)}
 
 	// -----> for writing test records.
 
@@ -88,7 +88,7 @@ func Test_Check_BpTree_Accuracy_mode1_generation(t *testing.T) {
 func Test_Check_BpTree_Accuracy_mode1_check_test_data(t *testing.T) {
 
 	testDataSet, err := recordDateNode.ReadAllBytesWithProgress(
-		uint32(randomTotalCount),
+		uint32(bptreeUnitTestcfg.Parameters.RandomTotalCount),
 		"mode0.do_not_open", 800,
 		binary.LittleEndian,
 		"Mode 1: Bulk Insert/Delete - check Test Data", // 进度条的标题
@@ -99,7 +99,7 @@ func Test_Check_BpTree_Accuracy_mode1_check_test_data(t *testing.T) {
 	// -----> for Generating test data.
 
 	// Create a new instance of BpTestModel1 with the specified random total count.
-	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(randomTotalCount)}
+	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(bptreeUnitTestcfg.Parameters.RandomTotalCount)}
 
 	fmt.Println(len(testDataSet))
 
@@ -117,13 +117,13 @@ func Test_Check_BpTree_Accuracy_mode1_execution(t *testing.T) {
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 1: Execution   ",                   // Progress bar title.
-		uint32(randomTotalCount),                 // Total number of operations.
-		70,                                       // Progress bar width.
-		utilhub.WithTracking(5),                  // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
-		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+		"Mode 1: Execution   ",                                // Progress bar title.
+		uint32(bptreeUnitTestcfg.Parameters.RandomTotalCount), // Total number of operations.
+		70,                                                    // Progress bar width.
+		utilhub.WithTracking(5),                               // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),                   // Time zone.
+		utilhub.WithTimeControl(500),                          // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen),              // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.
