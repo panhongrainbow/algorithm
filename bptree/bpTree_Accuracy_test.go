@@ -3,15 +3,10 @@ package bpTree
 // =====================================================================================================================
 //                  ⚗️ Consistency Integrity Test ( [B Plus Tree] ) - B加树 主要测试
 // =====================================================================================================================
-// 🧪 The [B Plus Tree] unit test is designed to validate the tree’s consistency
-// and integrity through bulk data insertion and deletion. (大量新增删除)
-// 🧪 The test begins by inserting a large volume of data into the tree,
-// followed by a complete deletion of all data, checking if the tree
-// returns to its initial empty state to verify correctness. (最后树都要回到空状态)
-// 🧪 [Indexing errors] in the [B Plus Tree] can lead to serious issues, such as
-// being unable to find specific data or failing to delete data properly. (索引很重要)
-// 🧪 The test ensures the [accuracy] of indexing to prevent inconsistencies
-// that might result in data operation failures. (测试正确性)
+// 🧪 B Plus Tree unit test validates structure via bulk insert and delete.
+// 🧪 Inserts large data, then deletes all to check if tree resets to empty.
+// 🧪 Indexing errors may cause data loss or deletion failures.
+// 🧪 Ensures indexing accuracy for reliable operations.
 
 // To run the test, run the following command:
 //
@@ -35,33 +30,42 @@ import (
 )
 
 var (
-	// 🧪 create an bptreeUnitTestConfig struct to store the configuration for the B Plus Tree unit test.
-	bptreeUnitTestcfg = utilhub.BptreeUnitTestConfig{}
-	errTestcfg        = utilhub.ParseDefault(&bptreeUnitTestcfg)
+	// 🧪 Create a config struct for B plus tree unit testing and parse default values.
+	unitTestConfig = utilhub.BptreeUnitTestConfig{}
+	configParseErr = utilhub.ParseDefault(&unitTestConfig)
 
-	// 🧪 Navigate to the record path and create a new directory for the current date.
-	recordNode = utilhub.FileNode{}.Goto(bptreeUnitTestcfg.Record.TestRecordPath)
+	// 🧪 Navigate to the project directory for test record storage.
+	ProjectDir = utilhub.FileNode{}.Goto(unitTestConfig.Record.TestRecordPath)
 
-	// 🧪 Create a new directory for the current date under the record path.
-	recordDateNode = recordNode.MkDir(time.Now().Format("2006-01-02"))
+	// 🧪 Create a subdirectory named with the current date under the project.
+	recordDir = ProjectDir.MkDir(time.Now().Format("2006-01-02"))
 )
 
-// Test_Check_BpTree_Accuracy 🧫 validates consistency and integrity by inserting and then deleting large data volumes
-// to check if the tree returns to an empty state, ensuring indexing accuracy to prevent data operation failures.
+// Test_Check_BpTree_Accuracy 🧫 checks if the tree resets after bulk insert/delete, ensuring indexing correctness.
 func Test_Check_BpTree_Accuracies(t *testing.T) {
-	// Ensure that the path for the record node is not empty. If it is, an error message is provided to check the path creation process. (锚定不能为空)
-	require.NotEqual(t, "", recordNode.Path(), "record path could not be created; please check the path.")
 
-	// Ensure that the path for the record date node is not empty. If it is, an error message is provided to check the path creation process.
-	require.NotEqual(t, "", recordDateNode.Path(), "record sub path could not be created; please check the path.")
+	t.Run("Pre-test checks", func(t *testing.T) {
+		// Config must parse without error.
+		require.NoError(t, configParseErr)
 
-	// Call the preparation function for checking B Plus Tree accuracy in mode 1.
-	Test_Check_BpTree_Accuracy_mode1_generation(t)
+		// Record path must not be empty.
+		require.NotEqual(t, "", ProjectDir.Path(), "record path is empty; check path creation")
 
-	// Call the execution function for checking B Plus Tree accuracy in mode 1.
-	Test_Check_BpTree_Accuracy_mode1_check_test_data(t)
+		// Record subdirectory must not be empty.
+		require.NotEqual(t, "", recordDir.Path(), "record date path is empty; check path creation")
+	})
 
-	Test_Check_BpTree_Accuracy_mode1_execution(t)
+	testMode0Name := "Mode 0: Bulk Insert/Delete"
+	t.Run(testMode0Name, func(t *testing.T) {
+		// Prepare test data for mode 1.
+		prepareMode1(t)
+
+		// Verify test data for mode 1.
+		verifyMode1(t)
+
+		// Execute accuracy test for mode 1.
+		runMode1(t)
+	})
 
 	testMode1Name := "Mode 1: Bulk Insert/Delete"
 	t.Run(testMode1Name, func(t *testing.T) {
@@ -85,12 +89,12 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
-				RandomTotalCount: bptreeUnitTestcfg.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
+				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
 			}
 			testPlan := choosePlan.PlanMaxInsertDelete()
 
 			// Generate a list of unique numbers for bulk insertion.
-			bulkAdd, err := randhub.GenerateUniqueNumbers(uint64(bptreeUnitTestcfg.Parameters.RandomTotalCount), bptreeUnitTestcfg.Parameters.RandomMin, bptreeUnitTestcfg.Parameters.RandomMax)
+			bulkAdd, err := randhub.GenerateUniqueNumbers(uint64(unitTestConfig.Parameters.RandomTotalCount), unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax)
 			if err != nil {
 				// Panic if an error occurs during number generation.
 				panic(err)
@@ -104,7 +108,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			// Create a progress bar with optional configurations.
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 1: Bulk Insert/Delete; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
-				uint32(bptreeUnitTestcfg.Parameters.RandomTotalCount*2),           // Total number of operations.
+				uint32(unitTestConfig.Parameters.RandomTotalCount*2),              // Total number of operations.
 				70,                                      // Progress bar width.
 				utilhub.WithTracking(5),                 // Update interval.
 				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
@@ -121,7 +125,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			root := NewBpTree(bpTreeWidth + i)
 
 			// Perform bulk insertion of generated numbers.
-			for j := 0; j < int(bptreeUnitTestcfg.Parameters.RandomTotalCount); j++ {
+			for j := 0; j < int(unitTestConfig.Parameters.RandomTotalCount); j++ {
 				// Insert a new value into the B Plus tree.
 				root.InsertValue(BpItem{Key: bulkAdd[j]})
 				// Update the progress bar.
@@ -129,7 +133,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			}
 
 			// Perform bulk deletion of shuffled numbers.
-			for k := 0; k < int(bptreeUnitTestcfg.Parameters.RandomTotalCount); k++ {
+			for k := 0; k < int(unitTestConfig.Parameters.RandomTotalCount); k++ {
 				// Remove a value from the B Plus tree.
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: bulkDel[k]})
 				// Update the progress bar.
@@ -186,7 +190,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
-				RandomTotalCount: bptreeUnitTestcfg.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
+				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
 			}
 			testPlan := choosePlan.RandomizedBoundary(5, 50, 10, 20)
 
@@ -215,7 +219,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			// Iterate through the test plan for bulk insert and delete operations in order to test stability and consistency.
 			for j := 0; j < len(testPlan); j++ {
 				// Generate random numbers for bulk insertion and deletion.
-				batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(bptreeUnitTestcfg.Parameters.RandomMin, bptreeUnitTestcfg.Parameters.RandomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
+				batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
 
 				// Create a copy of the bulk insertion list and shuffle it for deletion.
 				shuffleSlice(batchInsert, random)
@@ -251,7 +255,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			}
 
 			// Delete all data from the B Plus tree.
-			_, removeAll := pool.GenerateUniqueInt64Numbers(bptreeUnitTestcfg.Parameters.RandomMin, bptreeUnitTestcfg.Parameters.RandomMax, 0, 0, true)
+			_, removeAll := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, 0, 0, true)
 			for m := 0; m < len(removeAll); m++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: removeAll[m]})
 				progressBar.UpdateBar()
@@ -303,7 +307,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
-				RandomTotalCount: bptreeUnitTestcfg.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
+				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
 			}
 			testPlan := choosePlan.GradualBoundary(5, 50, 10, 20)
 
@@ -332,7 +336,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			// Iterate through the test plan for bulk insert and delete operations in order to test stability and consistency.
 			for j := 0; j < len(testPlan); j++ {
 				// Generate random numbers for bulk insertion and deletion.
-				batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(bptreeUnitTestcfg.Parameters.RandomMin, bptreeUnitTestcfg.Parameters.RandomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
+				batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
 
 				// Create a copy of the bulk insertion list and shuffle it for deletion.
 				shuffleSlice(batchInsert, random)
@@ -368,7 +372,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			}
 
 			// Delete all data from the B Plus tree.
-			_, removeAll := pool.GenerateUniqueInt64Numbers(bptreeUnitTestcfg.Parameters.RandomMin, bptreeUnitTestcfg.Parameters.RandomMax, 0, 0, true)
+			_, removeAll := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, 0, 0, true)
 			for m := 0; m < len(removeAll); m++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: removeAll[m]})
 				progressBar.UpdateBar()
@@ -420,7 +424,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
 			choosePlan := testplan.BpTreeProcess{
-				RandomTotalCount: bptreeUnitTestcfg.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
+				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
 			}
 			testPlan := choosePlan.GradualBoundary(5, 50, 10, 20)
 
@@ -449,7 +453,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			// Iterate through the test plan for bulk insert and delete operations in order to test stability and consistency.
 			for j := 0; j < len(testPlan); j++ {
 				// Generate random numbers for bulk insertion and deletion.
-				batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(bptreeUnitTestcfg.Parameters.RandomMin, bptreeUnitTestcfg.Parameters.RandomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
+				batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
 
 				// Create a copy of the bulk insertion list and shuffle it for deletion.
 				shuffleSlice(batchInsert, random)
@@ -515,7 +519,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			}
 
 			// Delete all data from the B Plus tree.
-			_, removeAll := pool.GenerateUniqueInt64Numbers(bptreeUnitTestcfg.Parameters.RandomMin, bptreeUnitTestcfg.Parameters.RandomMax, 0, 0, true)
+			_, removeAll := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, 0, 0, true)
 			for m := 0; m < len(removeAll); m++ {
 				deleted, _, _, err := root.RemoveValue(BpItem{Key: removeAll[m]})
 				progressBar.UpdateBar()
