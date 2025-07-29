@@ -7,6 +7,13 @@
     "randomTotalCount": 7500000,
     "randomMin": 10,
     "randomHitCollisionPercentage": 70,
-    "randomMax": 10714295
+    "randomMax": 10714295,
+    "bpWidth": [
+      3,
+      4,
+      5,
+      6,
+      10
+    ]
   }
 }

@@ -28,7 +28,7 @@ func prepareMode1(t *testing.T) {
 	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(unitTestConfig.Parameters.RandomTotalCount)}
 
 	// Create an empty record file.
-	err := recordDir.Touch("mode0.do_not_open")
+	err := recordDir.Touch("mode1.do_not_open")
 	require.NoError(t, err, "failed to create record file")
 
 	// === Generate test data ===
@@ -48,7 +48,7 @@ func prepareMode1(t *testing.T) {
 
 	err = recordDir.LinuxSpliceProgressStreamWrite(
 		testDataSet,
-		"mode0.do_not_open",
+		"mode1.do_not_open",
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
 		binary.LittleEndian, spliceBlockLength, spliceBlockWidth,
 		"Mode 1: Bulk Insert/Delete - Backup",
@@ -65,17 +65,15 @@ func verifyMode1(t *testing.T) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
 		uint32(unitTestConfig.Parameters.RandomTotalCount),
-		"mode0.do_not_open", 800,
+		"mode1.do_not_open", 800,
 		binary.LittleEndian,
-		"Mode 1: Bulk Insert/Delete - check Test Data",
+		"Mode 1: Bulk Insert/Delete - read test data",
 		utilhub.BrightCyan,
 		70,
 	)
 
 	// Init test model.
 	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(unitTestConfig.Parameters.RandomTotalCount)}
-
-	fmt.Println(len(testDataSet))
 
 	// Validate test data.
 	err = bptest1.CheckRandomSet(testDataSet)
@@ -84,13 +82,24 @@ func verifyMode1(t *testing.T) {
 
 // runMode1 🧫 runs the actual test cases for Mode 1.
 func runMode1(t *testing.T) {
-	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode0.do_not_open", 8, binary.LittleEndian)
+	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
+		_runMode1(t, bpWidth)
+	}
+}
 
-	root := NewBpTree(5)
+// _runMode1 🧫 runs the actual test cases for Mode 1.
+func _runMode1(t *testing.T, bpWidth int) {
+	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode1.do_not_open", 8, binary.LittleEndian)
+
+	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
+
+	// testMode1Name := "Mode 1: Execution; Width: " + strconv.Itoa(unitTestConfig.Parameters.BpWidth[bpWidth])
+	testMode1Name := fmt.Sprintf("Mode 1: Bulk Insert/Delete - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 1: Execution   ",                             // Progress bar title.
+		testMode1Name,
+		// "Mode 1: Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
@@ -108,13 +117,13 @@ Loop:
 	for {
 		select {
 		case data := <-dtatChan:
-			for i := 0; i < len(data); i++ {
-				if data[i] >= 0 {
-					root.InsertValue(BpItem{Key: data[i]})
+			for j := 0; j < len(data); j++ {
+				if data[j] >= 0 {
+					root.InsertValue(BpItem{Key: data[j]})
 					progressBar.UpdateBar()
 				}
-				if data[i] < 0 {
-					deleted, _, _, err := root.RemoveValue(BpItem{Key: -1 * data[i]})
+				if data[j] < 0 {
+					deleted, _, _, err := root.RemoveValue(BpItem{Key: -1 * data[j]})
 					require.True(t, deleted)
 					require.NoError(t, err)
 					progressBar.UpdateBar()
@@ -134,8 +143,7 @@ Loop:
 	<-progressBar.WaitForPrinterStop()
 
 	// Print a final report.
-	testMode0Name := "Mode 0: Bulk Insert/Delete"
-	err := progressBar.Report(len(testMode0Name + "; Width: XX"))
+	err := progressBar.Report(len(testMode1Name + "; Width: XX"))
 	assert.NoError(t, err)
 
 	// Print the B Plus tree structure.

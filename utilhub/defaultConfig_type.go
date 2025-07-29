@@ -22,6 +22,7 @@ type BptreeUnitTestConfig struct {
 		// randomTotalCount/randomHitCollisionPercentage*100 + randomMin = randomMax
 		// 7500000 / 70 * 100 + 10 = 10714295
 		RandomMax int64 `json:"randomMax" default:"10714295"` // 🧪 randomMax represents the maximum value for generating random numbers.
+		BpWidth   []int `json:"bpWidth" default:"3,4,5,6,7"`
 	} `json:"parameters"`
 }
 

@@ -18,7 +18,7 @@ type BpTestModel1 struct {
 
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 1.
 func (model1 *BpTestModel1) GenerateRandomSet(
-	randomMin uint64, // randomMin is the minimum value for generating random numbers.
+	randomMin uint64,                    // randomMin is the minimum value for generating random numbers.
 	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
 ) ([]int64, error) {
 	// Validate RandomTotalCount to ensure it is not zero.
@@ -60,17 +60,15 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	// Creating a new slice to store the dataset, which will be tested.
 	dataSet := make([]int64, randomEvenCount, randomEvenCount)
 
-	fmt.Println("dataSet", len(dataSet))
-
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 1: Generate Test Data",            // Progress bar title.
-		uint32(randomEvenCount),                 // Total number of operations.
-		70,                                      // Progress bar width.
-		utilhub.WithTracking(5),                 // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
-		utilhub.WithTimeControl(500),            // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightBlue), // Display style.
+		"Mode 1: Bulk Insert/Delete - generate test data", // Progress bar title.
+		uint32(randomEvenCount),                           // Total number of operations.
+		70,                                                // Progress bar width.
+		utilhub.WithTracking(5),                           // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),               // Time zone.
+		utilhub.WithTimeControl(500),                      // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightBlue),           // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.
@@ -121,13 +119,13 @@ func (model1 *BpTestModel1) CheckRandomSet(dataSet []int64) error {
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 1: Check Test Data   ",             // Progress bar title.
-		uint32(len(dataSet)/2*3),                 // Total number of operations.
-		70,                                       // Progress bar width.
-		utilhub.WithTracking(5),                  // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
-		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+		"Mode 1: Bulk Insert/Delete - check test data", // Progress bar title.
+		uint32(len(dataSet)/2*3),                       // Total number of operations.
+		70,                                             // Progress bar width.
+		utilhub.WithTracking(5),                        // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),            // Time zone.
+		utilhub.WithTimeControl(500),                   // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen),       // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.

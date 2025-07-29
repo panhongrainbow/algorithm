@@ -34,7 +34,7 @@ var (
 	unitTestConfig = utilhub.BptreeUnitTestConfig{}
 	configParseErr = utilhub.ParseDefault(&unitTestConfig)
 
-	// 🧪 Navigate to the project directory for test record storage.
+	// 🧪 Navigate to the projectdataSet directory for test record storage.
 	ProjectDir = utilhub.FileNode{}.Goto(unitTestConfig.Record.TestRecordPath)
 
 	// 🧪 Create a subdirectory named with the current date under the project.
@@ -55,8 +55,8 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		require.NotEqual(t, "", recordDir.Path(), "record date path is empty; check path creation")
 	})
 
-	testMode0Name := "Mode 0: Bulk Insert/Delete"
-	t.Run(testMode0Name, func(t *testing.T) {
+	testMode1Name := "Mode 1: Bulk Insert/Delete"
+	t.Run(testMode1Name, func(t *testing.T) {
 		// Prepare test data for mode 1.
 		prepareMode1(t)
 
@@ -67,105 +67,107 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		runMode1(t)
 	})
 
-	testMode1Name := "Mode 1: Bulk Insert/Delete"
-	t.Run(testMode1Name, func(t *testing.T) {
-		// Test case for bulk insert and delete operations on the B Plus tree.
+	/*
+		testMode1Name := "Mode 1: Bulk Insert/Delete"
+		t.Run(testMode1Name, func(t *testing.T) {
+			// Test case for bulk insert and delete operations on the B Plus tree.
 
-		// Initialize a random number generator.
-		source := rand.NewSource(time.Now().UnixNano())
-		random := rand.New(source)
+			// Initialize a random number generator.
+			source := rand.NewSource(time.Now().UnixNano())
+			random := rand.New(source)
 
-		// Set the initial width of the B Plus tree.
-		// The width of the B Plus Tree determines the number of keys that can be stored in each node.
+			// Set the initial width of the B Plus tree.
+			// The width of the B Plus Tree determines the number of keys that can be stored in each node.
 
-		// The random width is between 3 and 12.
-		// This is done to ensure that the number of keys in each node is varied,
-		// which helps to check for errors in indexing.
-		// The test is repeated five times, each time with an incremented width.
-		// This includes testing with both odd and even widths.
-		bpTreeWidth := rand.Intn(10) + 3
+			// The random width is between 3 and 12.
+			// This is done to ensure that the number of keys in each node is varied,
+			// which helps to check for errors in indexing.
+			// The test is repeated five times, each time with an incremented width.
+			// This includes testing with both odd and even widths.
+			bpTreeWidth := rand.Intn(10) + 3
 
-		// Perform tests with varying B Plus tree widths to ensure robustness.
-		for i := 0; i < 5; i++ {
-			// Create a test plan for bulk insert and delete operations.
-			choosePlan := testplan.BpTreeProcess{
-				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
-			}
-			testPlan := choosePlan.PlanMaxInsertDelete()
+			// Perform tests with varying B Plus tree widths to ensure robustness.
+			for i := 0; i < 5; i++ {
+				// Create a test plan for bulk insert and delete operations.
+				choosePlan := testplan.BpTreeProcess{
+					RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
+				}
+				testPlan := choosePlan.PlanMaxInsertDelete()
 
-			// Generate a list of unique numbers for bulk insertion.
-			bulkAdd, err := randhub.GenerateUniqueNumbers(uint64(unitTestConfig.Parameters.RandomTotalCount), unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax)
-			if err != nil {
-				// Panic if an error occurs during number generation.
-				panic(err)
-			}
-
-			// Create a copy of the bulk insertion list and shuffle it for deletion.
-			bulkDel := make([]int64, testPlan[0].ChangePattern[0])
-			copy(bulkDel, bulkAdd)
-			shuffleSlice(bulkDel, random)
-
-			// Create a progress bar with optional configurations.
-			progressBar, _ := utilhub.NewProgressBar(
-				"Mode 1: Bulk Insert/Delete; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
-				uint32(unitTestConfig.Parameters.RandomTotalCount*2),              // Total number of operations.
-				70,                                      // Progress bar width.
-				utilhub.WithTracking(5),                 // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
-				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
-			)
-
-			// Start the progress bar printer in a separate goroutine.
-			go func() {
-				progressBar.ListenPrinter()
-			}()
-
-			// Initialize a new B Plus tree with a specified order.
-			root := NewBpTree(bpTreeWidth + i)
-
-			// Perform bulk insertion of generated numbers.
-			for j := 0; j < int(unitTestConfig.Parameters.RandomTotalCount); j++ {
-				// Insert a new value into the B Plus tree.
-				root.InsertValue(BpItem{Key: bulkAdd[j]})
-				// Update the progress bar.
-				progressBar.UpdateBar()
-			}
-
-			// Perform bulk deletion of shuffled numbers.
-			for k := 0; k < int(unitTestConfig.Parameters.RandomTotalCount); k++ {
-				// Remove a value from the B Plus tree.
-				deleted, _, _, err := root.RemoveValue(BpItem{Key: bulkDel[k]})
-				// Update the progress bar.
-				progressBar.UpdateBar()
-
-				// Check for errors during deletion.
+				// Generate a list of unique numbers for bulk insertion.
+				bulkAdd, err := randhub.GenerateUniqueNumbers(uint64(unitTestConfig.Parameters.RandomTotalCount), unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax)
 				if err != nil {
-					// Panic with detailed error message about the failure during deletion.
-					panic(fmt.Sprintf("Error during deletion: Failed to delete number %d at index %d. Error: %v", bulkDel[k], k, err))
+					// Panic if an error occurs during number generation.
+					panic(err)
 				}
 
-				// Check if deletion was successful.
-				if deleted == false {
-					// Panic with detailed error message indicating deletion was not successful.
-					panic(fmt.Sprintf("Error during deletion: Data deletion for number %d at index %d was not successful.", bulkDel[k], k))
+				// Create a copy of the bulk insertion list and shuffle it for deletion.
+				bulkDel := make([]int64, testPlan[0].ChangePattern[0])
+				copy(bulkDel, bulkAdd)
+				shuffleSlice(bulkDel, random)
+
+				// Create a progress bar with optional configurations.
+				progressBar, _ := utilhub.NewProgressBar(
+					"Mode 1: Bulk Insert/Delete; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
+					uint32(unitTestConfig.Parameters.RandomTotalCount*2),              // Total number of operations.
+					70,                                      // Progress bar width.
+					utilhub.WithTracking(5),                 // Update interval.
+					utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+					utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+					utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
+				)
+
+				// Start the progress bar printer in a separate goroutine.
+				go func() {
+					progressBar.ListenPrinter()
+				}()
+
+				// Initialize a new B Plus tree with a specified order.
+				root := NewBpTree(bpTreeWidth + i)
+
+				// Perform bulk insertion of generated numbers.
+				for j := 0; j < int(unitTestConfig.Parameters.RandomTotalCount); j++ {
+					// Insert a new value into the B Plus tree.
+					root.InsertValue(BpItem{Key: bulkAdd[j]})
+					// Update the progress bar.
+					progressBar.UpdateBar()
 				}
+
+				// Perform bulk deletion of shuffled numbers.
+				for k := 0; k < int(unitTestConfig.Parameters.RandomTotalCount); k++ {
+					// Remove a value from the B Plus tree.
+					deleted, _, _, err := root.RemoveValue(BpItem{Key: bulkDel[k]})
+					// Update the progress bar.
+					progressBar.UpdateBar()
+
+					// Check for errors during deletion.
+					if err != nil {
+						// Panic with detailed error message about the failure during deletion.
+						panic(fmt.Sprintf("Error during deletion: Failed to delete number %d at index %d. Error: %v", bulkDel[k], k, err))
+					}
+
+					// Check if deletion was successful.
+					if deleted == false {
+						// Panic with detailed error message indicating deletion was not successful.
+						panic(fmt.Sprintf("Error during deletion: Data deletion for number %d at index %d was not successful.", bulkDel[k], k))
+					}
+				}
+
+				// Mark the progress bar as complete.
+				progressBar.Complete()
+
+				// Wait for the progress bar printer to stop.
+				<-progressBar.WaitForPrinterStop()
+
+				// Print a final report.
+				err = progressBar.Report(len(testMode1Name + "; Width: XX"))
+				assert.NoError(t, err)
+
+				// Print the B Plus tree structure.
+				root.root.Print()
 			}
-
-			// Mark the progress bar as complete.
-			progressBar.Complete()
-
-			// Wait for the progress bar printer to stop.
-			<-progressBar.WaitForPrinterStop()
-
-			// Print a final report.
-			err = progressBar.Report(len(testMode1Name + "; Width: XX"))
-			assert.NoError(t, err)
-
-			// Print the B Plus tree structure.
-			root.root.Print()
-		}
-	})
+		})
+	*/
 	testMode2Name := "Mode 2: Randomized Boundary Test"
 	t.Run(testMode2Name, func(t *testing.T) {
 		// By repeatedly performing insert and delete operations, we can assess the system's
