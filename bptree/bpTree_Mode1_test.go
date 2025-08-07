@@ -3,12 +3,13 @@ package bpTree
 import (
 	"encoding/binary"
 	"fmt"
-	bptestModel1 "github.com/panhongrainbow/algorithm/testplan/bptestplan/model1"
+	"os"
+	"testing"
+
+	bptestModel1 "github.com/panhongrainbow/algorithm/testdata/model1"
 	"github.com/panhongrainbow/algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 )
 
 // =====================================================================================================================
@@ -25,7 +26,7 @@ func prepareMode1(t *testing.T) {
 	// === Init test model and record file ===
 
 	// Create model 1 with specified data count.
-	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(unitTestConfig.Parameters.RandomTotalCount)}
+	bptest1 := &bptestModel1.BpTestModel1{}
 
 	// Create an empty record file.
 	err := recordDir.Touch("mode1.do_not_open")
@@ -73,7 +74,7 @@ func verifyMode1(t *testing.T) {
 	)
 
 	// Init test model.
-	bptest1 := &bptestModel1.BpTestModel1{RandomTotalCount: uint64(unitTestConfig.Parameters.RandomTotalCount)}
+	bptest1 := &bptestModel1.BpTestModel1{}
 
 	// Validate test data.
 	err = bptest1.CheckRandomSet(testDataSet)

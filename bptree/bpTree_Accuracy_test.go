@@ -18,23 +18,23 @@ package bpTree
 
 import (
 	"fmt"
-	"github.com/panhongrainbow/algorithm/randhub"
-	"github.com/panhongrainbow/algorithm/testplan"
-	"github.com/panhongrainbow/algorithm/utilhub"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/panhongrainbow/algorithm/randhub"
+	"github.com/panhongrainbow/algorithm/testdata"
+	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
-	// 🧪 Create a config struct for B plus tree unit testing and parse default values.
-	unitTestConfig = utilhub.BptreeUnitTestConfig{}
-	configParseErr = utilhub.ParseDefault(&unitTestConfig)
+	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
+	unitTestConfig = utilhub.GetDefaultConfig()
 
-	// 🧪 Navigate to the projectdataSet directory for test record storage.
+	// 🧪 Navigate to the project dataSet directory for test record storage.
 	ProjectDir = utilhub.FileNode{}.Goto(unitTestConfig.Record.TestRecordPath)
 
 	// 🧪 Create a subdirectory named with the current date under the project.
@@ -45,9 +45,6 @@ var (
 func Test_Check_BpTree_Accuracies(t *testing.T) {
 
 	t.Run("Pre-test checks", func(t *testing.T) {
-		// Config must parse without error.
-		require.NoError(t, configParseErr)
-
 		// Record path must not be empty.
 		require.NotEqual(t, "", ProjectDir.Path(), "record path is empty; check path creation")
 
@@ -66,9 +63,21 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		// Execute accuracy test for mode 1.
 		runMode1(t)
 	})
-	
-	testMode2Name := "Mode 2: Randomized Boundary Test"
-	t.Run(testMode2Name, func(t *testing.T) {
+
+	testMode2Name := "Mode 2: Randomized Boundary"
+	t.Run(testMode1Name, func(t *testing.T) {
+		// Prepare test data for mode 2.
+		// prepareMode2(t)
+
+		// Verify test data for mode 2.
+		// verifyMode2(t)
+
+		// Execute accuracy test for mode 2.
+		// runMode2(t)
+	})
+
+	testMode2Name2 := "Mode 2: Randomized Boundary Test2"
+	t.Run(testMode2Name2, func(t *testing.T) {
 		// By repeatedly performing insert and delete operations, we can assess the system's
 		// stability, performance, correctness, and handling of edge cases when dealing with a dynamic dataset.
 
@@ -90,7 +99,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		// We need at least 2 iterations to cover both odd and even BpTree widths.
 		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
-			choosePlan := testplan.BpTreeProcess{
+			choosePlan := testdata.BpTreeProcess{
 				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
 			}
 			testPlan := choosePlan.RandomizedBoundary(5, 50, 10, 20)
@@ -99,11 +108,11 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 2: Randomized Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                             // Total number of operations.
-				70,                                                                      // Progress bar width.
-				utilhub.WithTracking(5),                                                 // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                     // Time zone.
-				utilhub.WithTimeControl(500),                                            // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                                 // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
@@ -207,7 +216,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		// We need at least 2 iterations to cover both odd and even BpTree widths.
 		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
-			choosePlan := testplan.BpTreeProcess{
+			choosePlan := testdata.BpTreeProcess{
 				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
 			}
 			testPlan := choosePlan.GradualBoundary(5, 50, 10, 20)
@@ -216,11 +225,11 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 3: Gradual Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                          // Total number of operations.
-				70,                                                                   // Progress bar width.
-				utilhub.WithTracking(5),                                              // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                  // Time zone.
-				utilhub.WithTimeControl(500),                                         // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                              // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.
@@ -324,7 +333,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		// We need at least 2 iterations to cover both odd and even BpTree widths.
 		for i := 0; i < 5; i++ {
 			// Create a test plan for bulk insert and delete operations.
-			choosePlan := testplan.BpTreeProcess{
+			choosePlan := testdata.BpTreeProcess{
 				RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
 			}
 			testPlan := choosePlan.GradualBoundary(5, 50, 10, 20)
@@ -333,11 +342,11 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 			progressBar, _ := utilhub.NewProgressBar(
 				"Mode 4: Gradual Boundary Test; Width: "+strconv.Itoa(bpTreeWidth+i), // Progress bar title.
 				uint32(choosePlan.TotalOperation(testPlan)),                          // Total number of operations.
-				70,                                                                   // Progress bar width.
-				utilhub.WithTracking(5),                                              // Update interval.
-				utilhub.WithTimeZone("Asia/Taipei"),                                  // Time zone.
-				utilhub.WithTimeControl(500),                                         // Update interval in milliseconds.
-				utilhub.WithDisplay(utilhub.BrightCyan),                              // Display style.
+				70,                                      // Progress bar width.
+				utilhub.WithTracking(5),                 // Update interval.
+				utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+				utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+				utilhub.WithDisplay(utilhub.BrightCyan), // Display style.
 			)
 
 			// Start the progress bar printer in a separate goroutine.

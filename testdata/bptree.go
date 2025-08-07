@@ -1,4 +1,4 @@
-package testplan
+package testdata
 
 import (
 	"math/rand"

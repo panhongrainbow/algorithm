@@ -3,33 +3,36 @@ package bptestModel1
 import (
 	"errors"
 	"fmt"
+	"math"
+
 	"github.com/panhongrainbow/algorithm/costars/slice2tree"
 	"github.com/panhongrainbow/algorithm/randhub"
-	bptestUtilhub "github.com/panhongrainbow/algorithm/testplan/bptestplan/utilhub"
+	bptestUtilhub "github.com/panhongrainbow/algorithm/testdata/utilhub"
 	"github.com/panhongrainbow/algorithm/utilhub"
-	"math"
 )
 
 // BpTestModel1 🧮 represents a test model for B Plus Tree testing.
 // It emulates a scenario where random numbers are generated and inserted into a B Plus Tree and then deleted.
-type BpTestModel1 struct {
-	RandomTotalCount uint64 // RandomTotalCount is the total number of random numbers to be kept for testing.
-}
+type BpTestModel1 struct{}
 
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 1.
 func (model1 *BpTestModel1) GenerateRandomSet(
-	randomMin uint64,                    // randomMin is the minimum value for generating random numbers.
+	randomMin uint64, // randomMin is the minimum value for generating random numbers.
 	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
 ) ([]int64, error) {
+	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
+	unitTestConfig := utilhub.GetDefaultConfig()
+	randomTotalCount := uint64(unitTestConfig.Parameters.RandomTotalCount)
+
 	// Validate RandomTotalCount to ensure it is not zero.
 	// I make sure that RandomTotalCount is not zero to enough data for testing.
-	if model1.RandomTotalCount == 0 {
+	if randomTotalCount == 0 {
 		// Return an error if RandomTotalCount is zero.
 		return nil, errors.New("BpTestModel1.RandomTotalCount cannot be zero")
 	}
 
 	// Calculate the maximum random value based on RandomTotalCount, randomHitCollisionPercentage, and randomMin.
-	randomMax, err := bptestUtilhub.CalculateRandomMax(model1.RandomTotalCount, randomHitCollisionPercentage, randomMin)
+	randomMax, err := bptestUtilhub.CalculateRandomMax(randomTotalCount, randomHitCollisionPercentage, randomMin)
 	if err != nil {
 		// Return a wrapped error if CalculateRandomMax fails.
 		return nil, fmt.Errorf("failed to calculate random max: %w", err)
@@ -43,7 +46,7 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 
 	// Ensure randomEvenCount is at least 2 to maintain data integrity.
 	// I make sure that enough data is generated for testing again.
-	randomEvenCount := utilhub.Adjust2Even(int64(model1.RandomTotalCount))
+	randomEvenCount := utilhub.Adjust2Even(int64(randomTotalCount))
 	if randomEvenCount < 2 {
 		// Return an error if randomEvenCount is less than 2.
 		return nil, fmt.Errorf("randomEvenCount must be at least 2, got: %d", randomEvenCount)
