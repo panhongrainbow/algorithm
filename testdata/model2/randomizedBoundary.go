@@ -5,33 +5,26 @@ import (
 	"time"
 
 	"github.com/panhongrainbow/algorithm/randhub"
-	"github.com/panhongrainbow/algorithm/testdata"
 	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
-// BpTestModel2 🧮 represents a test model for B Plus Tree testing.
-// It emulates a scenario where random numbers are generated and inserted into a B Plus Tree and then deleted.
+// BpTestModel2 🧮 is implemented using the Dynamic Pool Stress Test to simulate random insertions and removals in a real data pool,
+// ensuring performance, stability, and correctness.
 type BpTestModel2 struct{}
 
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 2.
-func (model1 *BpTestModel2) GenerateRandomSet(
-	randomMin uint64,                    // randomMin is the minimum value for generating random numbers.
-	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
-) ([]int64, error) {
+func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 
 	unitTestConfig := utilhub.GetDefaultConfig()
 
 	source := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(source)
 
-	choosePlan := testdata.BpTreeProcess{
-		RandomTotalCount: unitTestConfig.Parameters.RandomTotalCount, // Number of elements to generate for random testing.
-	}
-	testPlan := choosePlan.RandomizedBoundary(5, 50, 10, 20)
+	testPlan := model2.RandomizedBoundary(5, 50, 10, 20)
 
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 2: Randomized Boundary - generate test data", // Progress bar title.
-		uint32(choosePlan.TotalOperation(testPlan)),        // Total number of operations.
+		uint32(model2.TotalOperation(testPlan)),            // Total number of operations.
 		70,                                                 // Progress bar width.
 		utilhub.WithTracking(5),                            // Update interval.
 		utilhub.WithTimeZone("Asia/Taipei"),                // Time zone.
@@ -90,7 +83,7 @@ func shuffleSlice(slice []int64, rng *rand.Rand) {
 }
 
 // CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers.
-func (model1 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
+func (model2 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
 
 	// Return nil if the data set is valid.
 	return nil
