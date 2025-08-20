@@ -199,10 +199,10 @@ func (bPlan BpTreeProcess) TotalOperation(testStages []EachBpTestStage) int64 {
 	for i := 0; i < len(testStages); i++ {
 
 		// Determine the number of times to repeat the test execution cycle.
-		// If the ExecutionCycle is greater than 1, use that value; otherwise, default to 1.
+		// If the RepeatCount is greater than 1, use that value; otherwise, default to 1.
 		repeatTime := 1
 		if testStages[i].ExecutionCycle > 1 {
-			// Override the default repeat time with the specified ExecutionCycle value.
+			// Override the default repeat time with the specified RepeatCount value.
 			repeatTime = testStages[i].ExecutionCycle
 		}
 

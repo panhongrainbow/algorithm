@@ -7,33 +7,38 @@ import (
 	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
-// EachBpTestStage Slice 🧮 will encompass a wide range of combinations, including boundary condition tests, consistency tests, balance tests, and more.
-type EachBpTestStage struct {
-	// Description provides a summary or purpose of the stage, explaining its testing goal.
-	Description string
+// StagePlan defines a test stage with operations and repeat count.
+type StagePlan struct {
+	// StageSummary provides a short description of this test stage.
+	StageSummary string
 
-	// ChangePattern records the specific data changes in this stage,
-	// such as inserting 20 items and then deleting 5 items.
-	ChangePattern []int64
+	// OperationPlan specifies the sequence of operations (e.g., insert/delete counts).
+	OperationPlan []int64
 
-	// ExecutionCycle defines the number of times this stage will repeat.
-	ExecutionCycle int
+	// RepeatCount indicates how many times this stage will be executed.
+	RepeatCount int
+}
 
-	// UseFixedData specifies whether fixed data should be used.
-	// If true, DataSource will be used for this stage.
-	// UseFixedData bool
-
-	// DataSource contains the data used in this stage, which can include
-	// either predefined values or randomly generated data.
-	// DataSource []int64
-
-	// IsFinalStage indicates whether this is the final stage of the test.
-	// If true, no additional stages will follow.
-	// IsFinalStage bool
+// CountOps returns the total number of insert/delete operations across all stages.
+//
+// The sum of all OperationPlans across stages is defined to be zero (total inserts equal total deletes).
+// Therefore, the total number of operations can be calculated as:
+//
+//	insertions * 2 * RepeatCount
+//
+// where OperationPlan[0] is used as the insertion count.
+func (model2 *BpTestModel2) CountOps(stages []StagePlan) int64 {
+	var totalOps int64
+	for _, stage := range stages {
+		if stage.RepeatCount > 1 {
+			totalOps += stage.OperationPlan[0] * int64(stage.RepeatCount) * 2
+		}
+	}
+	return totalOps
 }
 
 // RandomizedBoundary 🧮 plans repeated insertion and deletion of data in the boundary of B Plus tree.
-func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []EachBpTestStage) {
+func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []StagePlan) {
 	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
 	unitTestConfig := utilhub.GetDefaultConfig()
 	randomTotalCount := uint64(unitTestConfig.Parameters.RandomTotalCount)
@@ -56,11 +61,10 @@ func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDiff
 		difference := minDifference + rand.Int63n(maxDifference-minDifference)
 
 		// Add a test stage with the generated insertion and deletion counts.
-		testStages = append(testStages, EachBpTestStage{
-			Description:    "Cycle " + strconv.Itoa(cycleNumber),
-			ChangePattern:  []int64{removals + difference, -1 * removals},
-			ExecutionCycle: 1,
-			// UseFixedData:   false,
+		testStages = append(testStages, StagePlan{
+			StageSummary:  "Stage " + strconv.Itoa(cycleNumber),
+			OperationPlan: []int64{removals + difference, -1 * removals},
+			RepeatCount:   1,
 		})
 
 		// Increment the total count with the number of insertions performed in this cycle.
@@ -69,21 +73,4 @@ func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDiff
 	}
 
 	return testStages
-}
-
-func (model2 *BpTestModel2) TotalOperation(testStages []EachBpTestStage) int64 {
-	var totalOperation int64
-	for i := 0; i < len(testStages); i++ {
-
-		// Determine the number of times to repeat the test execution cycle.
-		// If the ExecutionCycle is greater than 1, use that value; otherwise, default to 1.
-		repeatTime := 1
-		if testStages[i].ExecutionCycle > 1 {
-			// Override the default repeat time with the specified ExecutionCycle value.
-			repeatTime = testStages[i].ExecutionCycle
-		}
-
-		totalOperation += testStages[i].ChangePattern[0] * int64(repeatTime) * 2
-	}
-	return totalOperation
 }

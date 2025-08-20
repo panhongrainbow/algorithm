@@ -24,7 +24,7 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 2: Randomized Boundary - generate test data", // Progress bar title.
-		uint32(model2.TotalOperation(testPlan)),            // Total number of operations.
+		uint32(model2.CountOps(testPlan)),                  // Total number of operations.
 		70,                                                 // Progress bar width.
 		utilhub.WithTracking(5),                            // Update interval.
 		utilhub.WithTimeZone("Asia/Taipei"),                // Time zone.
@@ -41,17 +41,17 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	dataSet := make([]int64, 0)
 
 	for j := 0; j < len(testPlan); j++ {
-		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].ChangePattern[0]), -1*int(testPlan[j].ChangePattern[1]), false)
+		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].OperationPlan[0]), -1*int(testPlan[j].OperationPlan[1]), false)
 
 		shuffleSlice(batchInsert, random)
 		shuffleSlice(batchRemove, random)
 
-		for k := 0; k < int(testPlan[j].ChangePattern[0]); k++ {
+		for k := 0; k < int(testPlan[j].OperationPlan[0]); k++ {
 			dataSet = append(dataSet, batchInsert[k])
 			progressBar.UpdateBar()
 		}
 
-		for l := 0; l < -1*int(testPlan[j].ChangePattern[1]); l++ {
+		for l := 0; l < -1*int(testPlan[j].OperationPlan[1]); l++ {
 			dataSet = append(dataSet, -1*batchRemove[l])
 			progressBar.UpdateBar()
 		}
