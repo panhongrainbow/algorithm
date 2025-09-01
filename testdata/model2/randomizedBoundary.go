@@ -41,17 +41,17 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	dataSet := make([]int64, 0)
 
 	for j := 0; j < len(testPlan); j++ {
-		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].OperationPlan[0]), -1*int(testPlan[j].OperationPlan[1]), false)
+		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].Op.InsertAction), -1*int(testPlan[j].Op.DeleteAction), false)
 
 		shuffleSlice(batchInsert, random)
 		shuffleSlice(batchRemove, random)
 
-		for k := 0; k < int(testPlan[j].OperationPlan[0]); k++ {
+		for k := 0; k < int(testPlan[j].Op.InsertAction); k++ {
 			dataSet = append(dataSet, batchInsert[k])
 			progressBar.UpdateBar()
 		}
 
-		for l := 0; l < -1*int(testPlan[j].OperationPlan[1]); l++ {
+		for l := 0; l < -1*int(testPlan[j].Op.DeleteAction); l++ {
 			dataSet = append(dataSet, -1*batchRemove[l])
 			progressBar.UpdateBar()
 		}

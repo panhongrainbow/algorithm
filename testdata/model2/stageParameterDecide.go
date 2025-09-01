@@ -13,10 +13,13 @@ type StagePlan struct {
 	StageSummary string
 
 	// OperationPlan specifies the sequence of operations (e.g., insert/delete counts).
-	OperationPlan []int64
+	Op struct {
+		InsertAction int64
+		DeleteAction int64
+	}
 
 	// RepeatCount indicates how many times this stage will be executed.
-	RepeatCount int
+	Repeat int
 }
 
 // CountOps returns the total number of insert/delete operations across all stages.
@@ -30,8 +33,8 @@ type StagePlan struct {
 func (model2 *BpTestModel2) CountOps(stages []StagePlan) int64 {
 	var totalOps int64
 	for _, stage := range stages {
-		if stage.RepeatCount > 1 {
-			totalOps += stage.OperationPlan[0] * int64(stage.RepeatCount) * 2
+		if stage.Repeat > 1 {
+			totalOps += stage.Op.InsertAction * int64(stage.Repeat) * 2
 		}
 	}
 	return totalOps
@@ -62,9 +65,15 @@ func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDiff
 
 		// Add a test stage with the generated insertion and deletion counts.
 		testStages = append(testStages, StagePlan{
-			StageSummary:  "Stage " + strconv.Itoa(cycleNumber),
-			OperationPlan: []int64{removals + difference, -1 * removals},
-			RepeatCount:   1,
+			StageSummary: "Stage " + strconv.Itoa(cycleNumber),
+			Op: struct {
+				InsertAction int64
+				DeleteAction int64
+			}{
+				InsertAction: removals + difference,
+				DeleteAction: -1 * removals,
+			},
+			Repeat: 1,
 		})
 
 		// Increment the total count with the number of insertions performed in this cycle.
