@@ -24,7 +24,7 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 2: Randomized Boundary - generate test data", // Progress bar title.
-		uint32(model2.CountOps(testPlan)),                  // Total number of operations.
+		uint32(model2.totalOps(testPlan)),                  // Total number of operations.
 		70,                                                 // Progress bar width.
 		utilhub.WithTracking(5),                            // Update interval.
 		utilhub.WithTimeZone("Asia/Taipei"),                // Time zone.

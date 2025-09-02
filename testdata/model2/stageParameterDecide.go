@@ -7,12 +7,14 @@ import (
 	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
-// StagePlan defines a test stage with operations and repeat count.
-type StagePlan struct {
+// stage 🧮 represents a single phase of the model2 test. (被切割)
+// Each stage defines how many records to insert and delete, and may involve reusing previously deleted records. (每阶段都会有 新增 和 删除)
+// The stage is repeated according to the specified count. (可重复执行)
+type stage struct {
 	// StageSummary provides a short description of this test stage.
 	StageSummary string
 
-	// OperationPlan specifies the sequence of operations (e.g., insert/delete counts).
+	// Op defines the sequence of operations (e.g., insert/delete counts).
 	Op struct {
 		InsertAction int64
 		DeleteAction int64
@@ -22,26 +24,26 @@ type StagePlan struct {
 	Repeat int
 }
 
-// CountOps returns the total number of insert/delete operations across all stages.
+// totalOps 🧮 returns the total number of insert/delete operations across all stages.
 //
-// The sum of all OperationPlans across stages is defined to be zero (total inserts equal total deletes).
+// The sum of all OperationPlans across all stages is defined to be zero (total inserts equal total deletes).
 // Therefore, the total number of operations can be calculated as:
 //
-//	insertions * 2 * RepeatCount
+//	\Sigma Op.InsertAction * 2 * Repeat
 //
-// where OperationPlan[0] is used as the insertion count.
-func (model2 *BpTestModel2) CountOps(stages []StagePlan) int64 {
+// where Op.InsertAction is used as the insertion count.
+func (model2 *BpTestModel2) totalOps(stages []stage) int64 {
 	var totalOps int64
-	for _, stage := range stages {
-		if stage.Repeat > 1 {
-			totalOps += stage.Op.InsertAction * int64(stage.Repeat) * 2
+	for _, each := range stages {
+		if each.Repeat > 1 {
+			totalOps += each.Op.InsertAction * int64(each.Repeat) * 2
 		}
 	}
 	return totalOps
 }
 
 // RandomizedBoundary 🧮 plans repeated insertion and deletion of data in the boundary of B Plus tree.
-func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []StagePlan) {
+func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []stage) {
 	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
 	unitTestConfig := utilhub.GetDefaultConfig()
 	randomTotalCount := uint64(unitTestConfig.Parameters.RandomTotalCount)
@@ -64,7 +66,7 @@ func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDiff
 		difference := minDifference + rand.Int63n(maxDifference-minDifference)
 
 		// Add a test stage with the generated insertion and deletion counts.
-		testStages = append(testStages, StagePlan{
+		testStages = append(testStages, stage{
 			StageSummary: "Stage " + strconv.Itoa(cycleNumber),
 			Op: struct {
 				InsertAction int64
