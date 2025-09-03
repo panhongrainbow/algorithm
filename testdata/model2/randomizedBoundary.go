@@ -41,7 +41,7 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	dataSet := make([]int64, 0)
 
 	for j := 0; j < len(testPlan); j++ {
-		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].Op.InsertAction), -1*int(testPlan[j].Op.DeleteAction), false)
+		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].Op.InsertAction), int(testPlan[j].Op.DeleteAction), false)
 
 		shuffleSlice(batchInsert, random)
 		shuffleSlice(batchRemove, random)
@@ -51,7 +51,7 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 			progressBar.UpdateBar()
 		}
 
-		for l := 0; l < -1*int(testPlan[j].Op.DeleteAction); l++ {
+		for l := 0; l < int(testPlan[j].Op.DeleteAction); l++ {
 			dataSet = append(dataSet, -1*batchRemove[l])
 			progressBar.UpdateBar()
 		}

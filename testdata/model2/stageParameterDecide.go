@@ -73,7 +73,7 @@ func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDiff
 				DeleteAction int64
 			}{
 				InsertAction: removals + difference,
-				DeleteAction: -1 * removals,
+				DeleteAction: removals,
 			},
 			Repeat: 1,
 		})
