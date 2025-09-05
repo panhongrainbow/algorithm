@@ -42,14 +42,25 @@ func (model2 *BpTestModel2) totalOps(stages []stage) int64 {
 	return totalOps
 }
 
-// RandomizedBoundary 🧮 plans repeated insertion and deletion of data in the boundary of B Plus tree.
-func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDifference, maxDifference int64) (testStages []stage) {
+// StageParameters 🧮 defines the configuration for each stage of the test.
+
+// Parameters:
+//   - minRemovals:      minimum number of records to delete per stage
+//   - maxRemovals:      maximum number of records to delete per stage
+//   - minPreserveInPool: minimum number of records to preserve in the pool
+//   - maxPreserveInPool: maximum number of records to preserve in the pool
+//
+// Returns:
+//   - testStages: a list of stages, each containing insertion/deletion counts
+
+func (model2 *BpTestModel2) StageParameters(
+	minRemovals, maxRemovals, minPreserveInPool, maxPreserveInPool int64) (testStages []stage) {
 	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
 	unitTestConfig := utilhub.GetDefaultConfig()
 	randomTotalCount := uint64(unitTestConfig.Parameters.RandomTotalCount)
 
 	// Perform boundary check outside the loop to ensure valid ranges for removal and insertion.
-	if minRemovals >= maxRemovals || minDifference >= maxDifference {
+	if minRemovals >= maxRemovals || minPreserveInPool >= maxPreserveInPool {
 		panic("max must be greater than min for both removal and insertion ranges")
 	}
 
@@ -63,7 +74,7 @@ func (model2 *BpTestModel2) RandomizedBoundary(minRemovals, maxRemovals, minDiff
 	for currentIncrement < int64(randomTotalCount) {
 		// Generate random values within the specified ranges for removals and insertions.
 		removals := minRemovals + rand.Int63n(maxRemovals-minRemovals)
-		difference := minDifference + rand.Int63n(maxDifference-minDifference)
+		difference := minPreserveInPool + rand.Int63n(maxPreserveInPool-minPreserveInPool)
 
 		// Add a test stage with the generated insertion and deletion counts.
 		testStages = append(testStages, stage{
