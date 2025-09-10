@@ -20,7 +20,7 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	source := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(source)
 
-	testPlan := model2.RandomizedBoundary(5, 50, 10, 20)
+	testPlan := model2.StageParameters(5, 50, 10, 20)
 
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 2: Randomized Boundary - generate test data", // Progress bar title.

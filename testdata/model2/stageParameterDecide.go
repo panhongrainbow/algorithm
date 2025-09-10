@@ -55,30 +55,27 @@ func (model2 *BpTestModel2) totalOps(stages []stage) int64 {
 
 func (model2 *BpTestModel2) StageParameters(
 	minRemovals, maxRemovals, minPreserveInPool, maxPreserveInPool int64) (testStages []stage) {
-	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
+	// unitTestConfig loads the default configuration values.
 	unitTestConfig := utilhub.GetDefaultConfig()
 	randomTotalCount := uint64(unitTestConfig.Parameters.RandomTotalCount)
 
-	// Perform boundary check outside the loop to ensure valid ranges for removal and insertion.
+	// It ensures that the maximum values are strictly greater than the minimum value.
 	if minRemovals >= maxRemovals || minPreserveInPool >= maxPreserveInPool {
 		panic("max must be greater than min for both removal and insertion ranges")
 	}
 
-	// This variable will track the cycle number.
-	cycleNumber := 0
-
-	// This variable will keep track of the total operation count.
-	var currentIncrement int64 = 0
-
-	// Continue adding insertion and deletion patterns until reaching the target operation count.
-	for currentIncrement < int64(randomTotalCount) {
-		// Generate random values within the specified ranges for removals and insertions.
+	// This for-loop continues generating test stages until the accumulated pool size reaches the target total count.
+	stageID := 0
+	var keepInPool int64 = 0
+	for keepInPool < int64(randomTotalCount) {
+		// removals randomly selects the number of deletions within the range [minRemovals, maxRemovals).
 		removals := minRemovals + rand.Int63n(maxRemovals-minRemovals)
+		// difference randomly selects the number of records to preserve in the pool within the range [minPreserveInPool, maxPreserveInPool).
 		difference := minPreserveInPool + rand.Int63n(maxPreserveInPool-minPreserveInPool)
 
-		// Add a test stage with the generated insertion and deletion counts.
+		// This block constructs a stage that defines how many items will be inserted and deleted.
 		testStages = append(testStages, stage{
-			StageSummary: "Stage " + strconv.Itoa(cycleNumber),
+			StageSummary: "Stage " + strconv.Itoa(stageID),
 			Op: struct {
 				InsertAction int64
 				DeleteAction int64
@@ -89,10 +86,11 @@ func (model2 *BpTestModel2) StageParameters(
 			Repeat: 1,
 		})
 
-		// Increment the total count with the number of insertions performed in this cycle.
-		currentIncrement += difference
-		cycleNumber++
+		// keepInPool updates the total number of records that remain in the pool after this stage.
+		keepInPool += difference
+		stageID++
 	}
 
+	// Return the list of generated test stages.
 	return testStages
 }
