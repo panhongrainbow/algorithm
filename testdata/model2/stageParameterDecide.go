@@ -3,8 +3,6 @@ package model2
 import (
 	"math/rand"
 	"strconv"
-
-	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
 // stage 🧮 represents a single phase of the model2 test. (被切割)
@@ -54,10 +52,9 @@ func (model2 *BpTestModel2) totalOps(stages []stage) int64 {
 //   - testStages: a list of stages, each containing insertion/deletion counts
 
 func (model2 *BpTestModel2) StageParameters(
-	minRemovals, maxRemovals, minPreserveInPool, maxPreserveInPool int64) (testStages []stage) {
-	// unitTestConfig loads the default configuration values.
-	unitTestConfig := utilhub.GetDefaultConfig()
-	randomTotalCount := uint64(unitTestConfig.Parameters.RandomTotalCount)
+	randomTotalCount, minRemovals, maxRemovals, minPreserveInPool, maxPreserveInPool int64) (testStages []stage) {
+	// Use RandomTotalCount to limit the test scope.
+	limitTestScope := uint64(randomTotalCount)
 
 	// It ensures that the maximum values are strictly greater than the minimum value.
 	if minRemovals >= maxRemovals || minPreserveInPool >= maxPreserveInPool {
@@ -67,7 +64,7 @@ func (model2 *BpTestModel2) StageParameters(
 	// This for-loop continues generating test stages until the accumulated pool size reaches the target total count.
 	stageID := 0
 	var keepInPool int64 = 0
-	for keepInPool < int64(randomTotalCount) {
+	for keepInPool < int64(limitTestScope) {
 		// removals randomly selects the number of deletions within the range [minRemovals, maxRemovals).
 		removals := minRemovals + rand.Int63n(maxRemovals-minRemovals)
 		// difference randomly selects the number of records to preserve in the pool within the range [minPreserveInPool, maxPreserveInPool).

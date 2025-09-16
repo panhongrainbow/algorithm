@@ -20,19 +20,19 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	randomMin uint64, // randomMin is the minimum value for generating random numbers.
 	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
 ) ([]int64, error) {
-	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
+	// Use RandomTotalCount to limit the test scope.
 	unitTestConfig := utilhub.GetDefaultConfig()
-	randomTotalCount := uint64(unitTestConfig.Parameters.RandomTotalCount)
+	limitTestScope := uint64(unitTestConfig.Parameters.RandomTotalCount)
 
 	// Validate RandomTotalCount to ensure it is not zero.
 	// I make sure that RandomTotalCount is not zero to enough data for testing.
-	if randomTotalCount == 0 {
+	if limitTestScope == 0 {
 		// Return an error if RandomTotalCount is zero.
 		return nil, errors.New("BpTestModel1.RandomTotalCount cannot be zero")
 	}
 
 	// Calculate the maximum random value based on RandomTotalCount, randomHitCollisionPercentage, and randomMin.
-	randomMax, err := bptestUtilhub.CalculateRandomMax(randomTotalCount, randomHitCollisionPercentage, randomMin)
+	randomMax, err := bptestUtilhub.CalculateRandomMax(limitTestScope, randomHitCollisionPercentage, randomMin)
 	if err != nil {
 		// Return a wrapped error if CalculateRandomMax fails.
 		return nil, fmt.Errorf("failed to calculate random max: %w", err)
@@ -46,7 +46,7 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 
 	// Ensure randomEvenCount is at least 2 to maintain data integrity.
 	// I make sure that enough data is generated for testing again.
-	randomEvenCount := utilhub.Adjust2Even(int64(randomTotalCount))
+	randomEvenCount := utilhub.Adjust2Even(int64(limitTestScope))
 	if randomEvenCount < 2 {
 		// Return an error if randomEvenCount is less than 2.
 		return nil, fmt.Errorf("randomEvenCount must be at least 2, got: %d", randomEvenCount)

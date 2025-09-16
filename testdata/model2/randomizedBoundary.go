@@ -15,12 +15,14 @@ type BpTestModel2 struct{}
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 2.
 func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 
-	unitTestConfig := utilhub.GetDefaultConfig()
-
 	source := rand.NewSource(time.Now().UnixNano())
 	random := rand.New(source)
 
-	testPlan := model2.StageParameters(5, 50, 10, 20)
+	// Use RandomTotalCount to limit the test scope.
+	unitTestConfig := utilhub.GetDefaultConfig()
+	limitTestScope := unitTestConfig.Parameters.RandomTotalCount
+
+	testPlan := model2.StageParameters(limitTestScope, 5, 50, 10, 20)
 
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 2: Randomized Boundary - generate test data", // Progress bar title.
