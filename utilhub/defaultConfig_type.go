@@ -24,6 +24,12 @@ type BptreeUnitTestConfig struct {
 		RandomMax int64 `json:"randomMax" default:"10714295"` // 🧪 randomMax represents the maximum value for generating random numbers.
 		BpWidth   []int `json:"bpWidth" default:"3,4,5,6,7"`
 	} `json:"parameters"`
+	PoolStage struct {
+		MinRemovals       int64 `json:"minRemovals" default:"5"`        // 🧪 lower bound of items to remove in this stage.
+		MaxRemovals       int64 `json:"maxRemovals" default:"50"`       // 🧪 upper bound of items to remove in this stage.
+		MinPreserveInPool int64 `json:"minPreserveInPool" default:"10"` // 🧪 lower bound of items to remain in the pool after this stage.
+		MaxPreserveInPool int64 `json:"maxPreserveInPool" default:"20"` // 🧪 upper bound of items to remain in the pool after this stage.
+	} `json:"poolStage"`
 }
 
 // types for testing is as bellows: (以下是测试用的类型) ===== ===== ===== ===== ===== ===== ===== ===== =====
