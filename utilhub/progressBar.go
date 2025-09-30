@@ -304,7 +304,8 @@ func (pb *ProgressBar) AddSpecificTimes(steps uint32) {
 	// pb.currentProcess += steps
 
 	// Calculate the current progress percentage.
-	progress := float64(pb.currentProcess) / float64(pb.total)
+	// progress := float64(pb.currentProcess) / float64(pb.total)
+	progress := float64(pb.currentProcess / pb.total)
 	filledLength := int(progress * float64(pb.barLength))
 
 	// Format the progress percentage, ensuring it does not exceed 100%.
