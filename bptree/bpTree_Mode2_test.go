@@ -2,7 +2,6 @@ package bpTree
 
 import (
 	"encoding/binary"
-	"fmt"
 	"os"
 	"testing"
 
@@ -46,8 +45,6 @@ func prepareMode2(t *testing.T) {
 
 	// === Write data with Linux splice stream ===
 
-	fmt.Println("數量", len(testDataSet))
-
 	err = recordDir.LinuxSpliceProgressStreamWrite(
 		testDataSet,
 		"mode2.do_not_open",
@@ -60,4 +57,24 @@ func prepareMode2(t *testing.T) {
 	require.NoError(t, err)
 
 	// Data check is done in the next test case.
+}
+
+// verifyMode2 🧫 checks the test data set for Mode 2.
+func verifyMode2(t *testing.T) {
+	// Read test data with progress bar.
+	testDataSet, err := recordDir.ReadAllBytesWithProgress(
+		uint32(unitTestConfig.Parameters.RandomTotalCount),
+		"mode2.do_not_open", 800,
+		binary.LittleEndian,
+		"Mode 2: Randomized Boundary Test - read test data",
+		utilhub.BrightCyan,
+		70,
+	)
+
+	// Init test model.
+	bptest2 := &bptestModel2.BpTestModel2{}
+
+	// Validate test data.
+	err = bptest2.CheckRandomSet(testDataSet)
+	require.NoError(t, err, "failed to validate test data")
 }
