@@ -2,11 +2,13 @@ package bpTree
 
 import (
 	"encoding/binary"
+	"fmt"
 	"os"
 	"testing"
 
 	bptestModel2 "github.com/panhongrainbow/algorithm/testdata/model2"
 	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -77,4 +79,74 @@ func verifyMode2(t *testing.T) {
 	// Validate test data.
 	err = bptest2.CheckRandomSet(testDataSet)
 	require.NoError(t, err, "failed to validate test data")
+}
+
+// runMode2 🧫 runs the actual test cases for Mode 1.
+func runMode2(t *testing.T) {
+	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
+		_runMode2(t, bpWidth)
+	}
+}
+
+// _runMode2 🧫 runs the actual test cases for Mode 1.
+func _runMode2(t *testing.T, bpWidth int) {
+	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode1.do_not_open", 8, binary.LittleEndian)
+
+	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
+
+	// testMode1Name := "Mode 1: Execution; Width: " + strconv.Itoa(unitTestConfig.Parameters.BpWidth[bpWidth])
+	testMode1Name := fmt.Sprintf("Mode 2: Randomized Boundary Test - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+
+	// ▓▒░ Creating a progress bar with optional configurations.
+	progressBar, _ := utilhub.NewProgressBar(
+		testMode1Name,
+		// "Mode 1: Execution   ",                             // Progress bar title.
+		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+	)
+
+	// ▓▒░ Start the progress bar printer in a separate goroutine.
+	go func() {
+		progressBar.ListenPrinter()
+	}()
+
+Loop:
+	for {
+		select {
+		case data := <-dtatChan:
+			for j := 0; j < len(data); j++ {
+				if data[j] >= 0 {
+					root.InsertValue(BpItem{Key: data[j]})
+					progressBar.UpdateBar()
+				}
+				if data[j] < 0 {
+					deleted, _, _, err := root.RemoveValue(BpItem{Key: -1 * data[j]})
+					require.True(t, deleted)
+					require.NoError(t, err)
+					progressBar.UpdateBar()
+				}
+			}
+		case err := <-errChan:
+			fmt.Println(err)
+		case <-finsishChan:
+			break Loop
+		}
+	}
+
+	// ▓▒░ Mark the progress bar as complete.
+	progressBar.Complete()
+
+	// ▓▒░ Wait for the progress bar printer to stop.
+	<-progressBar.WaitForPrinterStop()
+
+	// Print a final report.
+	err := progressBar.Report(len(testMode1Name + "; Width: XX"))
+	assert.NoError(t, err)
+
+	// Print the B Plus tree structure.
+	root.root.Print()
 }
