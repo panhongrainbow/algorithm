@@ -25,7 +25,6 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	limitTestScope := uint64(unitTestConfig.Parameters.RandomTotalCount)
 
 	// Validate RandomTotalCount to ensure it is not zero.
-	// I make sure that RandomTotalCount is not zero to enough data for testing.
 	if limitTestScope == 0 {
 		// Return an error if RandomTotalCount is zero.
 		return nil, errors.New("BpTestModel1.RandomTotalCount cannot be zero")

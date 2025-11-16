@@ -1,10 +1,11 @@
 package utilhub
 
 import (
-	"github.com/stretchr/testify/require"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // Test_SetFieldValue tests the setFieldValue function.

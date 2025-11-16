@@ -44,17 +44,17 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	random := rand.New(source)
 
 	for j := 0; j < len(testPlan); j++ {
-		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].Op.InsertAction), int(testPlan[j].Op.DeleteAction), false)
+		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].op.insertAction), int(testPlan[j].op.deleteAction), false)
 
 		shuffleSlice(batchInsert, random)
 		shuffleSlice(batchRemove, random)
 
-		for k := 0; k < int(testPlan[j].Op.InsertAction); k++ {
+		for k := 0; k < int(testPlan[j].op.insertAction); k++ {
 			dataSet = append(dataSet, batchInsert[k])
 			progressBar.UpdateBar()
 		}
 
-		for l := 0; l < int(testPlan[j].Op.DeleteAction); l++ {
+		for l := 0; l < int(testPlan[j].op.deleteAction); l++ {
 			dataSet = append(dataSet, -1*batchRemove[l])
 			progressBar.UpdateBar()
 		}
@@ -95,12 +95,12 @@ func (model2 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
 	// ▓▒░ Create a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 2: Randomized Boundary Test - check test data", // Progress bar title.
-		uint32(len(dataSet)),                                 // Total number of operations.
-		70,                                                   // Progress bar width.
-		utilhub.WithTracking(5),                              // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),                  // Time zone.
-		utilhub.WithTimeControl(500),                         // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen),             // Display style.
+		uint32(len(dataSet)),                     // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
 	)
 
 	// Create an empty map for checking dataSet.
