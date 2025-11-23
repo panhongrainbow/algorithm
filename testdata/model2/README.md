@@ -1,4 +1,6 @@
 # Mode 2 : Pool-Based Boundary Testing
+<small>模式二：边界条件测试</small>
+***
 
 ## Introduction
 

@@ -13,7 +13,7 @@ import (
 )
 
 // =====================================================================================================================
-//                  ⚗️ BpTree Accuracy Mode 2 (Boundary Mode)
+//                  ⚗️ BpTree Accuracy Mode 2 (Boundary Test Mode)
 // Test cases are divided into three phases: preparation, validation, and execution.
 // prepare_Mode2 : prepares test data for Mode 2.
 // verify_Mode2 : validates the test data.
@@ -81,14 +81,14 @@ func verifyMode2(t *testing.T) {
 	require.NoError(t, err, "failed to validate test data")
 }
 
-// runMode2 🧫 runs the actual test cases for Mode 1.
+// runMode2 🧫 runs the actual test cases for Mode 2.
 func runMode2(t *testing.T) {
 	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
 		_runMode2(t, bpWidth)
 	}
 }
 
-// _runMode2 🧫 runs the actual test cases for Mode 1.
+// _runMode2 🧫 runs the actual test cases for Mode 2.
 func _runMode2(t *testing.T, bpWidth int) {
 	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode1.do_not_open", 8, binary.LittleEndian)
 
@@ -102,11 +102,11 @@ func _runMode2(t *testing.T, bpWidth int) {
 		testMode1Name,
 		// "Mode 1: Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
-		70,                                       // Progress bar width.
-		utilhub.WithTracking(5),                  // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
-		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+		70,                                                 // Progress bar width.
+		utilhub.WithTracking(5),                            // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),                // Time zone.
+		utilhub.WithTimeControl(500),                       // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen),           // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.

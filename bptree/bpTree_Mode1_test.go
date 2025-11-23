@@ -13,7 +13,7 @@ import (
 )
 
 // =====================================================================================================================
-//                  ⚗️ BpTree Accuracy Mode 1 (Bulk Insert/Delete Mode)
+//                  ⚗️ BpTree Accuracy Mode 1 (Bulk Operation Mode)
 // Test cases are divided into three phases: preparation, validation, and execution.
 // prepare_Mode1 : prepares test data for Mode 1.
 // verify_Mode1 : validates the test data.
