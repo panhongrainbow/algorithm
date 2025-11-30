@@ -102,11 +102,11 @@ func _runMode2(t *testing.T, bpWidth int) {
 		testMode1Name,
 		// "Mode 1: Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
-		70,                                                 // Progress bar width.
-		utilhub.WithTracking(5),                            // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),                // Time zone.
-		utilhub.WithTimeControl(500),                       // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen),           // Display style.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.

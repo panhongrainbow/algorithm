@@ -43,7 +43,6 @@ var (
 
 // Test_Check_BpTree_Accuracy 🧫 checks if the tree resets after bulk insert/delete, ensuring indexing correctness.
 func Test_Check_BpTree_Accuracies(t *testing.T) {
-
 	t.Run("Pre-test checks", func(t *testing.T) {
 		// Record path must not be empty.
 		require.NotEqual(t, "", ProjectDir.Path(), "record path is empty; check path creation")
@@ -75,14 +74,14 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 	})
 
 	t.Run("Mode 3: Single Node Endurance Test", func(t *testing.T) {
-		// Prepare test data for mode 2.
-		prepareMode2(t)
+		// Prepare test data for mode 3.
+		prepareMode3(t)
 
-		// Verify test data for mode 2.
-		verifyMode2(t)
+		// Verify test data for mode 3.
+		// verifyMode3(t)
 
-		// Execute accuracy test for mode 2.
-		runMode2(t)
+		// Execute accuracy test for mode 3.
+		// runMode3(t)
 	})
 
 	testMode3Name := "Mode 3: Gradual Boundary Test"

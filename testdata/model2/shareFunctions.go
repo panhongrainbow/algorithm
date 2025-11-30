@@ -9,12 +9,8 @@ import (
 	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
-// BpTestModel2 🧮 is implemented using the Dynamic Pool Stress Test to simulate random insertions and removals in a real data pool,
-// ensuring performance, stability, and correctness.
-type BpTestModel2 struct{}
-
-// GenerateRandomSet 🧮 generates a slice of random data set for test model 2.
-func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
+// ShareGenerateRandomSet 🧮 generates a slice of random data set for test model 2 and test model 3.
+func (model2 *BpTestModel2) ShareGenerateRandomSet(cyclicStressCount int64) ([]int64, error) {
 	// Use RandomTotalCount to limit the test scope.
 	unitTestConfig := utilhub.GetDefaultConfig()
 	limitTestScope := unitTestConfig.Parameters.RandomTotalCount
@@ -23,13 +19,13 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	testPlan := model2.StageParameters(limitTestScope, stageParams.MinRemovals, stageParams.MaxRemovals, stageParams.MinPreserveInPool, stageParams.MaxPreserveInPool)
 
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 2: Randomized Boundary - generate test data", // Progress bar title.
-		uint32(model2.TotalOps(testPlan)),                  // Total number of operations.
-		70,                                                 // Progress bar width.
-		utilhub.WithTracking(5),                            // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),                // Time zone.
-		utilhub.WithTimeControl(500),                       // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightBlue),            // Display style.
+		"Mode 2: Randomized Boundary - generate test data",    // Progress bar title.
+		uint32(model2._TotalOps(testPlan, cyclicStressCount)), // Total number of operations.
+		70,                                                    // Progress bar width.
+		utilhub.WithTracking(5),                               // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),                   // Time zone.
+		utilhub.WithTimeControl(500),                          // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightBlue),               // Display style.
 	)
 
 	go func() {
@@ -40,11 +36,30 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 
 	dataSet := make([]int64, 0)
 
-	source := rand.NewSource(time.Now().UnixNano())
-	random := rand.New(source)
-
 	for j := 0; j < len(testPlan); j++ {
 		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].op.insertAction), int(testPlan[j].op.deleteAction), false)
+
+		for cycle := 0; cycle < int(cyclicStressCount); cycle++ {
+
+			source := rand.NewSource(time.Now().UnixNano())
+			random := rand.New(source)
+
+			shuffleSlice(batchInsert, random)
+			// shuffleSlice(batchRemove, random)
+
+			for k := 0; k < int(testPlan[j].op.insertAction); k++ {
+				dataSet = append(dataSet, batchInsert[k])
+				progressBar.UpdateBar()
+			}
+
+			for l := 0; l < int(testPlan[j].op.insertAction); l++ {
+				dataSet = append(dataSet, -1*batchInsert[l])
+				progressBar.UpdateBar()
+			}
+		}
+
+		source := rand.NewSource(time.Now().UnixNano())
+		random := rand.New(source)
 
 		shuffleSlice(batchInsert, random)
 		shuffleSlice(batchRemove, random)
@@ -73,8 +88,20 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	return dataSet, nil
 }
 
-// CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers.
-func (model2 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
+// shuffleSlice randomly shuffles the elements in the slice.
+func shuffleSlice(slice []int64, rng *rand.Rand) {
+	// Iterate through the slice in reverse order, starting from the last element.
+	for i := len(slice) - 1; i > 0; i-- {
+		// Generate a random index 'j' between 0 and i (inclusive).
+		j := rng.Intn(i + 1)
+
+		// Swap the elements at indices i and j.
+		slice[i], slice[j] = slice[j], slice[i]
+	}
+}
+
+// _CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers for test model 2 and test model 3.
+func (model2 *BpTestModel2) _CheckRandomSet(dataSet []int64) error {
 	// Check if the length of the data set is even.
 	if len(dataSet)%2 != 0 {
 		return errors.New("dataSet length must be even")
@@ -83,12 +110,12 @@ func (model2 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
 	// ▓▒░ Create a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
 		"Mode 2: Randomized Boundary Test - check test data", // Progress bar title.
-		uint32(len(dataSet)),                     // Total number of operations.
-		70,                                       // Progress bar width.
-		utilhub.WithTracking(5),                  // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
-		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+		uint32(len(dataSet)),                                 // Total number of operations.
+		70,                                                   // Progress bar width.
+		utilhub.WithTracking(5),                              // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),                  // Time zone.
+		utilhub.WithTimeControl(500),                         // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen),             // Display style.
 	)
 
 	// Create an empty map for checking dataSet.
@@ -142,4 +169,23 @@ func (model2 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
 
 	// Return nil if the data set is valid.
 	return nil
+}
+
+// TotalOps 🧮 returns the total number of insert/delete operations across all stages.
+//
+// The sum of all OperationPlans across all stages is defined to be zero (total inserts equal total deletes).
+// Therefore, the total number of operations can be calculated as:
+//
+//	\Sigma Op.InsertAction * 2 * Repeat * 1 (for test mode 2)
+//	\Sigma Op.InsertAction * 2 * Repeat * cyclicStressCount (for test mode 3)
+//
+// where Op.InsertAction is used as the insertion count.
+func (model2 *BpTestModel2) _TotalOps(stages []stage, cyclicStressCount int64) int64 {
+	var totalOps int64
+	for _, each := range stages {
+		if each.Repeat > 1 {
+			totalOps += each.op.insertAction * int64(each.Repeat) * 2 * cyclicStressCount
+		}
+	}
+	return totalOps
 }
