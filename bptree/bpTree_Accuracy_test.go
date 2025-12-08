@@ -78,7 +78,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		prepareMode3(t)
 
 		// Verify test data for mode 3.
-		// verifyMode3(t)
+		verifyMode3(t)
 
 		// Execute accuracy test for mode 3.
 		// runMode3(t)

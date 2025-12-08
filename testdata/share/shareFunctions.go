@@ -1,4 +1,4 @@
-package model2
+package share
 
 import (
 	"errors"
@@ -9,23 +9,25 @@ import (
 	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
+type BpTestShare struct{}
+
 // ShareGenerateRandomSet 🧮 generates a slice of random data set for test model 2 and test model 3.
-func (model2 *BpTestModel2) ShareGenerateRandomSet(cyclicStressCount int64) ([]int64, error) {
+func (model *BpTestShare) ShareGenerateRandomSet(cyclicStressCount int64) ([]int64, error) {
 	// Use RandomTotalCount to limit the test scope.
 	unitTestConfig := utilhub.GetDefaultConfig()
 	limitTestScope := unitTestConfig.Parameters.RandomTotalCount
 	stageParams := unitTestConfig.PoolStage
 
-	testPlan := model2.StageParameters(limitTestScope, stageParams.MinRemovals, stageParams.MaxRemovals, stageParams.MinPreserveInPool, stageParams.MaxPreserveInPool)
+	testPlan := model.StageParameters(limitTestScope, stageParams.MinRemovals, stageParams.MaxRemovals, stageParams.MinPreserveInPool, stageParams.MaxPreserveInPool)
 
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 2: Randomized Boundary - generate test data",    // Progress bar title.
-		uint32(model2._TotalOps(testPlan, cyclicStressCount)), // Total number of operations.
-		70,                                                    // Progress bar width.
-		utilhub.WithTracking(5),                               // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),                   // Time zone.
-		utilhub.WithTimeControl(500),                          // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightBlue),               // Display style.
+		"Mode 3: CyclicStress Boundary - generate test data", // Progress bar title.
+		uint32(model._TotalOps(testPlan, cyclicStressCount)), // Total number of operations.
+		70,                                      // Progress bar width.
+		utilhub.WithTracking(5),                 // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+		utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightBlue), // Display style.
 	)
 
 	go func() {
@@ -44,7 +46,7 @@ func (model2 *BpTestModel2) ShareGenerateRandomSet(cyclicStressCount int64) ([]i
 			source := rand.NewSource(time.Now().UnixNano())
 			random := rand.New(source)
 
-			shuffleSlice(batchInsert, random)
+			ShuffleSlice(batchInsert, random)
 			// shuffleSlice(batchRemove, random)
 
 			for k := 0; k < int(testPlan[j].op.insertAction); k++ {
@@ -61,8 +63,8 @@ func (model2 *BpTestModel2) ShareGenerateRandomSet(cyclicStressCount int64) ([]i
 		source := rand.NewSource(time.Now().UnixNano())
 		random := rand.New(source)
 
-		shuffleSlice(batchInsert, random)
-		shuffleSlice(batchRemove, random)
+		ShuffleSlice(batchInsert, random)
+		ShuffleSlice(batchRemove, random)
 
 		for k := 0; k < int(testPlan[j].op.insertAction); k++ {
 			dataSet = append(dataSet, batchInsert[k])
@@ -88,20 +90,8 @@ func (model2 *BpTestModel2) ShareGenerateRandomSet(cyclicStressCount int64) ([]i
 	return dataSet, nil
 }
 
-// shuffleSlice randomly shuffles the elements in the slice.
-func shuffleSlice(slice []int64, rng *rand.Rand) {
-	// Iterate through the slice in reverse order, starting from the last element.
-	for i := len(slice) - 1; i > 0; i-- {
-		// Generate a random index 'j' between 0 and i (inclusive).
-		j := rng.Intn(i + 1)
-
-		// Swap the elements at indices i and j.
-		slice[i], slice[j] = slice[j], slice[i]
-	}
-}
-
-// _CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers for test model 2 and test model 3.
-func (model2 *BpTestModel2) _CheckRandomSet(dataSet []int64) error {
+// CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers for test model 2 and test model 3.
+func (model *BpTestShare) CheckRandomSet(dataSet []int64) error {
 	// Check if the length of the data set is even.
 	if len(dataSet)%2 != 0 {
 		return errors.New("dataSet length must be even")
@@ -109,13 +99,13 @@ func (model2 *BpTestModel2) _CheckRandomSet(dataSet []int64) error {
 
 	// ▓▒░ Create a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 2: Randomized Boundary Test - check test data", // Progress bar title.
-		uint32(len(dataSet)),                                 // Total number of operations.
-		70,                                                   // Progress bar width.
-		utilhub.WithTracking(5),                              // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),                  // Time zone.
-		utilhub.WithTimeControl(500),                         // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen),             // Display style.
+		"Mode 3: CyclicStress Boundary Test - check test data", // Progress bar title.
+		uint32(len(dataSet)),                     // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
 	)
 
 	// Create an empty map for checking dataSet.
@@ -180,7 +170,7 @@ func (model2 *BpTestModel2) _CheckRandomSet(dataSet []int64) error {
 //	\Sigma Op.InsertAction * 2 * Repeat * cyclicStressCount (for test mode 3)
 //
 // where Op.InsertAction is used as the insertion count.
-func (model2 *BpTestModel2) _TotalOps(stages []stage, cyclicStressCount int64) int64 {
+func (model *BpTestShare) _TotalOps(stages []stage, cyclicStressCount int64) int64 {
 	var totalOps int64
 	for _, each := range stages {
 		if each.Repeat > 1 {
@@ -188,4 +178,16 @@ func (model2 *BpTestModel2) _TotalOps(stages []stage, cyclicStressCount int64) i
 		}
 	}
 	return totalOps
+}
+
+// ShuffleSlice randomly shuffles the elements in the slice.
+func ShuffleSlice(slice []int64, rng *rand.Rand) {
+	// Iterate through the slice in reverse order, starting from the last element.
+	for i := len(slice) - 1; i > 0; i-- {
+		// Generate a random index 'j' between 0 and i (inclusive).
+		j := rng.Intn(i + 1)
+
+		// Swap the elements at indices i and j.
+		slice[i], slice[j] = slice[j], slice[i]
+	}
 }

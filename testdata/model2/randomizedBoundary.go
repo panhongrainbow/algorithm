@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/panhongrainbow/algorithm/randhub"
+	"github.com/panhongrainbow/algorithm/testdata/share"
 	"github.com/panhongrainbow/algorithm/utilhub"
 )
 
@@ -46,8 +47,8 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 	for j := 0; j < len(testPlan); j++ {
 		batchInsert, batchRemove := pool.GenerateUniqueInt64Numbers(unitTestConfig.Parameters.RandomMin, unitTestConfig.Parameters.RandomMax, int(testPlan[j].op.insertAction), int(testPlan[j].op.deleteAction), false)
 
-		shuffleSlice(batchInsert, random)
-		shuffleSlice(batchRemove, random)
+		share.ShuffleSlice(batchInsert, random)
+		share.ShuffleSlice(batchRemove, random)
 
 		for k := 0; k < int(testPlan[j].op.insertAction); k++ {
 			dataSet = append(dataSet, batchInsert[k])
