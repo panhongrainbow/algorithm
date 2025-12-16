@@ -2,11 +2,13 @@ package bpTree
 
 import (
 	"encoding/binary"
+	"fmt"
 	"os"
 	"testing"
 
 	bptestModel3 "github.com/panhongrainbow/algorithm/testdata/model3"
 	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,7 +52,7 @@ func prepareMode3(t *testing.T) {
 		"mode3.do_not_open",
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
 		binary.LittleEndian, spliceBlockLength, spliceBlockWidth,
-		"Mode 3: cyclicStress - Backup",
+		"Mode 3: CyclicStress - Backup",
 		utilhub.BrightCyan,
 		70,
 	)
@@ -66,7 +68,7 @@ func verifyMode3(t *testing.T) {
 		uint32(unitTestConfig.Parameters.RandomTotalCount),
 		"mode3.do_not_open", 800,
 		binary.LittleEndian,
-		"Mode 3: Randomized Boundary Test - read test data",
+		"Mode 3: CyclicStress Test - read test data",
 		utilhub.BrightCyan,
 		70,
 	)
@@ -81,5 +83,69 @@ func verifyMode3(t *testing.T) {
 
 // runMode3 🧫 runs the actual test cases for Mode 3.
 func runMode3(t *testing.T) {
-	//
+	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
+		_runMode3(t, bpWidth)
+	}
+}
+
+// _runMode3 🧫 runs the actual test cases for Mode 3.
+func _runMode3(t *testing.T, bpWidth int) {
+	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode3.do_not_open", 8, binary.LittleEndian)
+
+	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
+
+	testMode2Name := fmt.Sprintf("Mode 3: CyclicStress Test - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+
+	// ▓▒░ Creating a progress bar with optional configurations.
+	progressBar, _ := utilhub.NewProgressBar(
+		testMode2Name,
+		// "Mode 1: Execution   ",                             // Progress bar title.
+		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
+	)
+
+	// ▓▒░ Start the progress bar printer in a separate goroutine.
+	go func() {
+		progressBar.ListenPrinter()
+	}()
+
+Loop:
+	for {
+		select {
+		case data := <-dtatChan:
+			for j := 0; j < len(data); j++ {
+				if data[j] >= 0 {
+					root.InsertValue(BpItem{Key: data[j]})
+					progressBar.UpdateBar()
+				}
+				if data[j] < 0 {
+					deleted, _, _, err := root.RemoveValue(BpItem{Key: -1 * data[j]})
+					require.True(t, deleted)
+					require.NoError(t, err)
+					progressBar.UpdateBar()
+				}
+			}
+		case err := <-errChan:
+			fmt.Println(err)
+		case <-finsishChan:
+			break Loop
+		}
+	}
+
+	// ▓▒░ Mark the progress bar as complete.
+	progressBar.Complete()
+
+	// ▓▒░ Wait for the progress bar printer to stop.
+	<-progressBar.WaitForPrinterStop()
+
+	// Print a final report.
+	err := progressBar.Report(len(testMode2Name + "; Width: XX"))
+	assert.NoError(t, err)
+
+	// Print the B Plus tree structure.
+	root.root.Print()
 }

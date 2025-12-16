@@ -90,16 +90,15 @@ func runMode2(t *testing.T) {
 
 // _runMode2 🧫 runs the actual test cases for Mode 2.
 func _runMode2(t *testing.T, bpWidth int) {
-	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode1.do_not_open", 8, binary.LittleEndian)
+	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode2.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
 
-	// testMode1Name := "Mode 1: Execution; Width: " + strconv.Itoa(unitTestConfig.Parameters.BpWidth[bpWidth])
-	testMode1Name := fmt.Sprintf("Mode 2: Randomized Boundary Test - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+	testMode2Name := fmt.Sprintf("Mode 2: Randomized Boundary Test - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		testMode1Name,
+		testMode2Name,
 		// "Mode 1: Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
@@ -144,7 +143,7 @@ Loop:
 	<-progressBar.WaitForPrinterStop()
 
 	// Print a final report.
-	err := progressBar.Report(len(testMode1Name + "; Width: XX"))
+	err := progressBar.Report(len(testMode2Name + "; Width: XX"))
 	assert.NoError(t, err)
 
 	// Print the B Plus tree structure.

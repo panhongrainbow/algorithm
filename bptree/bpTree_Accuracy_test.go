@@ -81,9 +81,8 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		verifyMode3(t)
 
 		// Execute accuracy test for mode 3.
-		// runMode3(t)
+		runMode3(t)
 	})
-
 	testMode3Name := "Mode 3: Gradual Boundary Test"
 	t.Run(testMode3Name, func(t *testing.T) {
 		// By repeatedly performing insert and delete operations, we can assess the system's
