@@ -1,7 +1,7 @@
 package utilhub
 
 var (
-	// 🧪 Create a config struct for B plus tree unit testing and parse default values.
+	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
 	_unitTestConfig = BptreeUnitTestConfig{}
 	_configParseErr = ParseDefault(&_unitTestConfig)
 )

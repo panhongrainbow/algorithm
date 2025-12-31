@@ -1,0 +1,29 @@
+{
+  "manualTest": {
+    "enableBulkInsertDelete": false,
+    "enableRandomizedBoundary": false,
+    "enableNodeEnduranceTest": true
+  },
+  "record": {
+    "testRecordPath": "/temp/test_record/2025-12-20/mode3.do_not_open",
+    "isInsideProject": true
+  },
+  "parameters": {
+    "randomTotalCount": 7500000,
+    "randomMin": 10,
+    "randomHitCollisionPercentage": 70,
+    "randomMax": 10714295,
+    "bpWidth": [
+      4
+    ]
+  },
+  "poolStage": {
+    "minRemovals": 5,
+    "maxRemovals": 50,
+    "minPreserveInPool": 10,
+    "maxPreserveInPool": 20
+  },
+  "cyclicStress": {
+    "cyclicStressCount": 10
+  }
+}
