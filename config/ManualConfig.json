@@ -1,4 +1,4 @@
-{
+[{
   "manualTest": {
     "enableBulkInsertDelete": false,
     "enableRandomizedBoundary": false,
@@ -26,4 +26,4 @@
   "cyclicStress": {
     "cyclicStressCount": 10
   }
-}
+}]
