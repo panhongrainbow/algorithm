@@ -10,9 +10,16 @@ import (
 
 var (
 	// 🧪 Create a config instance for B plus tree unit testing and collect many previous failure scenarios.
-	_manualTestConfig []BptreeUnitTestConfig // This time, using slices that contain various different failure scenarios.
+	_manualTestConfig []BptreeUnitTestConfig // This time, using a slice that gathers various different failure scenarios.
 	_manualParseErr   = ParseManual(&_manualTestConfig)
 )
+
+// 🧪 Initialize manual test parameters.
+func init() {
+	if _manualParseErr != nil {
+		panic(_manualParseErr)
+	}
+}
 
 // ManualConfig is the instance, which refers to the file name under the config directory.
 type ManualConfig interface{}
@@ -22,7 +29,7 @@ func ParseManual(cfg ManualConfig) error {
 	return _parseManual(cfg)
 }
 
-// _parseManual ⛏️ loads the default configuration from struct tags and applies it to the provided struct,
+// _parseManual ⛏️ loads the manual configurations from struct tags and applies it to the provided struct,
 // prioritizing the specified values if available.
 func _parseManual(cfg ManualConfig) error {
 	// Get the default configuration directory.
@@ -54,7 +61,6 @@ func _parseManual(cfg ManualConfig) error {
 
 	// Return nil to indicate the operation completed successfully.
 	return nil
-
 }
 
 // _applyDefaults2manualConfig fills in default values for many previous failure scenarios.
@@ -70,8 +76,20 @@ func _applyDefaults2manualConfig(filePath string, cfg ManualConfig) error {
 		return err
 	}
 
+	// Fills in default values for the content.
+	err = _applyDefaults2content(content, cfg)
+	if err != nil {
+		return err
+	}
+
+	// No error occurred, return nil.
+	return nil
+}
+
+// _applyDefaults2content function fills in default values for the content of many previous failure scenarios.
+func _applyDefaults2content(content []byte, cfg ManualConfig) error {
 	// Unmarshal the JSON data into the provided config and overwrite the default values.
-	if err = json.Unmarshal(content, cfg); err != nil {
+	if err := json.Unmarshal(content, cfg); err != nil {
 		return err
 	}
 
@@ -79,7 +97,7 @@ func _applyDefaults2manualConfig(filePath string, cfg ManualConfig) error {
 	arr := cfg.(*[]BptreeUnitTestConfig)
 	for i := 0; i < len(*arr); i++ {
 		// [applyDefaults] applies the default values from struct tags to the provided config. (主要逻辑)
-		if err = applyDefaults(&((*arr)[i])); err != nil {
+		if err := applyDefaults(&((*arr)[i])); err != nil {
 			return err
 		}
 	}

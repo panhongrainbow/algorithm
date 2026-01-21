@@ -6,6 +6,7 @@ var (
 	_configParseErr = ParseDefault(&_unitTestConfig)
 )
 
+// 🧪 Initialize default test parameters.
 func init() {
 	if _configParseErr != nil {
 		panic(_configParseErr)
