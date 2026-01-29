@@ -10,7 +10,7 @@ package bpTree
 
 // To run the test, run the following command:
 //
-// cd /home/panhong/go/src/github.com/panhongrainbow/algorithm/bptree
+// cd /home/panhong/go/src/github.com/panhongrainbow/go-algorithm/bptree
 // go clean -cache
 // go test -v . -timeout=0 -run Test_Check_BpTree_Accuracies
 
@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/panhongrainbow/go-algorithm/utilhub"
 	"github.com/stretchr/testify/require"
 )
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/panhongrainbow/go-algorithm/utilhub"
 )
 
 // CalculateRandomTotalCount 🧮 calculates the total count of random numbers that can be generated

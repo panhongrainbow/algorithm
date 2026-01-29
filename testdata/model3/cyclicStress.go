@@ -1,7 +1,7 @@
 package model3
 
 import (
-	bptestModel "github.com/panhongrainbow/algorithm/testdata/share"
+	bptestModel "github.com/panhongrainbow/go-algorithm/testdata/share"
 )
 
 type BpTestModel3 struct{}

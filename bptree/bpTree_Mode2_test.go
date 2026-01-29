@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	bptestModel2 "github.com/panhongrainbow/algorithm/testdata/model2"
-	"github.com/panhongrainbow/algorithm/utilhub"
+	bptestModel2 "github.com/panhongrainbow/go-algorithm/testdata/model2"
+	"github.com/panhongrainbow/go-algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

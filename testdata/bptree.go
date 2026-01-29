@@ -9,7 +9,7 @@ import (
 //                   🧮 BpTree Algorithm Test Plan
 // =====================================================================================================================
 // ✏️ These functions are designed to systematically plan the data generation,
-// batch insertion, and deletion processes for algorithm testing.
+// batch insertion, and deletion processes for go-algorithm testing.
 // ✏️ They ensure the test process is structured, clear, and easy to maintain,
 // while effectively covering various test scenarios.
 // ✏️ By organizing the workflow in advance, this approach enhances the

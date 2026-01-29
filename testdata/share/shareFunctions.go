@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/panhongrainbow/algorithm/randhub"
-	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/panhongrainbow/go-algorithm/randhub"
+	"github.com/panhongrainbow/go-algorithm/utilhub"
 )
 
 type BpTestShare struct{}

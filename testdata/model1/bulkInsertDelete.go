@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/panhongrainbow/algorithm/costars/slice2tree"
-	"github.com/panhongrainbow/algorithm/randhub"
-	bptestUtilhub "github.com/panhongrainbow/algorithm/testdata/utilhub"
-	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/panhongrainbow/go-algorithm/costars/slice2tree"
+	"github.com/panhongrainbow/go-algorithm/randhub"
+	bptestUtilhub "github.com/panhongrainbow/go-algorithm/testdata/utilhub"
+	"github.com/panhongrainbow/go-algorithm/utilhub"
 )
 
 // BpTestModel1 🧮 represents a test model for B Plus Tree testing.

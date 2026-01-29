@@ -3,7 +3,7 @@ package model2
 import (
 	"testing"
 
-	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/panhongrainbow/go-algorithm/utilhub"
 	"github.com/stretchr/testify/require"
 )
 

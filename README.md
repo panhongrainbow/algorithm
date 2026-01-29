@@ -1,4 +1,4 @@
-# algorithm
+# go-algorithm
 
 ## License Information
 

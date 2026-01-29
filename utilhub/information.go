@@ -1,6 +1,6 @@
 package utilhub
 
 const (
-	ProjectName = "algorithm"
+	ProjectName = "go-algorithm"
 	Version     = "0.0.1"
 )

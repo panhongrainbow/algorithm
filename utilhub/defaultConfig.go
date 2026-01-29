@@ -224,7 +224,7 @@ func setFieldValue(field reflect.Value, value string) error {
 // defaultConfig2file ⛏️ saves the default configuration to a JSON file.
 func defaultConfig2file(cfg DefaultConfig, overwrite bool) error {
 	// Get the default configuration directory.
-	path, err := GetProjectDir("algorithm/config")
+	path, err := GetProjectDir("go-algorithm/config")
 	if err != nil {
 		return err
 	}
@@ -283,7 +283,7 @@ func GetDefaultStructName(cfg DefaultConfig) (string, error) {
 	return v.Type().Name(), nil
 }
 
-// GetProjectDir ⛏️ retrieves the absolute path to the algorithm project's subdirectory.
+// GetProjectDir ⛏️ retrieves the absolute path to the go-algorithm project's subdirectory.
 func GetProjectDir(subDirs string) (string, error) {
 	// Get the caller's file path (this file).
 	_, callerPath, _, _ := runtime.Caller(0)
@@ -294,8 +294,8 @@ func GetProjectDir(subDirs string) (string, error) {
 		return "", fmt.Errorf("failed to get absolute path: %w", err)
 	}
 
-	// Split path to find algorithm root and join with config directory.
-	paths := strings.Split(utilhubPath, "algorithm")
+	// Split path to find go-algorithm root and join with config directory.
+	paths := strings.Split(utilhubPath, "go-algorithm")
 	configPath := filepath.Join(paths[0], subDirs)
 
 	// Return an absolute config path.

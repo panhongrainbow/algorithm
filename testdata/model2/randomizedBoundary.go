@@ -5,9 +5,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/panhongrainbow/algorithm/randhub"
-	"github.com/panhongrainbow/algorithm/testdata/share"
-	"github.com/panhongrainbow/algorithm/utilhub"
+	"github.com/panhongrainbow/go-algorithm/randhub"
+	"github.com/panhongrainbow/go-algorithm/testdata/share"
+	"github.com/panhongrainbow/go-algorithm/utilhub"
 )
 
 // BpTestModel2 🧮 is implemented using the Dynamic Pool Stress Test to simulate random insertions and removals in a real data pool,
