@@ -5,7 +5,7 @@ import "sync"
 var (
 	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
 	_unitTestConfig = BptreeUnitTestConfig{}
-	_configParseErr = ParseDefault(&_unitTestConfig)
+	_configParseErr = ParseDefaultManual(&_unitTestConfig)
 	_ones           sync.Once // Prevent configuration from being overwritten.
 )
 
@@ -22,6 +22,12 @@ func ForceReloadConfig() {
 }
 
 func GetDefaultConfig() BptreeUnitTestConfig {
+	_configParseErr = ParseDefaultManual(&_unitTestConfig)
+
+	if _configParseErr != nil {
+		panic(_configParseErr)
+	}
+
 	return _unitTestConfig
 }
 

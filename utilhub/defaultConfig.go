@@ -18,6 +18,31 @@ import (
 // (DefaultConfig是一个工具,用于标记结构体字段的默认值)
 // =====================================================================================================================
 
+// HACK => 暂时的设定
+var (
+	test_mech = "auto"
+	test_date = "2026-01-11"
+	test_file = "mode3.do_not_open"
+)
+
+func ParseDefaultManual(cfg DefaultConfig) error {
+	switch test_mech {
+	case "manual":
+		for _, manualConfig := range _manualTestConfig {
+			fmt.Println(manualConfig.Record.ManualRecordDate, manualConfig.Record.ManualRecordFile)
+			if manualConfig.Record.ManualRecordDate == test_date &&
+				manualConfig.Record.ManualRecordFile == test_file {
+				_unitTestConfig = manualConfig
+				return nil
+			}
+		}
+	case "auto":
+		return ParseDefault(cfg)
+	}
+
+	return nil
+}
+
 // ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
 func ParseDefault(cfg DefaultConfig) error {
 	// Prepare the variable outside of the closure function.
@@ -26,6 +51,7 @@ func ParseDefault(cfg DefaultConfig) error {
 
 	// Use Golang's sync.Once to prevent the setting from being overwritten.
 	_ones.Do(func() {
+
 		// Get the default configuration directory.
 		projectPath, err = GetProjectDir(filepath.Join(ProjectName))
 		if err != nil {
@@ -50,9 +76,13 @@ func ParseDefault(cfg DefaultConfig) error {
 			cfg.(*BptreeUnitTestConfig).Record.TestRecordPath = filepath.Join(projectPath, cfg.(*BptreeUnitTestConfig).Record.TestRecordPath)
 		}
 
-		// Below is the test code.
-		cfg.(*BptreeUnitTestConfig).Parameters.BpWidth = []int{3, 6, 7, 8, 12}
+		// When the mechanism is set to automatic, the test subdirectory will automatically be set to the current date.
+		if cfg.(*BptreeUnitTestConfig).Mechanism == "auto" {
+			cfg.(*BptreeUnitTestConfig).Record.ManualRecordDate = TestTimeString("2006-01-02", "Asia/Shanghai")
+		}
 
+		// HACK => Below is the test code.
+		cfg.(*BptreeUnitTestConfig).Parameters.BpWidth = []int{3, 6, 7, 8, 12}
 	})
 
 	// Return nil to indicate the operation completed successfully.

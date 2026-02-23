@@ -10,9 +10,12 @@ type DefaultConfig interface{}
 
 // BptreeUnitTestConfig ⛏️ is a struct for BpTree unit test configuration.
 type BptreeUnitTestConfig struct {
-	Record struct { // 🧪 Record contains configurations related to test record storage.
-		TestRecordPath  string `json:"testRecordPath" default:"/temp/test_record"` // 🧪 TestRecordPath specifies the directory path where test records will be saved.
-		IsInsideProject bool   `json:"isInsideProject" default:"true"`             // 🧪 IsInsideProject indicates whether the test records are stored inside the project directory.
+	Mechanism string   `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
+	Record    struct { // 🧪 Record contains configurations related to test record storage.
+		TestRecordPath   string `json:"testRecordPath" default:"/temp/test_record"` // 🧪 TestRecordPath specifies the directory path where test records will be saved.
+		ManualRecordDate string `json:"manualRecordDate" default:"0000-00-00"`      // 🧪 Manual testing requires specifying the previous test date.
+		ManualRecordFile string `json:"manualRecordFile" default:"empty"`           // 🧪 Manual testing requires specifying the previous test record file.
+		IsInsideProject  bool   `json:"isInsideProject" default:"true"`             // 🧪 IsInsideProject indicates whether the test records are stored inside the project directory.
 	} `json:"record"`
 	Parameters struct { // Parameters contains configurations for test execution parameters.
 		RandomTotalCount             int64 `json:"randomTotalCount" default:"7500000"`        // 🧪 RandomTotalCount represents the number of elements to be generated for random testing.

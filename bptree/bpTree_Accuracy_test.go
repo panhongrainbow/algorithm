@@ -32,20 +32,8 @@ var (
 	ProjectDir = utilhub.FileNode{}.Goto(unitTestConfig.Record.TestRecordPath)
 
 	// 🧪 Create a subdirectory named with the current date under the project.
-	recordDir = ProjectDir.MkDir(_TestTimeString("2006-01-02", "Asia/Shanghai"))
+	recordDir = ProjectDir.MkDir(unitTestConfig.Record.ManualRecordDate)
 )
-
-// _TestTimeString gets the current time as a formatted string in the given time zone.
-func _TestTimeString(format string, timeZone string) string {
-	// Call the function GetNowTimeString from the utilhub package to get the current time in string format.
-	str, err := utilhub.GetNowTimeString(format, timeZone)
-	if err != nil {
-		// If an error occurs, panic and terminate the program.
-		panic(err)
-	}
-	// Return the formatted time string.
-	return str
-}
 
 // Test_Check_BpTree_Accuracy 🧫 checks if the tree resets after bulk insert/delete, ensuring indexing correctness.
 func Test_Check_BpTree_Accuracies(t *testing.T) {
@@ -57,13 +45,23 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		require.NotEqual(t, "", recordDir.Path(), "record date path is empty; check path creation")
 	})
 
+	// HACK => 暂时测试
 	/*
 		t.Run("Mode 3:  Test", func(t *testing.T) {
 			// Prepare test data for mode 3.
 			// prepareMode3(t)
 
+			fmt.Println(">>>>>>>>>>>>>>>>>>>")
+
+			temp := unitTestConfig
+
+			fmt.Println(temp.Record.TestRecordPath)
+			fmt.Println(temp.Record.ManualRecordDate)
+
 			// Verify test data for mode 3.
-			// verifyMode3(t)
+			verifyMode3(t)
+
+			fmt.Println(">>>>>>>>>>>>>>>>>>>")
 
 			// Execute accuracy test for mode 3.
 			runMode3(t)

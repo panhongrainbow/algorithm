@@ -1,6 +1,9 @@
 {
+  "mechanism": "auto",
   "record": {
     "testRecordPath": "/temp/test_record",
+    "manualRecordDate": "0000-00-00",
+    "manualRecordFile": "empty",
     "isInsideProject": true
   },
   "parameters": {
@@ -24,5 +27,10 @@
   },
   "cyclicStress": {
     "cyclicStressCount": 10
+  },
+  "manualTest": {
+    "enableBulkInsertDelete": false,
+    "enableRandomizedBoundary": false,
+    "enableNodeEnduranceTest": false
   }
 }
