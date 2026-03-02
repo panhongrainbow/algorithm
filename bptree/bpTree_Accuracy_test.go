@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// This is a set of path configurations shared by both automated and manual testing.
 var (
 	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
 	unitTestConfig = utilhub.GetDefaultConfig()
@@ -45,62 +46,62 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		require.NotEqual(t, "", recordDir.Path(), "record date path is empty; check path creation")
 	})
 
-	// HACK => 暂时测试
-	/*
-		t.Run("Mode 3:  Test", func(t *testing.T) {
-			// Prepare test data for mode 3.
-			// prepareMode3(t)
-
-			fmt.Println(">>>>>>>>>>>>>>>>>>>")
-
-			temp := unitTestConfig
-
-			fmt.Println(temp.Record.TestRecordPath)
-			fmt.Println(temp.Record.ManualRecordDate)
-
-			// Verify test data for mode 3.
-			verifyMode3(t)
-
-			fmt.Println(">>>>>>>>>>>>>>>>>>>")
-
-			// Execute accuracy test for mode 3.
-			runMode3(t)
-		})
-
-		return
-	*/
-
 	t.Run("Mode 1: Bulk Insert/Delete", func(t *testing.T) {
-		// Prepare test data for mode 1.
-		prepareMode1(t)
 
-		// Verify test data for mode 1.
-		verifyMode1(t)
+		// Test data will only be generated during automated testing.
+		if unitTestConfig.Mechanism == "auto" {
+			// Prepare test data for mode 1.
+			prepareMode1(t)
+		}
 
-		// Execute accuracy test for mode 1.
-		runMode1(t)
+		// Only during automated testing or this test mode will the following tests be performed continuously.
+		if unitTestConfig.Mechanism == "auto" ||
+			unitTestConfig.ManualTest.EnableBulkInsertDelete {
+
+			// Verify test data for mode 1.
+			verifyMode1(t)
+
+			// Execute accuracy test for mode 1.
+			runMode1(t)
+		}
 	})
 
 	t.Run("Mode 2: Randomized Boundary Test", func(t *testing.T) {
-		// Prepare test data for mode 2.
-		prepareMode2(t)
 
-		// Verify test data for mode 2.
-		verifyMode2(t)
+		// Test data will only be generated during automated testing.
+		if unitTestConfig.Mechanism == "auto" {
+			// Prepare test data for mode 2.
+			prepareMode2(t)
+		}
 
-		// Execute accuracy test for mode 2.
-		runMode2(t)
+		// Only during automated testing or this test mode will the following tests be performed continuously.
+		if unitTestConfig.Mechanism == "auto" ||
+			unitTestConfig.ManualTest.EnableRandomizedBoundary {
+			// Verify test data for mode 2.
+			verifyMode2(t)
+
+			// Execute accuracy test for mode 2.
+			runMode2(t)
+		}
 	})
 
 	t.Run("Mode 3: Single Node Endurance Test", func(t *testing.T) {
-		// Prepare test data for mode 3.
-		prepareMode3(t)
 
-		// Verify test data for mode 3.
-		verifyMode3(t)
+		// Test data will only be generated during automated testing.
+		if unitTestConfig.Mechanism == "auto" {
+			// Prepare test data for mode 3.
+			prepareMode3(t)
+		}
 
-		// Execute accuracy test for mode 3.
-		runMode3(t)
+		// Only during automated testing or this test mode will the following tests be performed continuously.
+		if unitTestConfig.Mechanism == "auto" ||
+			unitTestConfig.ManualTest.EnableNodeEnduranceTest {
+			// Verify test data for mode 3.
+			verifyMode3(t)
+
+			// Execute accuracy test for mode 3.
+			runMode3(t)
+		}
 	})
 }
 
