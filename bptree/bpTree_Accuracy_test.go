@@ -46,23 +46,23 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		require.NotEqual(t, "", recordDir.Path(), "record date path is empty; check path creation")
 	})
 
-	t.Run("Mode 1: Bulk Insert/Delete", func(t *testing.T) {
+	t.Run("Bulk InsertDelete", func(t *testing.T) {
 
 		// Test data will only be generated during automated testing.
 		if unitTestConfig.Mechanism == "auto" {
-			// Prepare test data for mode 1.
-			prepareMode1(t)
+			// Prepare test data for BulkInsertDelete.
+			prepareBulkInsertDelete(t)
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
 		if unitTestConfig.Mechanism == "auto" ||
 			unitTestConfig.ManualTest.EnableBulkInsertDelete {
 
-			// Verify test data for mode 1.
-			verifyMode1(t)
+			// Verify test data for BulkInsertDelete.
+			verifyBulkInsertDelete(t)
 
-			// Execute accuracy test for mode 1.
-			runMode1(t)
+			// Execute accuracy test for BulkInsertDelete.
+			runBulkInsertDelete(t)
 		}
 	})
 

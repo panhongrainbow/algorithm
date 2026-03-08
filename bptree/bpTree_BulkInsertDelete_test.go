@@ -6,30 +6,30 @@ import (
 	"os"
 	"testing"
 
-	bptestModel1 "github.com/panhongrainbow/go-algorithm/testdata/model1"
+	bptestBulkInsertDelete "github.com/panhongrainbow/go-algorithm/testdata/bulkInsertDelete"
 	"github.com/panhongrainbow/go-algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // =====================================================================================================================
-//                  ⚗️ BpTree Accuracy Mode 1 (Bulk Operation Mode)
+//                  ⚗️ BpTree Accuracy BulkInsertDelete (Bulk Operation Mode)
 // Test cases are divided into three phases: preparation, validation, and execution.
-// prepare_Mode1 : prepares test data for Mode 1.
-// verify_Mode1 : validates the test data.
-// run_Mode1 : runs the test cases.
+// prepare_BulkInsertDelete : prepares test data for BulkInsertDelete.
+// verify_BulkInsertDelete : validates the test data.
+// run_BulkInsertDelete : runs the test cases.
 // =====================================================================================================================
 
-// prepareMode1 🧫 prepares test data for Mode 1.
-func prepareMode1(t *testing.T) {
+// prepareBulkInsertDelete 🧫 prepares test data for BulkInsertDelete.
+func prepareBulkInsertDelete(t *testing.T) {
 
 	// === Init test model and record file ===
 
 	// Create model 1 with specified data count.
-	bptest1 := &bptestModel1.BpTestModel1{}
+	bptest1 := &bptestBulkInsertDelete.BpTestBulkInsertDelete{}
 
 	// Create an empty record file.
-	err := recordDir.Touch("mode1.do_not_open")
+	err := recordDir.Touch("BulkInsertDelete.do_not_open")
 	require.NoError(t, err, "failed to create record file")
 
 	// === Generate test data ===
@@ -49,10 +49,10 @@ func prepareMode1(t *testing.T) {
 
 	err = recordDir.LinuxSpliceProgressStreamWrite(
 		testDataSet,
-		"mode1.do_not_open",
+		"BulkInsertDelete.do_not_open",
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
 		binary.LittleEndian, spliceBlockLength, spliceBlockWidth,
-		"Mode 1: Bulk Insert/Delete - Backup",
+		"Bulk InsertDelete - Backup",
 		utilhub.BrightCyan,
 		70,
 	)
@@ -61,46 +61,46 @@ func prepareMode1(t *testing.T) {
 	// Data check is done in the next test case.
 }
 
-// verifyMode1 🧫 checks the test data set for Mode 1.
-func verifyMode1(t *testing.T) {
+// verifyBulkInsertDelete 🧫 checks the test data set for BulkInsertDelete.
+func verifyBulkInsertDelete(t *testing.T) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
 		uint32(unitTestConfig.Parameters.RandomTotalCount),
-		"mode1.do_not_open", 800,
+		"BulkInsertDelete.do_not_open", 800,
 		binary.LittleEndian,
-		"Mode 1: Bulk Insert/Delete - read test data",
+		"Bulk InsertDelete - read test data",
 		utilhub.BrightCyan,
 		70,
 	)
 
 	// Init test model.
-	bptest1 := &bptestModel1.BpTestModel1{}
+	bptest1 := &bptestBulkInsertDelete.BpTestBulkInsertDelete{}
 
 	// Validate test data.
 	err = bptest1.CheckRandomSet(testDataSet)
 	require.NoError(t, err, "failed to validate test data")
 }
 
-// runMode1 🧫 runs the actual test cases for Mode 1.
-func runMode1(t *testing.T) {
+// runBulkInsertDelete 🧫 runs the actual test cases for BulkInsertDelete.
+func runBulkInsertDelete(t *testing.T) {
 	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
-		_runMode1(t, bpWidth)
+		_runBulkInsertDelete(t, bpWidth)
 	}
 }
 
-// _runMode1 🧫 runs the actual test cases for Mode 1.
-func _runMode1(t *testing.T, bpWidth int) {
-	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode1.do_not_open", 8, binary.LittleEndian)
+// _runBulkInsertDelete 🧫 runs the actual test cases for BulkInsertDelete.
+func _runBulkInsertDelete(t *testing.T, bpWidth int) {
+	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("BulkInsertDelete.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
 
-	// testMode1Name := "Mode 1: Execution; Width: " + strconv.Itoa(unitTestConfig.Parameters.BpWidth[bpWidth])
-	testMode1Name := fmt.Sprintf("Mode 1: Bulk Insert/Delete - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+	// testBulkInsertDeleteName := "Execution; Width: " + strconv.Itoa(unitTestConfig.Parameters.BpWidth[bpWidth])
+	testBulkInsertDeleteName := fmt.Sprintf("Bulk Insert/Delete - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		testMode1Name,
-		// "Mode 1: Execution   ",                             // Progress bar title.
+		testBulkInsertDeleteName,
+		// "BulkInsertDelete: Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
@@ -144,7 +144,7 @@ Loop:
 	<-progressBar.WaitForPrinterStop()
 
 	// Print a final report.
-	err := progressBar.Report(len(testMode1Name + "; Width: XX"))
+	err := progressBar.Report(len(testBulkInsertDeleteName + "; Width: XX"))
 	assert.NoError(t, err)
 
 	// Print the B Plus tree structure.

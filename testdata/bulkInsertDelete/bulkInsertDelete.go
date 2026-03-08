@@ -11,12 +11,12 @@ import (
 	"github.com/panhongrainbow/go-algorithm/utilhub"
 )
 
-// BpTestModel1 🧮 represents a test model for B Plus Tree testing.
+// BpTestBulkInsertDelete 🧮 represents a test model for B Plus Tree testing.
 // It emulates a scenario where random numbers are generated and inserted into a B Plus Tree and then deleted.
-type BpTestModel1 struct{}
+type BpTestBulkInsertDelete struct{}
 
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 1.
-func (model1 *BpTestModel1) GenerateRandomSet(
+func (model *BpTestBulkInsertDelete) GenerateRandomSet(
 	randomMin uint64, // randomMin is the minimum value for generating random numbers.
 	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
 ) ([]int64, error) {
@@ -27,7 +27,7 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	// Validate RandomTotalCount to ensure it is not zero.
 	if limitTestScope == 0 {
 		// Return an error if RandomTotalCount is zero.
-		return nil, errors.New("BpTestModel1.RandomTotalCount cannot be zero")
+		return nil, errors.New("RandomTotalCount cannot be zero")
 	}
 
 	// Calculate the maximum random value based on RandomTotalCount, randomHitCollisionPercentage, and randomMin.
@@ -60,17 +60,17 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 	}
 
 	// Creating a new slice to store the dataset, which will be tested.
-	dataSet := make([]int64, randomEvenCount, randomEvenCount)
+	dataSet := make([]int64, randomEvenCount)
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 1: Bulk Insert/Delete - generate test data", // Progress bar title.
-		uint32(randomEvenCount),                           // Total number of operations.
-		70,                                                // Progress bar width.
-		utilhub.WithTracking(5),                           // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),               // Time zone.
-		utilhub.WithTimeControl(500),                      // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightBlue),           // Display style.
+		"Bulk InsertDelete - generate test data", // Progress bar title.
+		uint32(randomEvenCount),                  // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightBlue),  // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.
@@ -109,7 +109,7 @@ func (model1 *BpTestModel1) GenerateRandomSet(
 }
 
 // CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers.
-func (model1 *BpTestModel1) CheckRandomSet(dataSet []int64) error {
+func (model *BpTestBulkInsertDelete) CheckRandomSet(dataSet []int64) error {
 	// Check if the length of the data set is even.
 	if len(dataSet)%2 != 0 {
 		return errors.New("dataSet length must be even")
@@ -121,13 +121,13 @@ func (model1 *BpTestModel1) CheckRandomSet(dataSet []int64) error {
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 1: Bulk Insert/Delete - check test data", // Progress bar title.
-		uint32(len(dataSet)/2*3),                       // Total number of operations.
-		70,                                             // Progress bar width.
-		utilhub.WithTracking(5),                        // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),            // Time zone.
-		utilhub.WithTimeControl(500),                   // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightGreen),       // Display style.
+		"Bulk InsertDelete - check test data",    // Progress bar title.
+		uint32(len(dataSet)/2*3),                 // Total number of operations.
+		70,                                       // Progress bar width.
+		utilhub.WithTracking(5),                  // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
+		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightGreen), // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.

@@ -99,7 +99,7 @@ func _runMode2(t *testing.T, bpWidth int) {
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
 		testMode2Name,
-		// "Mode 1: Execution   ",                             // Progress bar title.
+		// "Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
