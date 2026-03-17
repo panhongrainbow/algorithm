@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// stage 🧮 represents a single phase of the model2 test. (被切割成很多阶段)
+// stage 🧮 represents a single phase of the randomizedBoundary test. (被切割成很多阶段)
 // Each stage defines how many records to insert and delete, and may involve reusing previously deleted records. (每阶段都会有 新增 和 删除)
 // The stage is repeated according to the specified count. (重复执行)
 type stage struct {

@@ -1,4 +1,4 @@
-# Mode 3 : Single Node Endurance Test Mode
+# SingleNodeEndurance : Single Node Endurance Test Mode
 <small>模式三：单一节点耐久性测试</small>
 ***
 

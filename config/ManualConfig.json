@@ -8,7 +8,7 @@
   "record": {
     "testRecordPath": "/temp/test_record",
     "manualRecordDate": "2025-12-20",
-    "manualRecordFile": "mode3.do_not_open",
+    "manualRecordFile": "SingleNodeEndurance.do_not_open",
     "isInsideProject": true
   },
   "parameters": {
@@ -39,7 +39,7 @@
   "record": {
     "testRecordPath": "/temp/test_record",
     "manualRecordDate": "2026-01-08",
-    "manualRecordFile": "mode3.do_not_open",
+    "manualRecordFile": "SingleNodeEndurance.do_not_open",
     "isInsideProject": true
   },
   "parameters": {
@@ -70,7 +70,7 @@
   "record": {
     "testRecordPath": "/temp/test_record",
     "manualRecordDate": "2026-01-11",
-    "manualRecordFile": "mode2.do_not_open",
+    "manualRecordFile": "RandomizedBoundary.do_not_open",
     "isInsideProject": true
   },
   "parameters": {
@@ -101,7 +101,7 @@
   "record": {
     "testRecordPath": "/temp/test_record",
     "manualRecordDate": "2026-01-11",
-    "manualRecordFile": "mode3.do_not_open",
+    "manualRecordFile": "SingleNodeEndurance.do_not_open",
     "isInsideProject": true
   },
   "parameters": {

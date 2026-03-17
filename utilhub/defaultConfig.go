@@ -22,7 +22,7 @@ import (
 var (
 	test_mech = "auto"
 	test_date = "2026-01-11"
-	test_file = "mode3.do_not_open"
+	test_file = "SingleNodeEndurance.do_not_open"
 )
 
 func ParseDefaultManual(cfg DefaultConfig) error {

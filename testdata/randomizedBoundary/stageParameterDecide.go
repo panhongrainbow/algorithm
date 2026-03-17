@@ -1,11 +1,11 @@
-package model2
+package randomizedBoundary
 
 import (
 	"math/rand"
 	"strconv"
 )
 
-// stage 🧮 represents a single phase of the model2 test. (被切割成很多阶段)
+// stage 🧮 represents a single phase of the randomizedBoundary test. (被切割成很多阶段)
 // Each stage defines how many records to insert and delete, and may involve reusing previously deleted records. (每阶段都会有 新增 和 删除)
 // The stage is repeated according to the specified count. (重复执行)
 type stage struct {
@@ -30,7 +30,7 @@ type stage struct {
 //	\Sigma Op.InsertAction * 2 * Repeat
 //
 // where Op.InsertAction is used as the insertion count.
-func (model2 *BpTestModel2) TotalOps(stages []stage) int64 {
+func (model *BpTestRandomizedBoundary) TotalOps(stages []stage) int64 {
 	var totalOps int64
 	for _, each := range stages {
 		if each.Repeat > 1 {
@@ -53,7 +53,7 @@ func (model2 *BpTestModel2) TotalOps(stages []stage) int64 {
 //
 // (这里会决定每个阶段的设定细节)
 
-func (model2 *BpTestModel2) StageParameters(
+func (model *BpTestRandomizedBoundary) StageParameters(
 	randomTotalCount, minRemovals, maxRemovals, minPreserveInPool, maxPreserveInPool int64) (testStages []stage) {
 	// Use RandomTotalCount to limit the test scope.
 	limitTestScope := uint64(randomTotalCount)

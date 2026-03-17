@@ -21,7 +21,7 @@ func (model *BpTestShare) ShareGenerateRandomSet(cyclicStressCount int64) ([]int
 	testPlan := model.StageParameters(limitTestScope, stageParams.MinRemovals, stageParams.MaxRemovals, stageParams.MinPreserveInPool, stageParams.MaxPreserveInPool)
 
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 3: CyclicStress Boundary - generate test data", // Progress bar title.
+		"SingleNodeEndurance - generate test data",           // Progress bar title.
 		uint32(model._TotalOps(testPlan, cyclicStressCount)), // Total number of operations.
 		70,                                      // Progress bar width.
 		utilhub.WithTracking(5),                 // Update interval.
@@ -99,7 +99,7 @@ func (model *BpTestShare) CheckRandomSet(dataSet []int64) error {
 
 	// ▓▒░ Create a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 3: CyclicStress Boundary Test - check test data", // Progress bar title.
+		"SingleNodeEndurance - check test data",  // Progress bar title.
 		uint32(len(dataSet)),                     // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
@@ -166,8 +166,8 @@ func (model *BpTestShare) CheckRandomSet(dataSet []int64) error {
 // The sum of all OperationPlans across all stages is defined to be zero (total inserts equal total deletes).
 // Therefore, the total number of operations can be calculated as:
 //
-//	\Sigma Op.InsertAction * 2 * Repeat * 1 (for test mode 2)
-//	\Sigma Op.InsertAction * 2 * Repeat * cyclicStressCount (for test mode 3)
+//	\Sigma Op.InsertAction * 2 * Repeat * 1 (for RandomizedBoundary test)
+//	\Sigma Op.InsertAction * 2 * Repeat * cyclicStressCount (for SingleNodeEndurance test)
 //
 // where Op.InsertAction is used as the insertion count.
 func (model *BpTestShare) _TotalOps(stages []stage, cyclicStressCount int64) int64 {

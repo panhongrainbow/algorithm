@@ -6,36 +6,37 @@ import (
 	"os"
 	"testing"
 
-	bptestModel3 "github.com/panhongrainbow/go-algorithm/testdata/model3"
+	bptestRandomizedBoundary "github.com/panhongrainbow/go-algorithm/testdata/randomizedBoundary"
 	"github.com/panhongrainbow/go-algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // =====================================================================================================================
-//                  ⚗️ BpTree Accuracy Mode 3 (Endurance Test Mode)
+//                  ⚗️ BpTree Accuracy RandomizedBoundary (Boundary Test Mode)
 // Test cases are divided into three phases: preparation, validation, and execution.
-// prepare_Mode3 : prepares test data for Mode 3.
-// verify_Mode3 : validates the test data.
-// run_Mode3 : runs the test cases.
+// prepare_RandomizedBoundary : prepares test data for RandomizedBoundary.
+// verify_RandomizedBoundary : validates the test data.
+// run_RandomizedBoundary : runs the test cases.
 // =====================================================================================================================
 
-// prepareMode3 🧫 prepares test data for Mode 3.
-func prepareMode3(t *testing.T) {
+// prepareRandomizedBoundary 🧫 prepares test data for RandomizedBoundary.
+func prepareRandomizedBoundary(t *testing.T) {
 
 	// === Init test model and record file ===
 
-	// Create model 3 with specified data count.
-	bptest3 := &bptestModel3.BpTestModel3{}
+	// Create RandomizedBoundary test with specified data count.
+	bptest := &bptestRandomizedBoundary.BpTestRandomizedBoundary{}
 
 	// Create an empty record file.
-	err := recordDir.Touch("mode3.do_not_open")
+	err := recordDir.Touch("RandomizedBoundary.do_not_open")
 	require.NoError(t, err, "failed to create record file")
 
 	// === Generate test data ===
 
-	// Generate metal fatigue test data
-	testDataSet, err := bptest3.GenerateRandomSet()
+	// Generate a random set: half positive, half negative.
+	var testDataSet []int64
+	testDataSet, err = bptest.GenerateRandomSet()
 	require.NoError(t, err, "failed to generate test data")
 
 	// === Set write parameters ===
@@ -49,10 +50,10 @@ func prepareMode3(t *testing.T) {
 
 	err = recordDir.LinuxSpliceProgressStreamWrite(
 		testDataSet,
-		"mode3.do_not_open",
+		"RandomizedBoundary.do_not_open",
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
 		binary.LittleEndian, spliceBlockLength, spliceBlockWidth,
-		"Mode 3: CyclicStress - Backup",
+		"RandomizedBoundary - Backup",
 		utilhub.BrightCyan,
 		70,
 	)
@@ -61,45 +62,45 @@ func prepareMode3(t *testing.T) {
 	// Data check is done in the next test case.
 }
 
-// verifyMode3 🧫 checks the test data set for Mode 3.
-func verifyMode3(t *testing.T) {
+// verifyRandomizedBoundary 🧫 checks the test data set for RandomizedBoundary.
+func verifyRandomizedBoundary(t *testing.T) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
 		uint32(unitTestConfig.Parameters.RandomTotalCount),
-		"mode3.do_not_open", 800,
+		"RandomizedBoundary.do_not_open", 800,
 		binary.LittleEndian,
-		"Mode 3: CyclicStress Test - read test data",
+		"RandomizedBoundary - read test data",
 		utilhub.BrightCyan,
 		70,
 	)
 
 	// Init test model.
-	bptest3 := &bptestModel3.BpTestModel3{}
+	bptest := &bptestRandomizedBoundary.BpTestRandomizedBoundary{}
 
 	// Validate test data.
-	err = bptest3.CheckRandomSet(testDataSet)
+	err = bptest.CheckRandomSet(testDataSet)
 	require.NoError(t, err, "failed to validate test data")
 }
 
-// runMode3 🧫 runs the actual test cases for Mode 3.
-func runMode3(t *testing.T) {
+// runRandomizedBoundary 🧫 runs the actual test cases for RandomizedBoundary.
+func runRandomizedBoundary(t *testing.T) {
 	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
-		_runMode3(t, bpWidth)
+		_runRandomizedBoundary(t, bpWidth)
 	}
 }
 
-// _runMode3 🧫 runs the actual test cases for Mode 3.
-func _runMode3(t *testing.T, bpWidth int) {
-	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode3.do_not_open", 8, binary.LittleEndian)
+// _runRandomizedBoundary 🧫 runs the actual test cases for RandomizedBoundary test.
+func _runRandomizedBoundary(t *testing.T, bpWidth int) {
+	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("RandomizedBoundary.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
 
-	testMode2Name := fmt.Sprintf("Mode 3: CyclicStress Test - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+	testRandomizedBoundaryName := fmt.Sprintf("Randomized Boundary - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		testMode2Name,
-		// "Execution   ",                             // Progress bar title.
+		testRandomizedBoundaryName,
+		// "RandomizedBoundary: Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
@@ -116,7 +117,7 @@ func _runMode3(t *testing.T, bpWidth int) {
 Loop:
 	for {
 		select {
-		case data := <-dtatChan:
+		case data := <-dataChan:
 			for j := 0; j < len(data); j++ {
 				if data[j] >= 0 {
 					root.InsertValue(BpItem{Key: data[j]})
@@ -131,7 +132,7 @@ Loop:
 			}
 		case err := <-errChan:
 			fmt.Println(err)
-		case <-finsishChan:
+		case <-finishChan:
 			break Loop
 		}
 	}
@@ -143,7 +144,7 @@ Loop:
 	<-progressBar.WaitForPrinterStop()
 
 	// Print a final report.
-	err := progressBar.Report(len(testMode2Name + "; Width: XX"))
+	err := progressBar.Report(len(testRandomizedBoundaryName + "; Width: XX"))
 	assert.NoError(t, err)
 
 	// Print the B Plus tree structure.

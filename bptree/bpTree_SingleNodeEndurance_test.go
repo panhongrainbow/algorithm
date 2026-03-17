@@ -6,36 +6,36 @@ import (
 	"os"
 	"testing"
 
-	bptestModel2 "github.com/panhongrainbow/go-algorithm/testdata/model2"
+	bptestSingleNodeEndurance "github.com/panhongrainbow/go-algorithm/testdata/singleNodeEndurance"
 	"github.com/panhongrainbow/go-algorithm/utilhub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // =====================================================================================================================
-//                  ⚗️ BpTree Accuracy Mode 2 (Boundary Test Mode)
+//                  ⚗️ BpTree Accuracy SingleNodeEndurance (Endurance Test Mode)
 // Test cases are divided into three phases: preparation, validation, and execution.
-// prepare_Mode2 : prepares test data for Mode 2.
-// verify_Mode2 : validates the test data.
-// run_Mode2 : runs the test cases.
+// prepare_SingleNodeEndurance : prepares test data for SingleNodeEndurance.
+// verify_SingleNodeEndurance : validates the test data.
+// run_SingleNodeEndurance : runs the test cases.
 // =====================================================================================================================
 
-// prepareMode2 🧫 prepares test data for Mode 2.
-func prepareMode2(t *testing.T) {
+// prepareSingleNodeEndurance 🧫 prepares test data for SingleNodeEndurance.
+func prepareMode3(t *testing.T) {
 
 	// === Init test model and record file ===
 
-	// Create model 2 with specified data count.
-	bptest2 := &bptestModel2.BpTestModel2{}
+	// Create SingleNodeEndurance with specified data count.
+	bptest3 := &bptestSingleNodeEndurance.BpTestSingleNodeEndurance{}
 
 	// Create an empty record file.
-	err := recordDir.Touch("mode2.do_not_open")
+	err := recordDir.Touch("SingleNodeEndurance.do_not_open")
 	require.NoError(t, err, "failed to create record file")
 
 	// === Generate test data ===
 
-	// Generate a random set: half positive, half negative.
-	testDataSet, err := bptest2.GenerateRandomSet()
+	// Generate metal fatigue test data
+	testDataSet, err := bptest3.GenerateRandomSet()
 	require.NoError(t, err, "failed to generate test data")
 
 	// === Set write parameters ===
@@ -49,10 +49,10 @@ func prepareMode2(t *testing.T) {
 
 	err = recordDir.LinuxSpliceProgressStreamWrite(
 		testDataSet,
-		"mode2.do_not_open",
+		"SingleNodeEndurance.do_not_open",
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
 		binary.LittleEndian, spliceBlockLength, spliceBlockWidth,
-		"Mode 2: Boundary - Backup",
+		"SingleNodeEndurance - Backup",
 		utilhub.BrightCyan,
 		70,
 	)
@@ -61,45 +61,45 @@ func prepareMode2(t *testing.T) {
 	// Data check is done in the next test case.
 }
 
-// verifyMode2 🧫 checks the test data set for Mode 2.
-func verifyMode2(t *testing.T) {
+// verifySingleNodeEndurance 🧫 checks the test data set for SingleNodeEndurance test.
+func verifySingleNodeEndurance(t *testing.T) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
 		uint32(unitTestConfig.Parameters.RandomTotalCount),
-		"mode2.do_not_open", 800,
+		"SingleNodeEndurance.do_not_open", 800,
 		binary.LittleEndian,
-		"Mode 2: Randomized Boundary Test - read test data",
+		"SingleNodeEndurance - read test data",
 		utilhub.BrightCyan,
 		70,
 	)
 
 	// Init test model.
-	bptest2 := &bptestModel2.BpTestModel2{}
+	bptest3 := &bptestSingleNodeEndurance.BpTestSingleNodeEndurance{}
 
 	// Validate test data.
-	err = bptest2.CheckRandomSet(testDataSet)
+	err = bptest3.CheckRandomSet(testDataSet)
 	require.NoError(t, err, "failed to validate test data")
 }
 
-// runMode2 🧫 runs the actual test cases for Mode 2.
-func runMode2(t *testing.T) {
+// runSingleNodeEndurance 🧫 runs the actual test cases for SingleNodeEndurance test.
+func runSingleNodeEndurance(t *testing.T) {
 	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
-		_runMode2(t, bpWidth)
+		_runSingleNodeEndurance(t, bpWidth)
 	}
 }
 
-// _runMode2 🧫 runs the actual test cases for Mode 2.
-func _runMode2(t *testing.T, bpWidth int) {
-	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("mode2.do_not_open", 8, binary.LittleEndian)
+// _runSingleNodeEndurance 🧫 runs the actual test cases for SingleNodeEndurance test.
+func _runSingleNodeEndurance(t *testing.T, bpWidth int) {
+	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("SingleNodeEndurance.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
 
-	testMode2Name := fmt.Sprintf("Mode 2: Randomized Boundary Test - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+	testSingleNodeEnduranceName := fmt.Sprintf("SingleNodeEndurance - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		testMode2Name,
-		// "Execution   ",                             // Progress bar title.
+		testSingleNodeEnduranceName,
+		// "SingleNodeEndurance: Execution   ",                             // Progress bar title.
 		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
@@ -116,7 +116,7 @@ func _runMode2(t *testing.T, bpWidth int) {
 Loop:
 	for {
 		select {
-		case data := <-dtatChan:
+		case data := <-dataChan:
 			for j := 0; j < len(data); j++ {
 				if data[j] >= 0 {
 					root.InsertValue(BpItem{Key: data[j]})
@@ -131,7 +131,7 @@ Loop:
 			}
 		case err := <-errChan:
 			fmt.Println(err)
-		case <-finsishChan:
+		case <-finishChan:
 			break Loop
 		}
 	}
@@ -143,7 +143,7 @@ Loop:
 	<-progressBar.WaitForPrinterStop()
 
 	// Print a final report.
-	err := progressBar.Report(len(testMode2Name + "; Width: XX"))
+	err := progressBar.Report(len(testSingleNodeEnduranceName + "; Width: XX"))
 	assert.NoError(t, err)
 
 	// Print the B Plus tree structure.

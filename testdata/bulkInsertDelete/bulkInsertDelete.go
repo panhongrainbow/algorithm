@@ -1,4 +1,4 @@
-package bptestModel1
+package bulkInsertDelete
 
 import (
 	"errors"
@@ -64,13 +64,13 @@ func (model *BpTestBulkInsertDelete) GenerateRandomSet(
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Bulk InsertDelete - generate test data", // Progress bar title.
-		uint32(randomEvenCount),                  // Total number of operations.
-		70,                                       // Progress bar width.
-		utilhub.WithTracking(5),                  // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.
-		utilhub.WithTimeControl(500),             // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightBlue),  // Display style.
+		"BulkInsertDelete - generate test data", // Progress bar title.
+		uint32(randomEvenCount),                 // Total number of operations.
+		70,                                      // Progress bar width.
+		utilhub.WithTracking(5),                 // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),     // Time zone.
+		utilhub.WithTimeControl(500),            // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightBlue), // Display style.
 	)
 
 	// ▓▒░ Start the progress bar printer in a separate goroutine.
@@ -121,7 +121,7 @@ func (model *BpTestBulkInsertDelete) CheckRandomSet(dataSet []int64) error {
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Bulk InsertDelete - check test data",    // Progress bar title.
+		"BulkInsertDelete - check test data",     // Progress bar title.
 		uint32(len(dataSet)/2*3),                 // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.

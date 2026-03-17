@@ -25,8 +25,8 @@ func prepareBulkInsertDelete(t *testing.T) {
 
 	// === Init test model and record file ===
 
-	// Create model 1 with specified data count.
-	bptest1 := &bptestBulkInsertDelete.BpTestBulkInsertDelete{}
+	// Create BulkInsertDelete test with specified data count.
+	bptest := &bptestBulkInsertDelete.BpTestBulkInsertDelete{}
 
 	// Create an empty record file.
 	err := recordDir.Touch("BulkInsertDelete.do_not_open")
@@ -35,7 +35,8 @@ func prepareBulkInsertDelete(t *testing.T) {
 	// === Generate test data ===
 
 	// Generate a random set: half positive, half negative.
-	testDataSet, err := bptest1.GenerateRandomSet(uint64(unitTestConfig.Parameters.RandomMin), uint64(unitTestConfig.Parameters.RandomHitCollisionPercentage))
+	var testDataSet []int64
+	testDataSet, err = bptest.GenerateRandomSet(uint64(unitTestConfig.Parameters.RandomMin), uint64(unitTestConfig.Parameters.RandomHitCollisionPercentage))
 	require.NoError(t, err, "failed to generate test data")
 
 	// === Set write parameters ===
@@ -52,7 +53,7 @@ func prepareBulkInsertDelete(t *testing.T) {
 		"BulkInsertDelete.do_not_open",
 		os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644,
 		binary.LittleEndian, spliceBlockLength, spliceBlockWidth,
-		"Bulk InsertDelete - Backup",
+		"BulkInsertDelete - Backup",
 		utilhub.BrightCyan,
 		70,
 	)
@@ -68,16 +69,16 @@ func verifyBulkInsertDelete(t *testing.T) {
 		uint32(unitTestConfig.Parameters.RandomTotalCount),
 		"BulkInsertDelete.do_not_open", 800,
 		binary.LittleEndian,
-		"Bulk InsertDelete - read test data",
+		"BulkInsertDelete - read test data",
 		utilhub.BrightCyan,
 		70,
 	)
 
 	// Init test model.
-	bptest1 := &bptestBulkInsertDelete.BpTestBulkInsertDelete{}
+	bptest := &bptestBulkInsertDelete.BpTestBulkInsertDelete{}
 
 	// Validate test data.
-	err = bptest1.CheckRandomSet(testDataSet)
+	err = bptest.CheckRandomSet(testDataSet)
 	require.NoError(t, err, "failed to validate test data")
 }
 
@@ -90,7 +91,7 @@ func runBulkInsertDelete(t *testing.T) {
 
 // _runBulkInsertDelete 🧫 runs the actual test cases for BulkInsertDelete.
 func _runBulkInsertDelete(t *testing.T, bpWidth int) {
-	dtatChan, errChan, finsishChan := recordDir.ReadBytesInChunksWithProgress("BulkInsertDelete.do_not_open", 8, binary.LittleEndian)
+	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("BulkInsertDelete.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
 
@@ -117,7 +118,7 @@ func _runBulkInsertDelete(t *testing.T, bpWidth int) {
 Loop:
 	for {
 		select {
-		case data := <-dtatChan:
+		case data := <-dataChan:
 			for j := 0; j < len(data); j++ {
 				if data[j] >= 0 {
 					root.InsertValue(BpItem{Key: data[j]})
@@ -132,7 +133,7 @@ Loop:
 			}
 		case err := <-errChan:
 			fmt.Println(err)
-		case <-finsishChan:
+		case <-finishChan:
 			break Loop
 		}
 	}

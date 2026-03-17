@@ -194,8 +194,8 @@ func (bPlan BpTreeProcess) RedundantOperation(minRemovals, maxRemovals, minDiffe
 	return testStages
 }
 
-// TotalOperation 🧮 is used to calculate the total number of operations for the entire model2, including both additions and deletions.
-// (针算整个 model2 的操作总数量)
+// TotalOperation 🧮 is used to calculate the total number of operations for the entire randomizedBoundary, including both additions and deletions.
+// (针算整个 randomizedBoundary 的操作总数量)
 func (bPlan BpTreeProcess) TotalOperation(testStages []EachBpTestStage) int64 {
 	var totalOperation int64
 	for i := 0; i < len(testStages); i++ {

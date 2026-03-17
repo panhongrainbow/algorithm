@@ -1,4 +1,4 @@
-package model2
+package randomizedBoundary
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Test_Model2_Generate_Check_RandomSet verifies BpTestModel2's random data generation by setting a count of 50,
+// Test_Model2_Generate_Check_RandomSet verifies BpTestRandomizedBoundary's random data generation by setting a count of 50,
 // creating a dataset, and validating its integrity through the model's own checks.
 func Test_Model2_Generate_Check_RandomSet(t *testing.T) {
 	// Set the total count for random data generation to 50 in pool.
@@ -16,8 +16,8 @@ func Test_Model2_Generate_Check_RandomSet(t *testing.T) {
 	// Verify that the random total count was correctly set to 50.
 	require.Equal(t, utilhub.GetRandomTotalCount(), int64(50))
 
-	// Create an instance of BpTestModel2.
-	bptest2 := &BpTestModel2{}
+	// Create an instance of BpTestRandomizedBoundary.
+	bptest2 := &BpTestRandomizedBoundary{}
 
 	// Generate a random test dataset using the model.
 	testDataSet, err := bptest2.GenerateRandomSet()

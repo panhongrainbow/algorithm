@@ -1,4 +1,4 @@
-package bptestModel1
+package bulkInsertDelete
 
 import (
 	"testing"
@@ -17,14 +17,14 @@ func Test_Model1_Generate_Check_RandomSet(t *testing.T) {
 	require.Equal(t, utilhub.GetRandomTotalCount(), int64(100))
 
 	// Create an instance of BpTestModel1.
-	bptest1 := &BpTestModel1{}
+	bptest := &BpTestBulkInsertDelete{}
 
 	// Generate a random test dataset using the model.
-	testDataSet, err := bptest1.GenerateRandomSet(1, 30)
+	testDataSet, err := bptest.GenerateRandomSet(1, 30)
 	require.NoError(t, err, "failed to generate test data")
 
 	// Check the validity of the generated random dataset.
-	err = bptest1.CheckRandomSet(testDataSet)
+	err = bptest.CheckRandomSet(testDataSet)
 	require.NoError(t, err, "failed to check test data")
 
 	// Force reload the configuration to reset any changes made during testing.

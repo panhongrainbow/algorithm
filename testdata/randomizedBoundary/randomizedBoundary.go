@@ -1,4 +1,4 @@
-package model2
+package randomizedBoundary
 
 import (
 	"errors"
@@ -10,27 +10,27 @@ import (
 	"github.com/panhongrainbow/go-algorithm/utilhub"
 )
 
-// BpTestModel2 🧮 is implemented using the Dynamic Pool Stress Test to simulate random insertions and removals in a real data pool,
+// BpTestRandomizedBoundary 🧮 is implemented using the Dynamic Pool Stress Test to simulate random insertions and removals in a real data pool,
 // ensuring performance, stability, and correctness.
-type BpTestModel2 struct{}
+type BpTestRandomizedBoundary struct{}
 
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 2.
-func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
+func (model *BpTestRandomizedBoundary) GenerateRandomSet() ([]int64, error) {
 	// Use RandomTotalCount to limit the test scope.
 	unitTestConfig := utilhub.GetDefaultConfig()
 	limitTestScope := unitTestConfig.Parameters.RandomTotalCount
 	stageParams := unitTestConfig.PoolStage
 
-	testPlan := model2.StageParameters(limitTestScope, stageParams.MinRemovals, stageParams.MaxRemovals, stageParams.MinPreserveInPool, stageParams.MaxPreserveInPool)
+	testPlan := model.StageParameters(limitTestScope, stageParams.MinRemovals, stageParams.MaxRemovals, stageParams.MinPreserveInPool, stageParams.MaxPreserveInPool)
 
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 2: Randomized Boundary - generate test data", // Progress bar title.
-		uint32(model2.TotalOps(testPlan)),                  // Total number of operations.
-		70,                                                 // Progress bar width.
-		utilhub.WithTracking(5),                            // Update interval.
-		utilhub.WithTimeZone("Asia/Taipei"),                // Time zone.
-		utilhub.WithTimeControl(500),                       // Update interval in milliseconds.
-		utilhub.WithDisplay(utilhub.BrightBlue),            // Display style.
+		"RandomizedBoundary - generate test data", // Progress bar title.
+		uint32(model.TotalOps(testPlan)),          // Total number of operations.
+		70,                                        // Progress bar width.
+		utilhub.WithTracking(5),                   // Update interval.
+		utilhub.WithTimeZone("Asia/Taipei"),       // Time zone.
+		utilhub.WithTimeControl(500),              // Update interval in milliseconds.
+		utilhub.WithDisplay(utilhub.BrightBlue),   // Display style.
 	)
 
 	go func() {
@@ -75,7 +75,7 @@ func (model2 *BpTestModel2) GenerateRandomSet() ([]int64, error) {
 }
 
 // CheckRandomSet 🧮 checks the validity of a random data set by comparing the positive and negative numbers.
-func (model2 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
+func (model *BpTestRandomizedBoundary) CheckRandomSet(dataSet []int64) error {
 	// Check if the length of the data set is even.
 	if len(dataSet)%2 != 0 {
 		return errors.New("dataSet length must be even")
@@ -83,7 +83,7 @@ func (model2 *BpTestModel2) CheckRandomSet(dataSet []int64) error {
 
 	// ▓▒░ Create a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
-		"Mode 2: Randomized Boundary Test - check test data", // Progress bar title.
+		"RandomizedBoundary - check test data",   // Progress bar title.
 		uint32(len(dataSet)),                     // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.

@@ -17,7 +17,6 @@ package bpTree
 // =====================================================================================================================
 
 import (
-	"math/rand"
 	"testing"
 
 	"github.com/panhongrainbow/go-algorithm/utilhub"
@@ -66,53 +65,41 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		}
 	})
 
-	t.Run("Mode 2: Randomized Boundary Test", func(t *testing.T) {
+	t.Run("Randomized Boundary Test", func(t *testing.T) {
 
 		// Test data will only be generated during automated testing.
 		if unitTestConfig.Mechanism == "auto" {
-			// Prepare test data for mode 2.
-			prepareMode2(t)
+			// Prepare test data for RandomizedBoundary.
+			prepareRandomizedBoundary(t)
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
 		if unitTestConfig.Mechanism == "auto" ||
 			unitTestConfig.ManualTest.EnableRandomizedBoundary {
-			// Verify test data for mode 2.
-			verifyMode2(t)
+			// Verify test data for RandomizedBoundary.
+			verifyRandomizedBoundary(t)
 
-			// Execute accuracy test for mode 2.
-			runMode2(t)
+			// Execute accuracy test for RandomizedBoundary.
+			runRandomizedBoundary(t)
 		}
 	})
 
-	t.Run("Mode 3: Single Node Endurance Test", func(t *testing.T) {
+	t.Run("Single Node Endurance Test", func(t *testing.T) {
 
 		// Test data will only be generated during automated testing.
 		if unitTestConfig.Mechanism == "auto" {
-			// Prepare test data for mode 3.
+			// Prepare test data for SingleNodeEndurance.
 			prepareMode3(t)
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
 		if unitTestConfig.Mechanism == "auto" ||
 			unitTestConfig.ManualTest.EnableNodeEnduranceTest {
-			// Verify test data for mode 3.
-			verifyMode3(t)
+			// Verify test data for SingleNodeEndurance.
+			verifySingleNodeEndurance(t)
 
-			// Execute accuracy test for mode 3.
-			runMode3(t)
+			// Execute accuracy test for SingleNodeEndurance.
+			runSingleNodeEndurance(t)
 		}
 	})
-}
-
-// shuffleSlice randomly shuffles the elements in the slice.
-func shuffleSlice(slice []int64, rng *rand.Rand) {
-	// Iterate through the slice in reverse order, starting from the last element.
-	for i := len(slice) - 1; i > 0; i-- {
-		// Generate a random index 'j' between 0 and i (inclusive).
-		j := rng.Intn(i + 1)
-
-		// Swap the elements at indices i and j.
-		slice[i], slice[j] = slice[j], slice[i]
-	}
 }
