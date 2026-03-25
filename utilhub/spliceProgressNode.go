@@ -36,7 +36,7 @@ func (fn FileNode) LinuxSpliceProgressStreamWrite(
 	// The file is created with write-only permissions and truncated if it already exists.
 	spliceDataChan, spliceFinishChan, err := fn.LinuxSpliceStreamWrite(filename, fileFlag, filePerm)
 	if err != nil {
-		return fmt.Errorf("failed to initialize linux splice stream writer: %w", err)
+		return fmt.Errorf("failed to initialize Linux splice stream writer: %w", err)
 	}
 
 	// Variable Parameters:
