@@ -13,28 +13,35 @@ import (
 )
 
 // =====================================================================================================================
-//                  ⚗️ BpTree Accuracy BulkInsertDelete (Bulk Operation Mode)
-// Test cases are divided into three phases: preparation, validation, and execution.
-// prepare_BulkInsertDelete : prepares test data for BulkInsertDelete.
-// verify_BulkInsertDelete : validates the test data.
-// run_BulkInsertDelete : runs the test cases.
+//                  ⚗️ BpTree Accuracy BulkInsertDelete (BulkInsertDelete Test)
+//
+// This test consists of three phases: preparation, validation, and execution.
+//
+// 1. Preparation:
+//    Prepare test data via "prepareBulkInsertDelete".
+//
+// 2. Validation:
+//    Verify the prepared data via "verifyBulkInsertDelete".
+//
+// 3. Execution:
+//    Run the test cases via "runBulkInsertDelete".
 // =====================================================================================================================
 
-// prepareBulkInsertDelete 🧫 prepares test data for BulkInsertDelete.
+// prepareBulkInsertDelete 🧫 Prepares the test dataset required for BulkInsertDelete.
 func prepareBulkInsertDelete(t *testing.T) {
 
 	// === Init test model and record file ===
 
-	// Create BulkInsertDelete test with specified data count.
+	// Creates BulkInsertDelete test with specified data count.
 	bptest := &bptestBulkInsertDelete.BpTestBulkInsertDelete{}
 
-	// Create an empty record file.
+	// Creates an empty record file.
 	err := recordDir.Touch("BulkInsertDelete.do_not_open")
 	require.NoError(t, err, "failed to create record file")
 
 	// === Generate test data ===
 
-	// Generate a random set: half positive, half negative.
+	// Generates a random set: half positive, half negative.
 	var testDataSet []int64
 	testDataSet, err = bptest.GenerateRandomSet(uint64(unitTestConfig.Parameters.RandomMin), uint64(unitTestConfig.Parameters.RandomHitCollisionPercentage))
 	require.NoError(t, err, "failed to generate test data")

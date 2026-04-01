@@ -90,6 +90,7 @@ func LinuxSpliceBulkRead(filename string, chunkSize int) ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// Ensure the file is closed when the function returns.
 	defer func() { _ = file.Close() }()
 
@@ -149,7 +150,8 @@ func GenerateBinaryFile(path string, count int) error {
 // It returns a channel to send data to be written to the file.
 func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode) (dataChan chan [][]byte, finishChan chan struct{}, err error) {
 	// Open the file with the specified flags and permissions.
-	file, err := os.OpenFile(filename, fileFlag, filePerm)
+	var file *os.File
+	file, err = os.OpenFile(filename, fileFlag, filePerm)
 	if err != nil {
 		// If the file cannot be opened, return an error.
 		return nil, nil, fmt.Errorf("failed to open file: %w", err)
@@ -166,6 +168,7 @@ func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode)
 	// Create a channel to send data to be written to the file.
 	dataChan = make(chan [][]byte, 100)
 
+	// Signal that a process has finished.
 	finishChan = make(chan struct{})
 
 	// Start a goroutine to write data to the file.
@@ -177,23 +180,24 @@ func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode)
 			_ = syscall.Close(pipe[1])
 
 			// Close the file with retries.
-			for i := 0; i < 5; i++ {
-				if err := file.Close(); err != nil {
+			for i := 0; i < 20; i++ {
+				if closeErr := file.Close(); closeErr != nil {
 					// If the file cannot be closed, wait and try again.
-					time.Sleep(100 * time.Millisecond)
+					time.Sleep(1 * time.Second)
 				} else {
 					// If the file is closed successfully, break the loop.
 					break
 				}
-				if i == 4 {
+				if i == 19 {
 					// If the file cannot be closed after 5 attempts, print an error message.
-					fmt.Println("Failed to close file after 5 attempts")
+					fmt.Println("Failed to close file after 20 attempts")
 				}
 			}
 
 			// Sync the file system to ensure data is written to disk.
 			syscall.Sync()
 
+			// Send a signal to indicate that the process has finished.
 			finishChan <- struct{}{}
 		}()
 
@@ -201,7 +205,10 @@ func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode)
 		for {
 			// Select on the data channel.
 			select {
+
+			// Receive a value from dataChan and check whether the channel is still open.
 			case val, ok := <-dataChan:
+
 				// If the channel is closed, exit the loop.
 				if !ok {
 					return
@@ -209,13 +216,16 @@ func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode)
 
 				// Write each chunk of data to the pipe.
 				for _, chunk := range val {
+
 					// Write the chunk to the pipe.
-					n, err := syscall.Write(pipe[1], chunk)
+					var n int
+					n, err = syscall.Write(pipe[1], chunk)
 					if err != nil {
 						// If the write fails, print an error message and exit.
 						fmt.Printf("failed to write to pipe: %v\n", err)
 						return
 					}
+
 					if n != len(chunk) {
 						// If the write is partial, print an error message and exit.
 						fmt.Printf("partial write to pipe, wrote %d bytes out of %d\n", n, len(chunk))
@@ -224,7 +234,8 @@ func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode)
 
 					// Splice the data from the pipe to the file.
 					for n > 0 {
-						written, err := syscall.Splice(pipe[0], nil, int(file.Fd()), nil, n, 0)
+						var written int64
+						written, err = syscall.Splice(pipe[0], nil, int(file.Fd()), nil, n, 0)
 						if err != nil {
 							// If the splice fails, print an error message and exit.
 							fmt.Printf("failed to splice data: %v\n", err)
