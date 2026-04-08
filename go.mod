@@ -1,10 +1,11 @@
 module github.com/panhongrainbow/go-algorithm
 
-go 1.22.4
+go 1.25.0
 
 require (
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
+	golang.org/x/sys v0.43.0
 )
 
 require (

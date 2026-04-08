@@ -13,10 +13,17 @@ import (
 // TestLinuxSpliceCopy verifies that a binary file with UUIDs can be copied correctly
 // using LinuxSpliceBulkRead and LinuxSpliceBulkWrite.
 func TestLinuxSpliceCopy(t *testing.T) {
+	// Path to the source file.
 	srcFile := "/tmp/test_source.bin"
+
+	// Path to the destination file.
 	dstFile := "/tmp/test_copy.bin"
-	// defer func() { _ = os.Remove(srcFile) }()
-	// defer func() { _ = os.Remove(dstFile) }()
+
+	// Attempt to remove the source file and the destination file.
+	defer func() {
+		_ = os.Remove(srcFile)
+		_ = os.Remove(dstFile)
+	}()
 
 	// Generate a binary file with 10 random UUIDs.
 	var err error
@@ -24,7 +31,8 @@ func TestLinuxSpliceCopy(t *testing.T) {
 	require.Nil(t, err, "GenerateBinaryFile failed")
 
 	// Read the source file into chunks.
-	chunks, err := LinuxSpliceBulkRead(srcFile, 32) // 32 bytes per chunk
+	var chunks [][]byte
+	chunks, err = LinuxSpliceBulkRead(srcFile, 32) // 32 bytes per chunk
 	require.Nil(t, err, "LinuxSpliceBulkRead failed")
 
 	// Write the chunks to the destination file.

@@ -69,7 +69,8 @@ func Test_LinuxSpliceStreamWrite(t *testing.T) {
 				<-finishChan
 
 				// Read the file content to validate the written data.
-				content, err := os.ReadFile(tt.filename)
+				var content []byte
+				content, err = os.ReadFile(tt.filename)
 				require.NoError(t, err)
 
 				// Assert that the file content matches the expected result.
@@ -126,7 +127,7 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 				batch := make([]byte, batchSize)
 				for j := 0; j < batchSize; j++ {
 					// Generate data using a sequence of numbers modulo 256.
-					batch[j] = byte((i*batchSize + j) % 256)
+					batch[j] = byte((i*batchSize + j) % 256) // 因为 mod 256 ，所以永远不会出现 256，一个 byte 代表的值会在 0 至 255 之间
 				}
 				// Send the generated batch to the data channel.
 				dataChan <- [][]byte{batch}
@@ -151,7 +152,7 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 			// Verify that the actual file content matches the expected pattern.
 			assert.Equal(t, expectedContent, content)
 
-			// Clean up: Remove the test file after each test case.
+			// Remove the test file after each test case.
 			_ = os.Remove(tt.filename)
 		})
 	}

@@ -5,9 +5,9 @@ import (
 	"io"
 	"os"
 	"syscall"
-	"time"
 
 	"github.com/google/uuid"
+	"golang.org/x/sys/unix"
 )
 
 // =====================================================================================================================
@@ -82,7 +82,7 @@ func LinuxSpliceBulkWrite(filename string, data [][]byte, fileFlag int, filePerm
 	return nil
 }
 
-// LinuxSpliceBulkRead ⛏️ reads the contents of a file in chunks of the specified size.
+// LinuxSpliceBulkRead ⛏️ reads the contents of a file using Linux splice.
 // It returns a slice of byte slices, where each inner slice contains one chunk of data.
 func LinuxSpliceBulkRead(filename string, chunkSize int) ([][]byte, error) {
 	// Open the file for reading.
@@ -94,32 +94,51 @@ func LinuxSpliceBulkRead(filename string, chunkSize int) ([][]byte, error) {
 	// Ensure the file is closed when the function returns.
 	defer func() { _ = file.Close() }()
 
+	// Create a pipe to send data through.
+	pipe := make([]int, 2)
+	if err = syscall.Pipe(pipe); err != nil {
+		return [][]byte{}, fmt.Errorf("failed to create pipe: %w", err)
+	}
+	defer func() { _ = syscall.Close(pipe[0]) }()
+	defer func() { _ = syscall.Close(pipe[1]) }()
+
+	// Store all the chunks read from the file.
 	var chunks [][]byte
-	// Allocate a buffer of the specified chunk size.
-	buf := make([]byte, chunkSize)
 
 	for {
-		// Read up to chunkSize bytes from the file into the buffer.
-		var n int
-		n, err = file.Read(buf)
-		if n == 0 {
-			// End of file reached.
+		// Use splice to transfer data from the file to the pipe.
+		var n int64
+		n, err = syscall.Splice(int(file.Fd()), nil, pipe[1], nil, chunkSize, 0)
+		if n == 0 || err == io.EOF {
 			break
 		}
-		if err != nil && err != io.EOF {
-			// Return any read error other than EOF.
+		if err != nil {
 			return nil, err
 		}
 
-		// Copy the bytes read into a new slice to avoid overwriting the buffer.
-		chunk := make([]byte, n)
-		copy(chunk, buf[:n])
+		// Allocate a buffer to hold the chunk in user space
+		buf := make([]byte, n)
+		total := 0
 
-		// Append the chunk to the slice of chunks.
-		chunks = append(chunks, chunk)
+		// Loop until we read all n bytes from the pipe
+		for int64(total) < n {
+			var m int
+			m, err = unix.Read(pipe[0], buf[total:])
+			if err != nil {
+				return nil, err
+			}
+			if m == 0 {
+				break
+			}
+			total += m
+		}
+
+		// Append the fully-read buffer slice to the chunks
+		if total > 0 {
+			chunks = append(chunks, buf[:total])
+		}
 	}
 
-	// Return all chunks read from the file.
 	return chunks, nil
 }
 
@@ -137,117 +156,11 @@ func GenerateBinaryFile(path string, count int) error {
 		// Generate a new UUID.
 		id := uuid.New()
 		// Write the 16-byte UUID to the file.
-		_, err := file.Write(id[:])
+		_, err = file.Write(id[:])
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-// LinuxSpliceStreamWrite ⛏️ creates a pipe to write data to a file using the Splice system call.
-// It returns a channel to send data to be written to the file.
-func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode) (dataChan chan [][]byte, finishChan chan struct{}, err error) {
-	// Open the file with the specified flags and permissions.
-	var file *os.File
-	file, err = os.OpenFile(filename, fileFlag, filePerm)
-	if err != nil {
-		// If the file cannot be opened, return an error.
-		return nil, nil, fmt.Errorf("failed to open file: %w", err)
-	}
-
-	// Create a pipe to write data to.
-	pipe := make([]int, 2)
-	if err = syscall.Pipe(pipe); err != nil {
-		// If the pipe cannot be created, close the file and return an error.
-		_ = file.Close()
-		return nil, nil, fmt.Errorf("failed to create pipe: %w", err)
-	}
-
-	// Create a channel to send data to be written to the file.
-	dataChan = make(chan [][]byte, 100)
-
-	// Signal that a process has finished.
-	finishChan = make(chan struct{})
-
-	// Start a goroutine to write data to the file.
-	go func() {
-		// Defer closing the pipe and file.
-		defer func() {
-			// Close the pipe.
-			_ = syscall.Close(pipe[0])
-			_ = syscall.Close(pipe[1])
-
-			// Close the file with retries.
-			for i := 0; i < 20; i++ {
-				if closeErr := file.Close(); closeErr != nil {
-					// If the file cannot be closed, wait and try again.
-					time.Sleep(1 * time.Second)
-				} else {
-					// If the file is closed successfully, break the loop.
-					break
-				}
-				if i == 19 {
-					// If the file cannot be closed after 5 attempts, print an error message.
-					fmt.Println("Failed to close file after 20 attempts")
-				}
-			}
-
-			// Sync the file system to ensure data is written to disk.
-			syscall.Sync()
-
-			// Send a signal to indicate that the process has finished.
-			finishChan <- struct{}{}
-		}()
-
-		// Loop indefinitely to write data to the file.
-		for {
-			// Select on the data channel.
-			select {
-
-			// Receive a value from dataChan and check whether the channel is still open.
-			case val, ok := <-dataChan:
-
-				// If the channel is closed, exit the loop.
-				if !ok {
-					return
-				}
-
-				// Write each chunk of data to the pipe.
-				for _, chunk := range val {
-
-					// Write the chunk to the pipe.
-					var n int
-					n, err = syscall.Write(pipe[1], chunk)
-					if err != nil {
-						// If the write fails, print an error message and exit.
-						fmt.Printf("failed to write to pipe: %v\n", err)
-						return
-					}
-
-					if n != len(chunk) {
-						// If the write is partial, print an error message and exit.
-						fmt.Printf("partial write to pipe, wrote %d bytes out of %d\n", n, len(chunk))
-						return
-					}
-
-					// Splice the data from the pipe to the file.
-					for n > 0 {
-						var written int64
-						written, err = syscall.Splice(pipe[0], nil, int(file.Fd()), nil, n, 0)
-						if err != nil {
-							// If the splice fails, print an error message and exit.
-							fmt.Printf("failed to splice data: %v\n", err)
-							return
-						}
-						n -= int(written)
-					}
-				}
-			}
-		}
-	}()
-
-	// Return the data channel and no error.
-	return dataChan, finishChan, nil
 }
