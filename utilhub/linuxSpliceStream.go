@@ -146,7 +146,7 @@ func LinuxSpliceStreamWrite(filename string, fileFlag int, filePerm os.FileMode)
 
 // LinuxSpliceStreamRead ⛏️ efficiently reads a file in chunks using syscall.Splice, splitting the data into a 2D byte slice and sending it through a channel for further processing.
 // It returns a channel that delivers data read from the file in chunks.
-func LinuxSpliceStreamRead(filename string, fileFlag int, filePerm os.FileMode, chunkSize int, chunkSize2 int) (dataChan chan [][]byte, finishChan chan struct{}, err error) {
+func LinuxSpliceStreamRead(filename string, fileFlag int, filePerm os.FileMode, chunkSize int, chunkRaw int) (dataChan chan [][]byte, finishChan chan struct{}, err error) {
 	// Open the file with the specified flags and permissions.
 	var file *os.File
 	file, err = os.OpenFile(filename, fileFlag, filePerm)
@@ -204,7 +204,7 @@ func LinuxSpliceStreamRead(filename string, fileFlag int, filePerm os.FileMode, 
 	// Start reading.
 	for {
 		// Use splice to transfer data from file to pipe.
-		n, err := syscall.Splice(int(file.Fd()), nil, pipe[1], nil, chunkSize*chunkSize2, 0)
+		n, err := syscall.Splice(int(file.Fd()), nil, pipe[1], nil, chunkSize*chunkRaw, 0)
 		if n == 0 || err == io.EOF {
 			break
 		}
@@ -232,16 +232,16 @@ func LinuxSpliceStreamRead(filename string, fileFlag int, filePerm os.FileMode, 
 		}
 
 		// If enough data is accumulated, split it into chunks of chunkSize by chunkSize2.
-		for len(accumulatedData) >= chunkSize*chunkSize2 {
+		for len(accumulatedData) >= chunkSize*chunkRaw {
 			// Take chunkSize * chunkSize2 bytes.
-			block := accumulatedData[:chunkSize*chunkSize2]
-			accumulatedData = accumulatedData[chunkSize*chunkSize2:] // Remove processed data.
+			block := accumulatedData[:chunkSize*chunkRaw]
+			accumulatedData = accumulatedData[chunkSize*chunkRaw:] // Remove processed data.
 
 			// Split the block into chunkSize rows, each with chunkSize2 bytes.
 			var chunk [][]byte
 			for i := 0; i < chunkSize; i++ {
-				start := i * chunkSize2
-				end := start + chunkSize2
+				start := i * chunkRaw
+				end := start + chunkRaw
 				chunk = append(chunk, block[start:end])
 			}
 

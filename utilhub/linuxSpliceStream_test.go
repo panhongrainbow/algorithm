@@ -1,12 +1,15 @@
 package utilhub
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -279,4 +282,59 @@ func Test_LinuxSpliceStreamWrite_Race(t *testing.T) {
 			_ = os.Remove(tt.filename)
 		})
 	}
+}
+
+func TestLinuxSpliceStreamRead(t *testing.T) {
+	// 1. Generate a unique filename using UUID
+	fileName := fmt.Sprintf("%s.txt", uuid.New().String())
+
+	// 2. Create a test file
+	file, err := os.Create(fileName)
+	require.NoError(t, err, "failed to create file")
+	defer file.Close()
+
+	// Write some test data to the file
+	data := []byte("This is some test data to read.")
+	_, err = file.Write(data)
+	require.NoError(t, err, "failed to write to file")
+
+	// 3. Call the LinuxSpliceStreamRead function
+	dataChan, finishChan, err := LinuxSpliceStreamRead(fileName, os.O_RDONLY, 0644, 10, 5)
+	require.NoError(t, err, "failed to splice stream read")
+
+	// Move result outside the loop to accumulate data
+	var result [][]byte
+
+	// Goroutine to read from dataChan and accumulate result
+	go func() {
+		for chunk := range dataChan {
+			result = append(result, chunk...) // Unwrap the [][]byte to []byte
+		}
+	}()
+
+	// 4. Ensure finishChan is triggered within 1 second
+	select {
+	case <-finishChan:
+		// finishChan triggered, processing is done
+	case <-time.After(1 * time.Second):
+		t.Fatal("expected finishChan to trigger but it didn't")
+	}
+
+	// 5. Ensure that all data has been collected from dataChan
+	select {
+	case <-time.After(2 * time.Second): // Allow up to 2 seconds for data collection
+		// Check the result data
+		assert.NotEmpty(t, result, "expected data but got none")
+
+		// Check that each chunk is not empty
+		for i, chunk := range result {
+			assert.NotEmpty(t, chunk, fmt.Sprintf("chunk %d is empty", i))
+		}
+	}
+
+	fmt.Println(">>>>", result)
+
+	// 6. Clean up by deleting the file
+	err = os.Remove(fileName)
+	require.NoError(t, err, "failed to remove file")
 }
