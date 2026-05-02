@@ -195,7 +195,6 @@ func LinuxSpliceStreamRead(filename string, fileFlag int, filePerm os.FileMode, 
 
 		// Send a signal to indicate that the process has finished.
 		finishChan <- struct{}{}
-
 	}()
 
 	// Accumulate data.

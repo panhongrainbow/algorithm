@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -143,7 +142,8 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 			<-finishChan
 
 			// Read the content of the written file.
-			content, err := os.ReadFile(tt.filename)
+			var content []byte
+			content, err = os.ReadFile(tt.filename)
 			require.NoError(t, err)
 
 			// Generate the expected content based on the same dynamic pattern.
@@ -284,45 +284,44 @@ func Test_LinuxSpliceStreamWrite_Race(t *testing.T) {
 	}
 }
 
-func TestLinuxSpliceStreamRead(t *testing.T) {
-	// 1. Generate a unique filename using UUID
-	fileName := fmt.Sprintf("%s.txt", uuid.New().String())
-
-	// 2. Create a test file
-	file, err := os.Create(fileName)
+// Test_LinuxSpliceStreamRead validates the behavior of the LinuxSpliceStreamRead function.
+func Test_LinuxSpliceStreamRead(t *testing.T) {
+	// Create a test file.
+	file, err := os.Create("/tmp/test_file.txt")
 	require.NoError(t, err, "failed to create file")
 	defer file.Close()
 
-	// Write some test data to the file
+	// Write some test data to the file.
 	data := []byte("This is some test data to read.")
 	_, err = file.Write(data)
 	require.NoError(t, err, "failed to write to file")
 
-	// 3. Call the LinuxSpliceStreamRead function
-	dataChan, finishChan, err := LinuxSpliceStreamRead(fileName, os.O_RDONLY, 0644, 10, 5)
+	// Call the LinuxSpliceStreamRead function.
+	// dataChan, finishChan, err := LinuxSpliceStreamRead("/tmp/test_file.txt", os.O_RDONLY, 0644, 10, 5)
+	dataChan, finishChan, err := LinuxSpliceStreamRead("/tmp/random_file.bin", os.O_RDONLY, 0644, 10, 5)
 	require.NoError(t, err, "failed to splice stream read")
 
-	// Move result outside the loop to accumulate data
+	// Move result outside the loop to accumulate data.
 	var result [][]byte
 
-	// Goroutine to read from dataChan and accumulate result
+	// Goroutine to read from dataChan and accumulate result.
 	go func() {
 		for chunk := range dataChan {
-			result = append(result, chunk...) // Unwrap the [][]byte to []byte
+			result = append(result, chunk...) // Unwrap the [][]byte to []byte.
 		}
 	}()
 
-	// 4. Ensure finishChan is triggered within 1 second
+	// Ensure finishChan is triggered within 1 second.
 	select {
 	case <-finishChan:
-		// finishChan triggered, processing is done
+		// finishChan triggered, processing is done.
 	case <-time.After(1 * time.Second):
 		t.Fatal("expected finishChan to trigger but it didn't")
 	}
 
-	// 5. Ensure that all data has been collected from dataChan
+	// Ensure that all data has been collected from dataChan.
 	select {
-	case <-time.After(2 * time.Second): // Allow up to 2 seconds for data collection
+	case <-time.After(2 * time.Second): // Allow up to 2 seconds for data collection.
 		// Check the result data
 		assert.NotEmpty(t, result, "expected data but got none")
 
@@ -332,9 +331,7 @@ func TestLinuxSpliceStreamRead(t *testing.T) {
 		}
 	}
 
-	fmt.Println(">>>>", result)
-
-	// 6. Clean up by deleting the file
-	err = os.Remove(fileName)
+	// Clean up by deleting the file.
+	err = os.Remove("/tmp/test_file.txt")
 	require.NoError(t, err, "failed to remove file")
 }
