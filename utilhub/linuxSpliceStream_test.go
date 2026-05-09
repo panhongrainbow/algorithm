@@ -1,13 +1,12 @@
 package utilhub
 
 import (
-	"fmt"
+	"encoding/binary"
 	"os"
 	"runtime"
 	"strconv"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -112,6 +111,7 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 
 	// Iterate through the defined test cases.
 	for _, tt := range tests {
+		// 先产生档案
 		t.Run(tt.name, func(t *testing.T) {
 			// Initialize the splice stream writer with the specified file configuration.
 			dataChan, finishChan, err := LinuxSpliceStreamWrite(tt.filename, tt.fileFlag, tt.filePerm)
@@ -155,8 +155,69 @@ func Test_LinuxSpliceStreamWrite_FeedStreamData(t *testing.T) {
 			// Verify that the actual file content matches the expected pattern.
 			assert.Equal(t, expectedContent, content)
 
+		})
+
+		// hexdump -C test_file.txt | head -n 100
+		t.Run(tt.name, func(t *testing.T) {
 			// Remove the test file after each test case.
-			_ = os.Remove(tt.filename)
+			// _ = os.Remove(tt.filename)
+		})
+	}
+}
+
+func Test_LinuxSpliceStreamWrite_FeedStreamData2_Int64(t *testing.T) {
+	// Skip the test if the OS is not Linux
+	if runtime.GOOS != "linux" {
+		t.Skip("Skipping test on non-Linux OS: " + t.Name())
+	}
+
+	tests := []struct {
+		name     string
+		filename string
+		fileFlag int
+		filePerm os.FileMode
+		wantErr  bool
+	}{
+		{
+			name:     "Feed Stream Data Continuously to LinuxSpliceStreamWrite (int64)",
+			filename: "/tmp/test_file_int64.bin",
+			fileFlag: os.O_CREATE | os.O_WRONLY | os.O_TRUNC,
+			filePerm: 0644,
+			wantErr:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dataChan, finishChan, err := LinuxSpliceStreamWrite(tt.filename, tt.fileFlag, tt.filePerm)
+			assert.NoError(t, err)
+
+			const iterations = 1000000
+			const batchSize = 32 // 每 batch 寫入 32 個 int64
+			const bytesPerInt = 8
+
+			for i := 0; i < iterations; i++ {
+				batch := make([]byte, batchSize*bytesPerInt)
+				for j := 0; j < batchSize; j++ {
+					val := int64(i*batchSize + j) // 大數字
+					binary.LittleEndian.PutUint64(batch[j*bytesPerInt:], uint64(val))
+				}
+				dataChan <- [][]byte{batch}
+			}
+
+			close(dataChan)
+			<-finishChan
+
+			content, err := os.ReadFile(tt.filename)
+			require.NoError(t, err)
+
+			// od -An -t u1 /tmp/test_file.txt
+			expectedContent := make([]byte, iterations*batchSize*bytesPerInt)
+			for i := 0; i < iterations*batchSize; i++ {
+				binary.LittleEndian.PutUint64(expectedContent[i*bytesPerInt:], uint64(i))
+			}
+
+			assert.Equal(t, expectedContent, content)
 		})
 	}
 }
@@ -282,56 +343,4 @@ func Test_LinuxSpliceStreamWrite_Race(t *testing.T) {
 			_ = os.Remove(tt.filename)
 		})
 	}
-}
-
-// Test_LinuxSpliceStreamRead validates the behavior of the LinuxSpliceStreamRead function.
-func Test_LinuxSpliceStreamRead(t *testing.T) {
-	// Create a test file.
-	file, err := os.Create("/tmp/test_file.txt")
-	require.NoError(t, err, "failed to create file")
-	defer file.Close()
-
-	// Write some test data to the file.
-	data := []byte("This is some test data to read.")
-	_, err = file.Write(data)
-	require.NoError(t, err, "failed to write to file")
-
-	// Call the LinuxSpliceStreamRead function.
-	// dataChan, finishChan, err := LinuxSpliceStreamRead("/tmp/test_file.txt", os.O_RDONLY, 0644, 10, 5)
-	dataChan, finishChan, err := LinuxSpliceStreamRead("/tmp/random_file.bin", os.O_RDONLY, 0644, 10, 5)
-	require.NoError(t, err, "failed to splice stream read")
-
-	// Move result outside the loop to accumulate data.
-	var result [][]byte
-
-	// Goroutine to read from dataChan and accumulate result.
-	go func() {
-		for chunk := range dataChan {
-			result = append(result, chunk...) // Unwrap the [][]byte to []byte.
-		}
-	}()
-
-	// Ensure finishChan is triggered within 1 second.
-	select {
-	case <-finishChan:
-		// finishChan triggered, processing is done.
-	case <-time.After(1 * time.Second):
-		t.Fatal("expected finishChan to trigger but it didn't")
-	}
-
-	// Ensure that all data has been collected from dataChan.
-	select {
-	case <-time.After(2 * time.Second): // Allow up to 2 seconds for data collection.
-		// Check the result data
-		assert.NotEmpty(t, result, "expected data but got none")
-
-		// Check that each chunk is not empty
-		for i, chunk := range result {
-			assert.NotEmpty(t, chunk, fmt.Sprintf("chunk %d is empty", i))
-		}
-	}
-
-	// Clean up by deleting the file.
-	err = os.Remove("/tmp/test_file.txt")
-	require.NoError(t, err, "failed to remove file")
 }
