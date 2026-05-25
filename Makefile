@@ -14,13 +14,14 @@ WASTEBASKET := 🗑️
 ALCHEMY := ⚗️
 LAB := 🧪
 
-# Default target to run tests in all directories.
-.PHONY: all
-all: test
+# go clean -cache removes the Go build cache and deletes $HOME/.cache/go-build on Linux.
+.PHONY: clean
+clean:
+	@go clean --cache
 
 # Test target to run tests in all specified directories.
-.PHONY: test
-test:
+.PHONY: test-all
+test-all:
 	@for dir in $(DIRS); do \
 		echo "$(YELLOW)$(ALCHEMY)  Testing directory: $$dir$(RESET)"; \
 		cd $$dir && go test -v ./...; \
@@ -32,11 +33,11 @@ test:
 		cd ..; \
 	done
 
-# Clean up any generated files or artifacts.
-.PHONY: clean
-clean:
-	@for dir in $(DIRS); do \
-		echo "$(YELLOW)$(WASTEBASKET) Cleaning directory: $$dir$(RESET)"; \
-		cd $$dir && go clean; \
-		cd ..; \
-	done
+# Default target: clean Go build cache and run tests in all directories.
+.PHONY: all
+all: clean test-all
+
+# Run tests in the ./utilhub directory with verbose output and no timeout.
+.PHONY: test-utilhub
+test-utilhub:
+	@go test -v ./utilhub -timeout=0 -run Test_AnsiColorOutput

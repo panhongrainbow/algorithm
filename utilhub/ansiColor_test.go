@@ -24,7 +24,7 @@ func Test_AnsiColorOutput(t *testing.T) {
 		{"DarkCyan", DarkCyan},
 		{"DarkWhite", DarkWhite}, // Actually, this represents Gray.
 
-		// Bright color codes (high intensity).
+		// Bright color codes (high Intensity).
 		{"BrightBlack", BrightBlack}, // Actually, this represents Gray.
 		{"BrightRed", BrightRed},
 		{"BrightGreen", BrightGreen},
