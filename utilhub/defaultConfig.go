@@ -82,7 +82,7 @@ func ParseDefault(cfg DefaultConfig) error {
 		}
 
 		// HACK => Below is the test code.
-		cfg.(*BptreeUnitTestConfig).Parameters.BpWidth = []int{3, 6, 7, 9, 13}
+		cfg.(*BptreeUnitTestConfig).Parameters.BpWidth = []int{3, 10, 11, 12, 13}
 	})
 
 	// Return nil to indicate the operation completed successfully.

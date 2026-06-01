@@ -1,8 +1,9 @@
 package utilhub
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // Test_Adjust2Even tests the Even function with various input lengths.
@@ -23,7 +24,7 @@ func Test_Adjust2Even(t *testing.T) {
 		{"zero length", 0, 0},
 	}
 
-	// Iterate over each test case and run a sub-test.
+	// Iterate over each test case and run a subtest.
 	for _, test := range tests {
 		// Run a sub-test with the test case name.
 		t.Run(test.name, func(t *testing.T) {

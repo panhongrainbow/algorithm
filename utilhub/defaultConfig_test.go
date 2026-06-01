@@ -12,7 +12,7 @@ import (
 // setFieldValue is a helper function to set a field value using reflection.
 func Test_SetFieldValue(t *testing.T) {
 	// The first part demonstrates usage examples, the second part contains actual test cases.
-	// (先测试，再说明)
+	// (先测试原理，再说明细节)
 
 	// Explanation 1: Modifying existing values with reflect.Value.
 	// (很简单的原则，用 ValueOf 修改数值，接近底层)
@@ -20,39 +20,36 @@ func Test_SetFieldValue(t *testing.T) {
 		// When you need to modify an existing value, use ValueOf to get a settable reflected value.
 
 		var modified int16
-		v := reflect.ValueOf(&modified).Elem() // use ValueOf to set value.
+		v := reflect.ValueOf(&modified).Elem() // use ValueOf to set value. (直接修改)
 		err := setFieldValue(v, "100")
 		require.NoError(t, err)
 		require.Equal(t, modified, int16(100))
 	})
 
-	// Explanation 2: Creating new values from type information.
-	// (用 TypeOf 建立新值，TypeOf 可以获取最完整类型信息)
+	// Explanation 2: Assigning int64 to interface{} and modifying the underlying value via reflection.
 	t.Run("demonstrates creating new values from types", func(t *testing.T) {
-		// When you need to create a new value, use TypeOf to get type information, then create via reflect.New.
 
 		var modified int16
-		var container interface{} = modified
-		fieldType := reflect.TypeOf(container) // use TypeOf to create new value.
-		v := reflect.New(fieldType).Elem()
-		err := setFieldValue(v, "100")
+		var container interface{} = modified // Assigning int64 to interface{}.
+		fieldType := reflect.TypeOf(container)
+		v := reflect.New(fieldType).Elem() // Modifying via reflection
+		err := setFieldValue(v, "100")     // Modifying the underlying value via reflection.
 		require.NoError(t, err)
 		modified = v.Interface().(int16)
 		require.Equal(t, modified, int16(100))
 	})
 
-	// Explanation 3: Working with interface{} conversions.
+	// Explanation 3: Assigning int64 to interface{} and modifying the underlying value via reflection.
 	t.Run("demonstrates interface{} conversion", func(t *testing.T) {
-		// Finally, tests comparison between two interface{} values and verifies the result.
 
 		var modified int16
-		var container interface{} = modified
+		var container interface{} = modified // Assigning int64 to interface{}. (有地址)
 		fieldType := reflect.TypeOf(container)
-		v := reflect.New(fieldType).Elem()
-		err := setFieldValue(v, "100")
+		v := reflect.New(fieldType).Elem() // Modifying via reflection. (有类型)
+		err := setFieldValue(v, "100")     // Modifying the underlying value via reflection. (用值修改)
 		require.NoError(t, err)
-		container = v.Interface() // Convert Value back to interface{}
-		require.Equal(t, container, interface{}(int16(100)))
+		container = v.Interface()                            // 设定不知类型
+		require.Equal(t, container, interface{}(int16(100))) // 但我知道
 	})
 
 	// Comprehensive test cases.
