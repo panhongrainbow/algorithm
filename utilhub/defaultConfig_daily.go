@@ -3,10 +3,14 @@ package utilhub
 import "sync"
 
 var (
-	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
-	_unitTestConfig = BptreeUnitTestConfig{}
+	// 🧪 Create a config instance for B plus tree unit testing and parse toggle switch settings. (开关设定值)
+	_toggleConfig     = BptreeToggleConfig{}
+	_onesToggleConfig sync.Once // Prevent configuration from being overwritten.
+	// 🧪 Create a config instance for B plus tree unit testing and parse default values. (单元测试设定值)
+	_unitTestConfig     = BptreeUnitTestConfig{}
+	_onesUnitTestConfig sync.Once // Prevent configuration from being overwritten.
+	// _configParseErr stores any error returned.
 	_configParseErr = ParseDefaultManual(&_unitTestConfig)
-	_ones           sync.Once // Prevent configuration from being overwritten.
 )
 
 // 🧪 Initialize default test parameters.

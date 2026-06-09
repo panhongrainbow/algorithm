@@ -20,18 +20,19 @@ import (
 
 // HACK => 暂时的设定
 var (
-	test_mech = "auto"
-	test_date = "2026-01-11"
-	test_file = "SingleNodeEndurance.do_not_open"
+	testMech = "auto"
+	testDate = "2026-01-11"
+	testFile = "SingleNodeEndurance.do_not_open"
 )
 
+// ParseDefaultManual may load either default configuration values or manually specified configuration values, depending on Toggle Config.
 func ParseDefaultManual(cfg DefaultConfig) error {
-	switch test_mech {
+	switch testMech {
 	case "manual":
 		for _, manualConfig := range _manualTestConfig {
 			fmt.Println(manualConfig.Record.ManualRecordDate, manualConfig.Record.ManualRecordFile)
-			if manualConfig.Record.ManualRecordDate == test_date &&
-				manualConfig.Record.ManualRecordFile == test_file {
+			if manualConfig.Record.ManualRecordDate == testDate &&
+				manualConfig.Record.ManualRecordFile == testFile {
 				_unitTestConfig = manualConfig
 				return nil
 			}
@@ -50,7 +51,7 @@ func ParseDefault(cfg DefaultConfig) error {
 	var projectPath, file string
 
 	// Use Golang's sync.Once to prevent the setting from being overwritten.
-	_ones.Do(func() {
+	_onesUnitTestConfig.Do(func() {
 
 		// Get the default configuration directory.
 		projectPath, err = GetProjectDir(filepath.Join(ProjectName))

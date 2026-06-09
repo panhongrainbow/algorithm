@@ -5,6 +5,15 @@ package utilhub
 // Default Config Type contains types for DefaultConfig, bptreeUnitTestConfig etc. (这里收集了 DefaultConfig 等类型)
 // =====================================================================================================================
 
+// ToggleConfig represents the master switch for configuration.
+// It determines whether the system should use the default configuration or a manually provided configuration. (开关配置)
+type ToggleConfig interface{}
+
+// BptreeToggleConfig defines the toggle settings for Bptree tests.
+type BptreeToggleConfig struct {
+	Mechanism string `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
+}
+
 // DefaultConfig ⛏️ is a type constraint that allows struct types to store default configuration values. (预设配置)
 type DefaultConfig interface{}
 
