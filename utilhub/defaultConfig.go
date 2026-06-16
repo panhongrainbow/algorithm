@@ -28,6 +28,8 @@ var (
 // ParseDefaultManual may load either default configuration values or manually specified configuration values, depending on Toggle Config.
 func ParseDefaultManual(cfg DefaultConfig) error {
 	switch testMech {
+	case "auto":
+		return ParseDefault(cfg)
 	case "manual":
 		for _, manualConfig := range _manualTestConfig {
 			fmt.Println(manualConfig.Record.ManualRecordDate, manualConfig.Record.ManualRecordFile)
@@ -37,8 +39,6 @@ func ParseDefaultManual(cfg DefaultConfig) error {
 				return nil
 			}
 		}
-	case "auto":
-		return ParseDefault(cfg)
 	}
 
 	return nil

@@ -9,7 +9,7 @@ package utilhub
 // It determines whether the system should use the default configuration or a manually provided configuration. (开关配置)
 type ToggleConfig interface{}
 
-// BptreeToggleConfig defines the toggle settings for Bptree tests.
+// BptreeToggleConfig ⛏️ defines the toggle settings for Bptree tests.
 type BptreeToggleConfig struct {
 	Mechanism string `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
 }
@@ -17,7 +17,7 @@ type BptreeToggleConfig struct {
 // DefaultConfig ⛏️ is a type constraint that allows struct types to store default configuration values. (预设配置)
 type DefaultConfig interface{}
 
-// BptreeUnitTestConfig ⛏️ is a struct for BpTree unit test configuration.
+// BptreeUnitTestConfig ⛏️ is a struct for Bptree unit test configuration.
 type BptreeUnitTestConfig struct {
 	Mechanism string   `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
 	Record    struct { // 🧪 Record contains configurations related to test record storage.

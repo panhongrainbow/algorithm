@@ -1,6 +1,8 @@
 package utilhub
 
-import "path/filepath"
+import (
+	"path/filepath"
+)
 
 // ParseToggle ⛏️ loads the toggle configuration from struct tags and applies it to the provided struct.
 func ParseToggle(cfg ToggleConfig) error {
@@ -32,5 +34,4 @@ func ParseToggle(cfg ToggleConfig) error {
 
 	// Return nil to indicate the operation completed successfully.
 	return err
-
 }
