@@ -11,10 +11,10 @@ import (
 // creating a dataset, and validating its integrity through the model's own checks.
 func Test_Model1_Generate_Check_RandomSet(t *testing.T) {
 	// Set the total count for random data generation to 50 in pool.
-	utilhub.SetRandomTotalCount(100)
+	utilhub.SetAutoRandomTotalCount(100)
 
 	// Verify that the random total count was correctly set to 50.
-	require.Equal(t, utilhub.GetRandomTotalCount(), int64(100))
+	require.Equal(t, utilhub.GetAutoRandomTotalCount(), int64(100))
 
 	// Create an instance of BpTestModel1.
 	bptest := &BpTestBulkInsertDelete{}
@@ -28,5 +28,5 @@ func Test_Model1_Generate_Check_RandomSet(t *testing.T) {
 	require.NoError(t, err, "failed to check test data")
 
 	// Force reload the configuration to reset any changes made during testing.
-	utilhub.ForceReloadConfig()
+	utilhub.ForceReloadAutoTest()
 }

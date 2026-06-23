@@ -12,116 +12,6 @@ import (
 	"strings"
 )
 
-// =====================================================================================================================
-//	🛠️ Default Config (Tool)
-// Default Config is a tool that tags struct fields with default values.
-// (DefaultConfig是一个工具,用于标记结构体字段的默认值)
-// =====================================================================================================================
-
-// HACK => 暂时的设定
-var (
-	testMech = "auto"
-	testDate = "2026-01-11"
-	testFile = "SingleNodeEndurance.do_not_open"
-)
-
-// ParseDefaultManual may load either default configuration values or manually specified configuration values, depending on Toggle Config.
-func ParseDefaultManual(cfg DefaultConfig) error {
-	switch testMech {
-	case "auto":
-		return ParseDefault(cfg)
-	case "manual":
-		for _, manualConfig := range _manualTestConfig {
-			fmt.Println(manualConfig.Record.ManualRecordDate, manualConfig.Record.ManualRecordFile)
-			if manualConfig.Record.ManualRecordDate == testDate &&
-				manualConfig.Record.ManualRecordFile == testFile {
-				_unitTestConfig = manualConfig
-				return nil
-			}
-		}
-	}
-
-	return nil
-}
-
-// ParseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
-func ParseDefault(cfg DefaultConfig) error {
-	// Prepare the variable outside of the closure function.
-	var err error
-	var projectPath, file string
-
-	// Use Golang's sync.Once to prevent the setting from being overwritten.
-	_onesUnitTestConfig.Do(func() {
-
-		// Get the default configuration directory.
-		projectPath, err = GetProjectDir(filepath.Join(ProjectName))
-		if err != nil {
-			return
-		}
-
-		// Get the struct name to use as the filename.
-		file, err = GetDefaultStructName(&cfg)
-		if err != nil {
-			return
-		}
-
-		// Return the result of _parseDefault.
-		err = _parseDefault(filepath.Join(projectPath, "config", file+".json"), cfg)
-		if err != nil {
-			return
-		}
-
-		// If the record is configured to be inside the project directory,
-		// prepend the project path to the test record path
-		if cfg.(*BptreeUnitTestConfig).Record.IsInsideProject == true {
-			cfg.(*BptreeUnitTestConfig).Record.TestRecordPath = filepath.Join(projectPath, cfg.(*BptreeUnitTestConfig).Record.TestRecordPath)
-		}
-
-		// When the mechanism is set to automatic, the test subdirectory will automatically be set to the current date.
-		if cfg.(*BptreeUnitTestConfig).Mechanism == "auto" {
-			cfg.(*BptreeUnitTestConfig).Record.ManualRecordDate = TestTimeString("2006-01-02", "Asia/Shanghai")
-		}
-
-		// HACK => Below is the test code.
-		cfg.(*BptreeUnitTestConfig).Parameters.BpWidth = []int{3, 10, 11, 12, 13}
-	})
-
-	// Return nil to indicate the operation completed successfully.
-	return err
-
-}
-
-// _parseDefault ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
-// Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
-func _parseDefault(filePath string, cfg DefaultConfig) error {
-	// Check if the config is a pointer to a struct.
-	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
-		return errors.New("config must be a pointer to a struct")
-	}
-
-	// Read the default configuration from the file.
-	file, err := os.ReadFile(filePath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// Do nothing; the tag will be handled later by applyDefaults. (之后由 applyDefaults 取 tag 决定)
-		}
-		return err
-	}
-
-	// Unmarshal the JSON data into the provided config and overwrite the default values.
-	if err := json.Unmarshal(file, cfg); err != nil {
-		return err
-	}
-
-	// [applyDefaults] applies the default values from struct tags to the provided config. (主要逻辑)
-	if err := applyDefaults(cfg); err != nil {
-		return err
-	}
-
-	// No error occurred, return nil.
-	return nil
-}
-
 // applyDefaults ⛏️ applies the default values from struct tags to the provided config.
 func applyDefaults(cfg interface{}) error {
 	// Get the reflect.Value of the passed-in struct and dereference it.
@@ -264,7 +154,7 @@ func setFieldValue(field reflect.Value, value string) error {
 }
 
 // defaultConfig2file ⛏️ saves the default configuration to a JSON file.
-func defaultConfig2file(cfg DefaultConfig, overwrite bool) error {
+func defaultConfig2file(cfg AutoConfig, overwrite bool) error {
 	// Get the default configuration directory.
 	path, err := GetProjectDir("go-algorithm/config")
 	if err != nil {
@@ -282,7 +172,7 @@ func defaultConfig2file(cfg DefaultConfig, overwrite bool) error {
 }
 
 // _defaultConfig2file ⛏️ overwrites the default configuration from struct tags and applies it to the specific file.
-func _defaultConfig2file(cfg DefaultConfig, filePath string, overwrite bool) error {
+func _defaultConfig2file(cfg AutoConfig, filePath string, overwrite bool) error {
 	// Check if the config is a pointer to a struct.
 	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
 		return errors.New("config must be a pointer to a struct")
@@ -312,7 +202,7 @@ func _defaultConfig2file(cfg DefaultConfig, filePath string, overwrite bool) err
 }
 
 // GetDefaultStructName ⛏️ retrieves the name of the struct.
-func GetDefaultStructName(cfg DefaultConfig) (string, error) {
+func GetDefaultStructName(cfg AutoConfig) (string, error) {
 	// Check if the config is a pointer to a struct.
 	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
 		return "", errors.New("config must be a pointer to a struct")

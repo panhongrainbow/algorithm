@@ -9,16 +9,16 @@ package utilhub
 // It determines whether the system should use the default configuration or a manually provided configuration. (开关配置)
 type ToggleConfig interface{}
 
-// BptreeToggleConfig ⛏️ defines the toggle settings for Bptree tests.
-type BptreeToggleConfig struct {
+// TestToggleConfig ⛏️ defines the toggle settings for Bptree tests.
+type TestToggleConfig struct {
 	Mechanism string `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
 }
 
-// DefaultConfig ⛏️ is a type constraint that allows struct types to store default configuration values. (预设配置)
-type DefaultConfig interface{}
+// AutoConfig ⛏️ is a type constraint that allows struct types to store default configuration values. (预设配置)
+type AutoConfig interface{}
 
-// BptreeUnitTestConfig ⛏️ is a struct for Bptree unit test configuration.
-type BptreeUnitTestConfig struct {
+// TestAutoConfig ⛏️ is a struct for Bptree unit test configuration.
+type TestAutoConfig struct {
 	Mechanism string   `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
 	Record    struct { // 🧪 Record contains configurations related to test record storage.
 		TestRecordPath   string `json:"testRecordPath" default:"/temp/test_record"` // 🧪 TestRecordPath specifies the directory path where test records will be saved.
@@ -54,7 +54,7 @@ type BptreeUnitTestConfig struct {
 
 // types for testing is as bellows: (以下是测试用的类型) ===== ===== ===== ===== ===== ===== ===== ===== =====
 
-// testConfig ⛏️ is a test struct for DefaultConfig. (测试用的预设配置)
+// testConfig ⛏️ is a test struct for AutoConfig. (测试用的预设配置)
 type testConfig struct {
 	Server struct {
 		Host string `json:"host" default:"localhost"`
