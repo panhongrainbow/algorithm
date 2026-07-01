@@ -26,7 +26,7 @@ import (
 // This is a set of path configurations shared by both automated and manual testing.
 var (
 	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
-	unitTestConfig = utilhub.GetDefaultConfig()
+	unitTestConfig = utilhub.GetAutoConfig()
 
 	// 🧪 Navigate to the project dataSet directory for test record storage.
 	ProjectDir = utilhub.FileNode{}.Goto(unitTestConfig.Record.TestRecordPath)
@@ -54,8 +54,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
-		if unitTestConfig.Mechanism == "auto" ||
-			unitTestConfig.ManualTest.EnableBulkInsertDelete {
+		if unitTestConfig.Mechanism == "auto" {
 
 			// Verify test data for BulkInsertDelete.
 			verifyBulkInsertDelete(t)
@@ -74,8 +73,7 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
-		if unitTestConfig.Mechanism == "auto" ||
-			unitTestConfig.ManualTest.EnableRandomizedBoundary {
+		if unitTestConfig.Mechanism == "auto" {
 			// Verify test data for RandomizedBoundary.
 			verifyRandomizedBoundary(t)
 
@@ -93,13 +91,13 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
-		if unitTestConfig.Mechanism == "auto" ||
-			unitTestConfig.ManualTest.EnableNodeEnduranceTest {
+		if unitTestConfig.Mechanism == "auto" {
 			// Verify test data for SingleNodeEndurance.
 			verifySingleNodeEndurance(t)
 
 			// Execute accuracy test for SingleNodeEndurance.
 			runSingleNodeEndurance(t)
 		}
+
 	})
 }

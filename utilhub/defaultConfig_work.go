@@ -153,8 +153,8 @@ func setFieldValue(field reflect.Value, value string) error {
 	return nil
 }
 
-// defaultConfig2file ⛏️ saves the default configuration to a JSON file.
-func defaultConfig2file(cfg AutoConfig, overwrite bool) error {
+// autoConfig2file ⛏️ saves the default configuration to a JSON file.
+func autoConfig2file(cfg AutoConfig, overwrite bool) error {
 	// Get the default configuration directory.
 	path, err := GetProjectDir("go-algorithm/config")
 	if err != nil {

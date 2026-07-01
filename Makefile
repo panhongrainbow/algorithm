@@ -40,9 +40,12 @@ all: clean test-all
 # Run tests in the ./utilhub directory with verbose output and no timeout.
 .PHONY: test-utilhub
 test-utilhub:
-	# (1) Verifying Bash ANSI color output rendering in terminal.
+	# (1) Verifying Bash ANSI color output rendering in terminal. (色彩)
 	@go test -v ./utilhub -timeout=0 -run Test_AnsiColorOutput
-	# (2) Verifying the Adjust2Even function ensures the input record count is always even, adjusting it when necessary.
+	# (2) Verifying the Adjust2Even function ensures the input record count is always even, adjusting it when necessary. (算术)
 	@go test -v ./utilhub -timeout=0 -run Test_Adjust2Even
-	# (3) Showing how default values can be set on config fields.
+	# (3) Showing how default values can be set on config fields. (预设值底层测试)
 	@go test -v ./utilhub -timeout=0 -run Test_SetFieldValue
+	# (4) Test automatic completion of the auto test configuration file. (自动测试补齐)
+	@go test -v ./utilhub -timeout=0 -run Test_RestoreAutoConfig
+	@go test -v ./utilhub -timeout=0 -run

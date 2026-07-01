@@ -14,7 +14,7 @@ type BpTestShare struct{}
 // ShareGenerateRandomSet 🧮 generates a slice of random data set for test model 2 and test model 3.
 func (model *BpTestShare) ShareGenerateRandomSet(cyclicStressCount int64) ([]int64, error) {
 	// Use RandomTotalCount to limit the test scope.
-	unitTestConfig := utilhub.GetDefaultConfig()
+	unitTestConfig := utilhub.GetAutoConfig()
 	limitTestScope := unitTestConfig.Parameters.RandomTotalCount
 	stageParams := unitTestConfig.PoolStage
 

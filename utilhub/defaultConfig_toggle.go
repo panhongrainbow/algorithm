@@ -19,10 +19,12 @@ var (
 	testFile = "SingleNodeEndurance.do_not_open"
 )
 
+// >>>>> >>>>> >>>>> >>>>> >>>>> Managed Global Variables
+
 // 🧪 Centralized feature toggle configuration for B Plus Tree unit testing. (测试模式总开关)
 var (
 	// 🧪 Create a config instance for B plus tree unit testing and parse toggle switch settings.
-	_toggleConfig     = TestToggleConfig{}
+	_toggleConfig     = ToggleConfigType{}
 	_onesToggleConfig sync.Once // Prevent configuration from being overwritten.
 	// _toggleParseErr stores any error returned.
 	_toggleParseErr = ParseToggle(&_toggleConfig)
@@ -31,7 +33,7 @@ var (
 // 🧪 Default configuration settings for daily automated B Plus Tree testing. (自动测试模式)
 var (
 	// 🧪 Create a config instance for B plus tree automatic unit testing and parse default values.
-	_autoConfig     = TestAutoConfig{}
+	_autoConfig     = AutoConfigType{}
 	_onesAutoConfig sync.Once // Prevent configuration from being overwritten.
 	// _autoParseErr stores any error returned.
 	_autoParseErr = ParseDefaultManual(&_autoConfig)
@@ -45,6 +47,41 @@ func init() {
 	}
 }
 
+var (
+	// 🧪 Create a config instance for B plus tree unit testing and collect many previous failure scenarios.
+	_manualTestConfig []ManualConfigType // This time, using a slice that gathers various different failure scenarios.
+	_manualParseErr   = ParseManual(&_manualTestConfig)
+)
+
+// 🧪 Initialize manual test parameters.
+func init() {
+	if _manualParseErr != nil {
+		panic(_manualParseErr)
+	}
+}
+
+// >>>>> >>>>> >>>>> >>>>> >>>>> Toggle Logic (总)
+
+// ToggleConfig represents the master switch for configuration.
+// It determines whether the system should use the default configuration or a manually provided configuration. (开关配置)
+type ToggleConfig interface{}
+
+// ToggleConfigType ⛏️ defines the toggle settings for Bptree tests.
+type ToggleConfigType struct {
+	Mechanism string `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
+}
+
+// ManualConfig is the instance, which refers to the file name under the config directory.
+// type ManualConfig interface{}
+
+// ParseManual ⛏️ loads previous failure scenarios.
+func ParseManual(cfg ManualConfig) error {
+	return _parseManual(cfg)
+}
+
+// ManualConfig ⛏️ is a type constraint that allows struct types to store default configuration values. (预设配置)
+type ManualConfig interface{}
+
 // ParseDefaultManual may load either default configuration values or manually specified configuration values, depending on Toggle Config.
 func ParseDefaultManual(cfg AutoConfig) error {
 	switch testMech {
@@ -55,7 +92,7 @@ func ParseDefaultManual(cfg AutoConfig) error {
 			fmt.Println(manualConfig.Record.ManualRecordDate, manualConfig.Record.ManualRecordFile)
 			if manualConfig.Record.ManualRecordDate == testDate &&
 				manualConfig.Record.ManualRecordFile == testFile {
-				_autoConfig = manualConfig
+				// _autoConfig = manualConfig
 				return nil
 			}
 		}

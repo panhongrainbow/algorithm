@@ -17,7 +17,7 @@ type BpTestRandomizedBoundary struct{}
 // GenerateRandomSet 🧮 generates a slice of random data set for test model 2.
 func (model *BpTestRandomizedBoundary) GenerateRandomSet() ([]int64, error) {
 	// Use RandomTotalCount to limit the test scope.
-	unitTestConfig := utilhub.GetDefaultConfig()
+	unitTestConfig := utilhub.GetAutoConfig()
 	limitTestScope := unitTestConfig.Parameters.RandomTotalCount
 	stageParams := unitTestConfig.PoolStage
 

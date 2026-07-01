@@ -21,7 +21,7 @@ func (model *BpTestBulkInsertDelete) GenerateRandomSet(
 	randomHitCollisionPercentage uint64, // randomHitCollisionPercentage is the percentage of random number hit collision in map insert.
 ) ([]int64, error) {
 	// Use RandomTotalCount to limit the test scope.
-	unitTestConfig := utilhub.GetDefaultConfig()
+	unitTestConfig := utilhub.GetAutoConfig()
 	limitTestScope := uint64(unitTestConfig.Parameters.RandomTotalCount)
 
 	// Validate RandomTotalCount to ensure it is not zero.

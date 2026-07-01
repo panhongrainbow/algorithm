@@ -8,27 +8,6 @@ import (
 	"reflect"
 )
 
-var (
-	// 🧪 Create a config instance for B plus tree unit testing and collect many previous failure scenarios.
-	_manualTestConfig []TestAutoConfig // This time, using a slice that gathers various different failure scenarios.
-	_manualParseErr   = ParseManual(&_manualTestConfig)
-)
-
-// 🧪 Initialize manual test parameters.
-func init() {
-	if _manualParseErr != nil {
-		panic(_manualParseErr)
-	}
-}
-
-// ManualConfig is the instance, which refers to the file name under the config directory.
-type ManualConfig interface{}
-
-// ParseManual ⛏️ loads previous failure scenarios.
-func ParseManual(cfg ManualConfig) error {
-	return _parseManual(cfg)
-}
-
 // _parseManual ⛏️ loads the manual configurations from struct tags and applies it to the provided struct,
 // prioritizing the specified values if available.
 func _parseManual(cfg ManualConfig) error {
@@ -52,7 +31,7 @@ func _parseManual(cfg ManualConfig) error {
 
 	// If the record is configured to be inside the project directory,
 	// prepend the project path to the test record path.
-	arr := *cfg.(*[]TestAutoConfig)
+	arr := *cfg.(*[]ManualConfigType)
 	for i := 0; i < len(arr); i++ {
 		if arr[i].Record.IsInsideProject == true {
 			arr[i].Record.TestRecordPath = filepath.Join(projectPath, arr[i].Record.TestRecordPath)
@@ -94,7 +73,7 @@ func _applyDefaults2content(content []byte, cfg ManualConfig) error {
 	}
 
 	// Extract each configuration file from the slice, and fill in the default values if any fields are missing.
-	arr := cfg.(*[]TestAutoConfig)
+	arr := cfg.(*[]ManualConfigType)
 	for i := 0; i < len(*arr); i++ {
 		// [applyDefaults] applies the default values from struct tags to the provided config. (主要逻辑)
 		if err := applyDefaults(&((*arr)[i])); err != nil {
