@@ -23,16 +23,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// This is a set of path configurations shared by both automated and manual testing.
+// This is a set of path configurations shared by the automated testing.
 var (
 	// 🧪 Create a config instance for B plus tree unit testing and parse default values.
-	unitTestConfig = utilhub.GetAutoConfig()
+	autoTestConfig = utilhub.GetAutoConfig()
 
 	// 🧪 Navigate to the project dataSet directory for test record storage.
-	ProjectDir = utilhub.FileNode{}.Goto(unitTestConfig.Record.TestRecordPath)
+	ProjectDir = utilhub.FileNode{}.Goto(autoTestConfig.Record.TestRecordPath)
 
 	// 🧪 Create a subdirectory named with the current date under the project.
-	recordDir = ProjectDir.MkDir(unitTestConfig.Record.ManualRecordDate)
+	recordDir = ProjectDir.MkDir(autoTestConfig.Record.ManualRecordDate)
 )
 
 // Test_Check_BpTree_Accuracy 🧫 checks if the tree resets after bulk insert/delete, ensuring indexing correctness.
@@ -48,13 +48,13 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 	t.Run("Bulk InsertDelete", func(t *testing.T) {
 
 		// Test data will only be generated during automated testing.
-		if unitTestConfig.Mechanism == "auto" {
+		if autoTestConfig.Mechanism == "auto" {
 			// Prepare test data for BulkInsertDelete.
 			prepareBulkInsertDelete(t)
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
-		if unitTestConfig.Mechanism == "auto" {
+		if autoTestConfig.Mechanism == "auto" {
 
 			// Verify test data for BulkInsertDelete.
 			verifyBulkInsertDelete(t)
@@ -67,13 +67,13 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 	t.Run("Randomized Boundary Test", func(t *testing.T) {
 
 		// Test data will only be generated during automated testing.
-		if unitTestConfig.Mechanism == "auto" {
+		if autoTestConfig.Mechanism == "auto" {
 			// Prepare test data for RandomizedBoundary.
 			prepareRandomizedBoundary(t)
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
-		if unitTestConfig.Mechanism == "auto" {
+		if autoTestConfig.Mechanism == "auto" {
 			// Verify test data for RandomizedBoundary.
 			verifyRandomizedBoundary(t)
 
@@ -85,13 +85,13 @@ func Test_Check_BpTree_Accuracies(t *testing.T) {
 	t.Run("Single Node Endurance Test", func(t *testing.T) {
 
 		// Test data will only be generated during automated testing.
-		if unitTestConfig.Mechanism == "auto" {
+		if autoTestConfig.Mechanism == "auto" {
 			// Prepare test data for SingleNodeEndurance.
 			prepareMode3(t)
 		}
 
 		// Only during automated testing or this test mode will the following tests be performed continuously.
-		if unitTestConfig.Mechanism == "auto" {
+		if autoTestConfig.Mechanism == "auto" {
 			// Verify test data for SingleNodeEndurance.
 			verifySingleNodeEndurance(t)
 

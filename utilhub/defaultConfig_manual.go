@@ -1,5 +1,17 @@
 package utilhub
 
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"reflect"
+)
+
+// ManualConfig ⛏️ is a type constraint for struct types that store default configuration values used in manual testing. (手动预设配置)
+type ManualConfig interface{}
+
 // ManualConfigType ⛏️ is a struct for manual test configuration.
 type ManualConfigType struct {
 	Mechanism string   `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
@@ -35,14 +47,89 @@ type ManualConfigType struct {
 	} `json:"manualTest"`
 }
 
-/*
-func GetDefaultConfig() AutoConfigType {
-	_autoParseErr = ParseDefaultManual(&_autoConfig)
+// ParseManual ⛏️ loads the default configuration for manual testing from struct tags and applies it to the provided struct.
+func ParseManual(cfg ManualConfig) error {
+	// Prepare the variable outside the closure function.
+	var err error
+	var projectPath, file string
 
-	if _autoParseErr != nil {
-		panic(_autoParseErr)
+	// Use Golang's sync.Once to prevent the setting from being overwritten.
+	_onesManualConfig.Do(func() {
+
+		// Get the default configuration directory.
+		projectPath, err = GetProjectDir(filepath.Join(ProjectName))
+		if err != nil {
+			return
+		}
+
+		// Get the struct name to use as the filename.
+		file, err = GetDefaultStructName(&cfg)
+		if err != nil {
+			return
+		}
+
+		// Return the result of _parseManual.
+		err = _parseManual(filepath.Join(projectPath, "config", file+".json"), cfg)
+		if err != nil {
+			return
+		}
+
+		// If the record is configured to be inside the project directory,
+		// prepend the project path to the test record path
+		/*
+			if cfg.(*ManualConfigType).Record.IsInsideProject == true {
+				cfg.(*ManualConfigType).Record.TestRecordPath = filepath.Join(projectPath, cfg.(*ManualConfigType).Record.TestRecordPath)
+			}
+		*/
+	})
+
+	// Return nil to indicate the operation completed successfully.
+	return err
+}
+
+// _parseManual ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
+// Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
+func _parseManual(filePath string, cfg ManualConfig) error {
+	// Check if the config is a pointer to a struct.
+	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
+		return errors.New("config must be a pointer to a struct")
 	}
 
-	return _autoConfig
+	// Read the default configuration from the file.
+	var content []byte
+	var err error
+	content, err = os.ReadFile(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Do nothing; the tag will be handled later by applyDefaults. (之后由 applyDefaults 取 tag 决定)
+		}
+		return err
+	}
+
+	// Unmarshal the JSON data into the provided config and overwrite the default values.
+	if err = json.Unmarshal(content, cfg); err != nil {
+		return err
+	}
+
+	// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
+	/*
+		if err = applyDefaults(cfg); err != nil {
+			return err
+		}
+	*/
+
+	// No error occurred, return nil.
+	return nil
 }
-*/
+
+// GetManualConfig parses and returns the auto-configuration, panicking if parsing fails.
+func GetManualConfig() []ManualConfigType {
+	// Parse the auto-configuration into the global config instance.
+	if err := ParseManual(&_manualConfig); err != nil {
+		fmt.Printf("autoParseErr after init: %v\n", err)
+		panic(err)
+	}
+
+	// Return the initialized configuration.
+	return _manualConfig
+}

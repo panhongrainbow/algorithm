@@ -43,7 +43,7 @@ func prepareBulkInsertDelete(t *testing.T) {
 
 	// Generates a random set: half positive, half negative.
 	var testDataSet []int64
-	testDataSet, err = bptest.GenerateRandomSet(uint64(unitTestConfig.Parameters.RandomMin), uint64(unitTestConfig.Parameters.RandomHitCollisionPercentage))
+	testDataSet, err = bptest.GenerateRandomSet(uint64(autoTestConfig.Parameters.RandomMin), uint64(autoTestConfig.Parameters.RandomHitCollisionPercentage))
 	require.NoError(t, err, "failed to generate test data")
 
 	// === Set write parameters ===
@@ -73,7 +73,7 @@ func prepareBulkInsertDelete(t *testing.T) {
 func verifyBulkInsertDelete(t *testing.T) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
-		uint32(unitTestConfig.Parameters.RandomTotalCount),
+		uint32(autoTestConfig.Parameters.RandomTotalCount),
 		"BulkInsertDelete.do_not_open", 800,
 		binary.LittleEndian,
 		"BulkInsertDelete - read test data",
@@ -91,7 +91,7 @@ func verifyBulkInsertDelete(t *testing.T) {
 
 // runBulkInsertDelete 🧫 runs the actual test cases for BulkInsertDelete.
 func runBulkInsertDelete(t *testing.T) {
-	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
+	for bpWidth := 0; bpWidth < len(autoTestConfig.Parameters.BpWidth); bpWidth++ {
 		_runBulkInsertDelete(t, bpWidth)
 	}
 }
@@ -100,16 +100,16 @@ func runBulkInsertDelete(t *testing.T) {
 func _runBulkInsertDelete(t *testing.T, bpWidth int) {
 	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("BulkInsertDelete.do_not_open", 8, binary.LittleEndian)
 
-	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
+	root := NewBpTree(autoTestConfig.Parameters.BpWidth[bpWidth])
 
 	// testBulkInsertDeleteName := "Execution; Width: " + strconv.Itoa(unitTestConfig.Parameters.BpWidth[bpWidth])
-	testBulkInsertDeleteName := fmt.Sprintf("Bulk Insert/Delete - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+	testBulkInsertDeleteName := fmt.Sprintf("Bulk Insert/Delete - run; Width: %3d", autoTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
 		testBulkInsertDeleteName,
 		// "BulkInsertDelete: Execution   ",                             // Progress bar title.
-		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
+		uint32(autoTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
 		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.

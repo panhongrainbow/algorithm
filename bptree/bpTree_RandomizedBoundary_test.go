@@ -66,7 +66,7 @@ func prepareRandomizedBoundary(t *testing.T) {
 func verifyRandomizedBoundary(t *testing.T) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
-		uint32(unitTestConfig.Parameters.RandomTotalCount),
+		uint32(autoTestConfig.Parameters.RandomTotalCount),
 		"RandomizedBoundary.do_not_open", 800,
 		binary.LittleEndian,
 		"RandomizedBoundary - read test data",
@@ -84,7 +84,7 @@ func verifyRandomizedBoundary(t *testing.T) {
 
 // runRandomizedBoundary 🧫 runs the actual test cases for RandomizedBoundary.
 func runRandomizedBoundary(t *testing.T) {
-	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
+	for bpWidth := 0; bpWidth < len(autoTestConfig.Parameters.BpWidth); bpWidth++ {
 		_runRandomizedBoundary(t, bpWidth)
 	}
 }
@@ -93,15 +93,15 @@ func runRandomizedBoundary(t *testing.T) {
 func _runRandomizedBoundary(t *testing.T, bpWidth int) {
 	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("RandomizedBoundary.do_not_open", 8, binary.LittleEndian)
 
-	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
+	root := NewBpTree(autoTestConfig.Parameters.BpWidth[bpWidth])
 
-	testRandomizedBoundaryName := fmt.Sprintf("Randomized Boundary - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+	testRandomizedBoundaryName := fmt.Sprintf("Randomized Boundary - run; Width: %3d", autoTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
 		testRandomizedBoundaryName,
 		// "RandomizedBoundary: Execution   ",                             // Progress bar title.
-		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
+		uint32(autoTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
 		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.

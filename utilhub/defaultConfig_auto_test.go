@@ -19,7 +19,7 @@ func Test_RestoreAutoConfig(t *testing.T) {
 	require.NoError(t, err)
 }
 
-// Preview the current autoconfiguration values for inspection.
+// Preview the current auto-configuration values for inspection.
 func Test_PreviewAutoConfig(t *testing.T) {
 	fmt.Printf("%+v\n", _autoConfig)
 }

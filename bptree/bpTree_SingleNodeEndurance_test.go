@@ -65,7 +65,7 @@ func prepareMode3(t *testing.T) {
 func verifySingleNodeEndurance(t *testing.T) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
-		uint32(unitTestConfig.Parameters.RandomTotalCount),
+		uint32(autoTestConfig.Parameters.RandomTotalCount),
 		"SingleNodeEndurance.do_not_open", 800,
 		binary.LittleEndian,
 		"SingleNodeEndurance - read test data",
@@ -83,7 +83,7 @@ func verifySingleNodeEndurance(t *testing.T) {
 
 // runSingleNodeEndurance 🧫 runs the actual test cases for SingleNodeEndurance test.
 func runSingleNodeEndurance(t *testing.T) {
-	for bpWidth := 0; bpWidth < len(unitTestConfig.Parameters.BpWidth); bpWidth++ {
+	for bpWidth := 0; bpWidth < len(autoTestConfig.Parameters.BpWidth); bpWidth++ {
 		_runSingleNodeEndurance(t, bpWidth)
 	}
 }
@@ -92,15 +92,15 @@ func runSingleNodeEndurance(t *testing.T) {
 func _runSingleNodeEndurance(t *testing.T, bpWidth int) {
 	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("SingleNodeEndurance.do_not_open", 8, binary.LittleEndian)
 
-	root := NewBpTree(unitTestConfig.Parameters.BpWidth[bpWidth])
+	root := NewBpTree(autoTestConfig.Parameters.BpWidth[bpWidth])
 
-	testSingleNodeEnduranceName := fmt.Sprintf("SingleNodeEndurance - run; Width: %3d", unitTestConfig.Parameters.BpWidth[bpWidth])
+	testSingleNodeEnduranceName := fmt.Sprintf("SingleNodeEndurance - run; Width: %3d", autoTestConfig.Parameters.BpWidth[bpWidth])
 
 	// ▓▒░ Creating a progress bar with optional configurations.
 	progressBar, _ := utilhub.NewProgressBar(
 		testSingleNodeEnduranceName,
 		// "SingleNodeEndurance: Execution   ",                             // Progress bar title.
-		uint32(unitTestConfig.Parameters.RandomTotalCount), // Total number of operations.
+		uint32(autoTestConfig.Parameters.RandomTotalCount), // Total number of operations.
 		70,                                       // Progress bar width.
 		utilhub.WithTracking(5),                  // Update interval.
 		utilhub.WithTimeZone("Asia/Taipei"),      // Time zone.

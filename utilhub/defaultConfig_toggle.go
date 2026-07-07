@@ -36,7 +36,7 @@ var (
 	_autoConfig     = AutoConfigType{}
 	_onesAutoConfig sync.Once // Prevent configuration from being overwritten.
 	// _autoParseErr stores any error returned.
-	_autoParseErr = ParseDefaultManual(&_autoConfig)
+	_autoParseErr = ParseAuto(&_autoConfig)
 )
 
 // 🧪 Initialize default test parameters.
@@ -47,10 +47,13 @@ func init() {
 	}
 }
 
+// 🧪 Default configuration settings for manual B Plus Tree testing. (《手动测试模式)
 var (
 	// 🧪 Create a config instance for B plus tree unit testing and collect many previous failure scenarios.
-	_manualTestConfig []ManualConfigType // This time, using a slice that gathers various different failure scenarios.
-	_manualParseErr   = ParseManual(&_manualTestConfig)
+	_manualConfig     []ManualConfigType // This time, using a slice that gathers various different failure scenarios.
+	_onesManualConfig sync.Once          // Prevent configuration from being overwritten.
+	// _manualParseErr stores any error returned.
+	_manualParseErr = ParseManual(&_manualConfig)
 )
 
 // 🧪 Initialize manual test parameters.
@@ -69,36 +72,6 @@ type ToggleConfig interface{}
 // ToggleConfigType ⛏️ defines the toggle settings for Bptree tests.
 type ToggleConfigType struct {
 	Mechanism string `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
-}
-
-// ManualConfig is the instance, which refers to the file name under the config directory.
-// type ManualConfig interface{}
-
-// ParseManual ⛏️ loads previous failure scenarios.
-func ParseManual(cfg ManualConfig) error {
-	return _parseManual(cfg)
-}
-
-// ManualConfig ⛏️ is a type constraint that allows struct types to store default configuration values. (预设配置)
-type ManualConfig interface{}
-
-// ParseDefaultManual may load either default configuration values or manually specified configuration values, depending on Toggle Config.
-func ParseDefaultManual(cfg AutoConfig) error {
-	switch testMech {
-	case "auto":
-		return ParseAuto(cfg)
-	case "manual":
-		for _, manualConfig := range _manualTestConfig {
-			fmt.Println(manualConfig.Record.ManualRecordDate, manualConfig.Record.ManualRecordFile)
-			if manualConfig.Record.ManualRecordDate == testDate &&
-				manualConfig.Record.ManualRecordFile == testFile {
-				// _autoConfig = manualConfig
-				return nil
-			}
-		}
-	}
-
-	return nil
 }
 
 // ParseToggle ⛏️ loads the toggle configuration from struct tags and applies it to the provided struct.
@@ -132,3 +105,37 @@ func ParseToggle(cfg ToggleConfig) error {
 	// Return nil to indicate the operation completed successfully.
 	return err
 }
+
+// ManualConfig is the instance, which refers to the file name under the config directory.
+// type ManualConfig interface{}
+
+// ParseManual ⛏️ loads previous failure scenarios.
+/*
+func ParseManual(cfg ManualConfig) error {
+	return _parseManual(cfg)
+}
+*/
+
+// ManualConfig ⛏️ is a type constraint that allows struct types to store default configuration values. (预设配置)
+// type ManualConfig interface{}
+
+// ParseDefaultManual may load either default configuration values or manually specified configuration values, depending on Toggle Config.
+/*
+func ParseDefaultManual(cfg AutoConfig) error {
+	switch testMech {
+	case "auto":
+		return ParseAuto(cfg)
+	case "manual":
+		for _, manualConfig := range _manualConfig {
+			fmt.Println(manualConfig.Record.ManualRecordDate, manualConfig.Record.ManualRecordFile)
+			if manualConfig.Record.ManualRecordDate == testDate &&
+				manualConfig.Record.ManualRecordFile == testFile {
+				// _autoConfig = manualConfig
+				return nil
+			}
+		}
+	}
+
+	return nil
+}
+*/

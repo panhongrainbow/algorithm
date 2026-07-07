@@ -1,15 +1,8 @@
 package utilhub
 
-import (
-	"encoding/json"
-	"errors"
-	"os"
-	"path/filepath"
-	"reflect"
-)
-
 // _parseManual ⛏️ loads the manual configurations from struct tags and applies it to the provided struct,
 // prioritizing the specified values if available.
+/*
 func _parseManual(cfg ManualConfig) error {
 	// Get the default configuration directory.
 	projectPath, err := GetProjectDir(filepath.Join(ProjectName))
@@ -41,8 +34,10 @@ func _parseManual(cfg ManualConfig) error {
 	// Return nil to indicate the operation completed successfully.
 	return nil
 }
+*/
 
 // _applyDefaults2manualConfig fills in default values for many previous failure scenarios.
+/*
 func _applyDefaults2manualConfig(filePath string, cfg ManualConfig) error {
 	// Check if the config is a pointer to a struct.
 	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
@@ -64,8 +59,10 @@ func _applyDefaults2manualConfig(filePath string, cfg ManualConfig) error {
 	// No error occurred, return nil.
 	return nil
 }
+*/
 
 // _applyDefaults2content function fills in default values for the content of many previous failure scenarios.
+/*
 func _applyDefaults2content(content []byte, cfg ManualConfig) error {
 	// Unmarshal the JSON data into the provided config and overwrite the default values.
 	if err := json.Unmarshal(content, cfg); err != nil {
@@ -84,3 +81,4 @@ func _applyDefaults2content(content []byte, cfg ManualConfig) error {
 	// No error occurred, return nil.
 	return nil
 }
+*/
