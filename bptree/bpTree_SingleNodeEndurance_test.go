@@ -21,7 +21,7 @@ import (
 // =====================================================================================================================
 
 // prepareSingleNodeEndurance 🧫 prepares test data for SingleNodeEndurance.
-func prepareMode3(t *testing.T) {
+func prepareMode3(t *testing.T, recordDir utilhub.FileNode) {
 
 	// === Init test model and record file ===
 
@@ -62,7 +62,7 @@ func prepareMode3(t *testing.T) {
 }
 
 // verifySingleNodeEndurance 🧫 checks the test data set for SingleNodeEndurance test.
-func verifySingleNodeEndurance(t *testing.T) {
+func verifySingleNodeEndurance(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
 		uint32(autoTestConfig.Parameters.RandomTotalCount),
@@ -82,14 +82,14 @@ func verifySingleNodeEndurance(t *testing.T) {
 }
 
 // runSingleNodeEndurance 🧫 runs the actual test cases for SingleNodeEndurance test.
-func runSingleNodeEndurance(t *testing.T) {
+func runSingleNodeEndurance(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
 	for bpWidth := 0; bpWidth < len(autoTestConfig.Parameters.BpWidth); bpWidth++ {
-		_runSingleNodeEndurance(t, bpWidth)
+		_runSingleNodeEndurance(t, bpWidth, recordDir, autoTestConfig)
 	}
 }
 
 // _runSingleNodeEndurance 🧫 runs the actual test cases for SingleNodeEndurance test.
-func _runSingleNodeEndurance(t *testing.T, bpWidth int) {
+func _runSingleNodeEndurance(t *testing.T, bpWidth int, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
 	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("SingleNodeEndurance.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(autoTestConfig.Parameters.BpWidth[bpWidth])

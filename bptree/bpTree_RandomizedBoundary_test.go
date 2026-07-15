@@ -21,7 +21,7 @@ import (
 // =====================================================================================================================
 
 // prepareRandomizedBoundary 🧫 prepares test data for RandomizedBoundary.
-func prepareRandomizedBoundary(t *testing.T) {
+func prepareRandomizedBoundary(t *testing.T, recordDir utilhub.FileNode) {
 
 	// === Init test model and record file ===
 
@@ -63,7 +63,7 @@ func prepareRandomizedBoundary(t *testing.T) {
 }
 
 // verifyRandomizedBoundary 🧫 checks the test data set for RandomizedBoundary.
-func verifyRandomizedBoundary(t *testing.T) {
+func verifyRandomizedBoundary(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
 		uint32(autoTestConfig.Parameters.RandomTotalCount),
@@ -83,14 +83,14 @@ func verifyRandomizedBoundary(t *testing.T) {
 }
 
 // runRandomizedBoundary 🧫 runs the actual test cases for RandomizedBoundary.
-func runRandomizedBoundary(t *testing.T) {
+func runRandomizedBoundary(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
 	for bpWidth := 0; bpWidth < len(autoTestConfig.Parameters.BpWidth); bpWidth++ {
-		_runRandomizedBoundary(t, bpWidth)
+		_runRandomizedBoundary(t, bpWidth, recordDir, autoTestConfig)
 	}
 }
 
 // _runRandomizedBoundary 🧫 runs the actual test cases for RandomizedBoundary test.
-func _runRandomizedBoundary(t *testing.T, bpWidth int) {
+func _runRandomizedBoundary(t *testing.T, bpWidth int, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
 	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("RandomizedBoundary.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(autoTestConfig.Parameters.BpWidth[bpWidth])
