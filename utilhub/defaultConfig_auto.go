@@ -10,9 +10,9 @@ import (
 )
 
 // AutoConfig ⛏️ is a type constraint for struct types that store default configuration values used in automated testing. (自动预设配置)
-type AutoConfig interface{}
+type AutoConfig any
 
-// AutoConfigType ⛏️ is a struct for Bptree unit test configuration.
+// AutoConfigType ⛏️ is a struct for Bptree automatic unit test configuration.
 type AutoConfigType struct {
 	Mechanism string   `json:"mechanism" default:"auto"` // 🧪 When the mechanism selection is set to `auto`, all tests will be conducted.
 	Record    struct { // 🧪 Record contains configurations related to test record storage.
@@ -50,8 +50,9 @@ type AutoConfigType struct {
 }
 
 // ParseAuto ⛏️ loads the default configuration for automated testing from struct tags and applies it to the provided struct.
-func ParseAuto(cfg AutoConfig) error {
+func ParseAuto(autoConfig *TestProcessConfigType) error {
 	// Prepare the variable outside the closure function.
+	var cfgFile AutoConfig = new(AutoConfigType)
 	var err error
 	var projectPath, file string
 
@@ -65,30 +66,37 @@ func ParseAuto(cfg AutoConfig) error {
 		}
 
 		// Get the struct name to use as the filename.
-		file, err = GetDefaultStructName(&cfg)
+		file, err = GetDefaultStructName(&cfgFile)
 		if err != nil {
 			return
 		}
 
 		// Return the result of _parseAuto.
-		err = _parseAuto(filepath.Join(projectPath, "config", file+".json"), cfg)
+		err = _parseAuto(filepath.Join(projectPath, "config", file+".json"), cfgFile)
 		if err != nil {
 			return
 		}
 
 		// If the record is configured to be inside the project directory,
 		// prepend the project path to the test record path
-		if cfg.(*AutoConfigType).Record.IsInsideProject == true {
-			cfg.(*AutoConfigType).Record.TestRecordPath = filepath.Join(projectPath, cfg.(*AutoConfigType).Record.TestRecordPath)
+		if cfgFile.(*AutoConfigType).Record.IsInsideProject == true {
+			cfgFile.(*AutoConfigType).Record.TestRecordPath = filepath.Join(projectPath, cfgFile.(*AutoConfigType).Record.TestRecordPath)
 		}
 
 		// When the mechanism is set to automatic, the test subdirectory will automatically be set to the current date.
-		if cfg.(*AutoConfigType).Mechanism == "auto" {
-			cfg.(*AutoConfigType).Record.ManualRecordDate = TestTimeString("2006-01-02", "Asia/Shanghai")
+		if cfgFile.(*AutoConfigType).Mechanism == "auto" {
+			cfgFile.(*AutoConfigType).Record.ManualRecordDate = TestTimeString("2006-01-02", "Asia/Shanghai")
 		}
 
 		// HACK => For a B plus tree, you can specify the branching factor here and test each case one by one.
-		cfg.(*AutoConfigType).Parameters.BpWidth = []int{3, 10, 13, 14, 15} // 指定分叉因子
+		cfgFile.(*AutoConfigType).Parameters.BpWidth = []int{3, 10, 13, 14, 17} // 指定分叉因子
+
+		// Copy all Parameters from cfgFile to autoConfig.
+		autoConfig.Mechanism = cfgFile.(*AutoConfigType).Mechanism
+		autoConfig.Record = cfgFile.(*AutoConfigType).Record
+		autoConfig.Parameters = cfgFile.(*AutoConfigType).Parameters
+		autoConfig.PoolStage = cfgFile.(*AutoConfigType).PoolStage
+		autoConfig.CyclicStress = cfgFile.(*AutoConfigType).CyclicStress
 	})
 
 	// Return nil to indicate the operation completed successfully.
@@ -129,7 +137,7 @@ func _parseAuto(filePath string, cfg AutoConfig) error {
 }
 
 // GetAutoConfig parses and returns the auto-configuration, panicking if parsing fails.
-func GetAutoConfig() AutoConfigType {
+func GetAutoConfig() TestProcessConfigType {
 	// Parse the auto-configuration into the global config instance.
 	if err := ParseAuto(&_autoConfig); err != nil {
 		fmt.Printf("autoParseErr after init: %v\n", err)

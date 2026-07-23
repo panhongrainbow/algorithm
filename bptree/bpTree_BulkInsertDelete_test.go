@@ -28,7 +28,7 @@ import (
 // =====================================================================================================================
 
 // prepareBulkInsertDelete 🧫 Prepares the test dataset required for BulkInsertDelete.
-func prepareBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
+func prepareBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.TestProcessConfigType) {
 
 	// === Init test model and record file ===
 
@@ -70,7 +70,7 @@ func prepareBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestC
 }
 
 // verifyBulkInsertDelete 🧫 checks the test data set for BulkInsertDelete.
-func verifyBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
+func verifyBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.TestProcessConfigType) {
 	// Read test data with progress bar.
 	testDataSet, err := recordDir.ReadAllBytesWithProgress(
 		uint32(autoTestConfig.Parameters.RandomTotalCount),
@@ -90,14 +90,14 @@ func verifyBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestCo
 }
 
 // runBulkInsertDelete 🧫 runs the actual test cases for BulkInsertDelete.
-func runBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
+func runBulkInsertDelete(t *testing.T, recordDir utilhub.FileNode, autoTestConfig utilhub.TestProcessConfigType) {
 	for bpWidth := 0; bpWidth < len(autoTestConfig.Parameters.BpWidth); bpWidth++ {
 		_runBulkInsertDelete(t, bpWidth, recordDir, autoTestConfig)
 	}
 }
 
 // _runBulkInsertDelete 🧫 runs the actual test cases for BulkInsertDelete.
-func _runBulkInsertDelete(t *testing.T, bpWidth int, recordDir utilhub.FileNode, autoTestConfig utilhub.AutoConfigType) {
+func _runBulkInsertDelete(t *testing.T, bpWidth int, recordDir utilhub.FileNode, autoTestConfig utilhub.TestProcessConfigType) {
 	dataChan, errChan, finishChan := recordDir.ReadBytesInChunksWithProgress("BulkInsertDelete.do_not_open", 8, binary.LittleEndian)
 
 	root := NewBpTree(autoTestConfig.Parameters.BpWidth[bpWidth])

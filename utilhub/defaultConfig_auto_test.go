@@ -13,7 +13,7 @@ import (
 // - When false: The configuration is prepared but not written to disk. (会把设定覆盖自动设定档！)
 func Test_RestoreAutoConfig(t *testing.T) {
 	// Setting it to true ensures the configuration is persisted to the filesystem.
-	err := autoConfig2file(&AutoConfigType{}, false)
+	err := autoConfig2file(&TestProcessConfigType{}, false)
 
 	// Check whether the generated default values are incorrect.
 	require.NoError(t, err)

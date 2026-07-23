@@ -2,7 +2,7 @@ package utilhub
 
 // ForceReloadAutoTest ⛏️ forces the configuration to be reloaded for testing.
 func ForceReloadAutoTest() {
-	_autoConfig = AutoConfigType{}
+	_autoConfig = TestProcessConfigType{}
 	_autoParseErr = ParseAuto(&_autoConfig)
 }
 

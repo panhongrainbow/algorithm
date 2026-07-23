@@ -33,7 +33,7 @@ var (
 // 🧪 Default configuration settings for daily automated B Plus Tree testing. (自动测试模式)
 var (
 	// 🧪 Create a config instance for B plus tree automatic unit testing and parse default values.
-	_autoConfig     = AutoConfigType{}
+	_autoConfig     = TestProcessConfigType{}
 	_onesAutoConfig sync.Once // Prevent configuration from being overwritten.
 	// _autoParseErr stores any error returned.
 	_autoParseErr = ParseAuto(&_autoConfig)
@@ -67,7 +67,7 @@ func init() {
 
 // ToggleConfig represents the master switch for configuration.
 // It determines whether the system should use the default configuration or a manually provided configuration. (开关配置)
-type ToggleConfig interface{}
+type ToggleConfig any
 
 // ToggleConfigType ⛏️ defines the toggle settings for Bptree tests.
 type ToggleConfigType struct {
