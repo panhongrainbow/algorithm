@@ -76,11 +76,17 @@ func ParseManual(cfg ManualConfig) error {
 
 		// If the record is configured to be inside the project directory,
 		// prepend the project path to the test record path
+		var configDereference = *cfg.(*[]ManualConfigType)
 		/*
-			if cfg.(*ManualConfigType).Record.IsInsideProject == true {
-				cfg.(*ManualConfigType).Record.TestRecordPath = filepath.Join(projectPath, cfg.(*ManualConfigType).Record.TestRecordPath)
-			}
+			第一步 cfg.(*[]ManualConfigType)，取得 *[]ManualConfigType
+			第二步 *cfg.(*[]ManualConfigType)，取得 dereference 成 []ManualConfigType
+			之后针对 slice 进行索引操作 [i]
 		*/
+		for i := range configDereference {
+			if configDereference[i].Record.IsInsideProject == true {
+				configDereference[i].Record.TestRecordPath = filepath.Join(projectPath, configDereference[i].Record.TestRecordPath)
+			}
+		}
 	})
 
 	// Return nil to indicate the operation completed successfully.
