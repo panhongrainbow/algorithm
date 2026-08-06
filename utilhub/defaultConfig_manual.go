@@ -63,7 +63,7 @@ func ParseManual(cfg ManualConfig) error {
 		}
 
 		// Get the struct name to use as the filename.
-		file, err = GetDefaultStructName(&cfg)
+		file, err = GetStructName(&cfg)
 		if err != nil {
 			return
 		}
@@ -76,12 +76,14 @@ func ParseManual(cfg ManualConfig) error {
 
 		// If the record is configured to be inside the project directory,
 		// prepend the project path to the test record path
-		var configDereference = *cfg.(*[]ManualConfigType)
 		/*
 			第一步 cfg.(*[]ManualConfigType)，取得 *[]ManualConfigType
 			第二步 *cfg.(*[]ManualConfigType)，取得 dereference 成 []ManualConfigType
 			之后针对 slice 进行索引操作 [i]
 		*/
+		var configDereference = *cfg.(*[]ManualConfigType)
+
+		// Convert the test record path to an absolute path within the project if it is configured as being inside the project.
 		for i := range configDereference {
 			if configDereference[i].Record.IsInsideProject == true {
 				configDereference[i].Record.TestRecordPath = filepath.Join(projectPath, configDereference[i].Record.TestRecordPath)
@@ -97,7 +99,7 @@ func ParseManual(cfg ManualConfig) error {
 // Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
 func _parseManual(filePath string, cfg ManualConfig) error {
 	// Check if the config is a pointer to a struct.
-	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
+	if reflect.ValueOf(cfg).Kind() != reflect.Pointer {
 		return errors.New("config must be a pointer to a struct")
 	}
 

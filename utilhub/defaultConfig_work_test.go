@@ -125,7 +125,7 @@ func Test_Apply_Default(t *testing.T) {
 	require.NoError(t, err)
 
 	// Get the struct name to be used as the filename.
-	fileName, err := GetDefaultStructName(cfg)
+	fileName, err := GetStructName(cfg)
 	require.NoError(t, err)
 
 	// Save the default configuration to a JSON file in the specified test directory.

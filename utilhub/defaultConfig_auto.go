@@ -66,7 +66,7 @@ func ParseAuto(autoConfig *TestProcessConfigType) error {
 		}
 
 		// Get the struct name to use as the filename.
-		file, err = GetDefaultStructName(&cfgFile)
+		file, err = GetStructName(&cfgFile)
 		if err != nil {
 			return
 		}
@@ -107,7 +107,7 @@ func ParseAuto(autoConfig *TestProcessConfigType) error {
 // Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
 func _parseAuto(filePath string, cfg AutoConfig) error {
 	// Check if the config is a pointer to a struct.
-	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
+	if reflect.ValueOf(cfg).Kind() != reflect.Pointer {
 		return errors.New("config must be a pointer to a struct")
 	}
 

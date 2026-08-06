@@ -90,7 +90,7 @@ func ParseToggle(cfg ToggleConfig) error {
 		}
 
 		// Get the struct name to use as the filename.
-		file, err = GetDefaultStructName(&cfg)
+		file, err = GetStructName(&cfg)
 		if err != nil {
 			return
 		}

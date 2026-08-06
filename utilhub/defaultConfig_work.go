@@ -162,7 +162,7 @@ func autoConfig2file(cfg AutoConfig, overwrite bool) error {
 	}
 
 	// Get the struct name to use as the filename.
-	file, err := GetDefaultStructName(&cfg)
+	file, err := GetStructName(&cfg)
 	if err != nil {
 		return err
 	}
@@ -201,10 +201,10 @@ func _defaultConfig2file(cfg AutoConfig, filePath string, overwrite bool) error 
 	return nil
 }
 
-// GetDefaultStructName ⛏️ retrieves the name of the struct.
-func GetDefaultStructName(cfg AutoConfig) (string, error) {
+// GetStructName ⛏️ retrieves the name of the struct.
+func GetStructName(cfg any) (string, error) {
 	// Check if the config is a pointer to a struct.
-	if reflect.ValueOf(cfg).Kind() != reflect.Ptr {
+	if reflect.ValueOf(cfg).Kind() != reflect.Pointer {
 		return "", errors.New("config must be a pointer to a struct")
 	}
 
