@@ -96,7 +96,13 @@ func ParseToggle(cfg ToggleConfig) error {
 		}
 
 		// Return the result of _parseDefault.
-		err = _parseAuto(filepath.Join(projectPath, "config", file+".json"), cfg)
+		err = parseCommon(filepath.Join(projectPath, "config", file+".json"), cfg)
+
+		// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
+		if err = applyDefaults(cfg); err != nil {
+			return
+		}
+
 		if err != nil {
 			return
 		}

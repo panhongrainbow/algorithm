@@ -1,12 +1,8 @@
 package utilhub
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
-	"reflect"
 )
 
 // AutoConfig ⛏️ is a type constraint for struct types that store default configuration values used in automated testing. (自动预设配置)
@@ -50,10 +46,9 @@ type AutoConfigType struct {
 }
 
 // ParseAuto ⛏️ loads the default configuration for automated testing from struct tags and applies it to the provided struct.
-func ParseAuto(autoConfig *TestProcessConfigType) error {
+func ParseAuto(autoConfig *TestProcessConfigType) (err error) {
 	// Prepare the variable outside the closure function.
 	var cfgFile AutoConfig = new(AutoConfigType)
-	var err error
 	var projectPath, file string
 
 	// Use Golang's sync.Once to prevent the setting from being overwritten.
@@ -72,8 +67,17 @@ func ParseAuto(autoConfig *TestProcessConfigType) error {
 		}
 
 		// Return the result of _parseAuto.
-		err = _parseAuto(filepath.Join(projectPath, "config", file+".json"), cfgFile)
-		if err != nil {
+		/*
+			err = _parseAuto(filepath.Join(projectPath, "config", file+".json"), cfgFile)
+			if err != nil {
+				return
+			}
+		*/
+
+		err = parseCommon(filepath.Join(projectPath, "config", file+".json"), cfgFile)
+
+		// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
+		if err = applyDefaults(cfgFile); err != nil {
 			return
 		}
 
@@ -101,39 +105,6 @@ func ParseAuto(autoConfig *TestProcessConfigType) error {
 
 	// Return nil to indicate the operation completed successfully.
 	return err
-}
-
-// _parseAuto ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
-// Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
-func _parseAuto(filePath string, cfg AutoConfig) error {
-	// Check if the config is a pointer to a struct.
-	if reflect.ValueOf(cfg).Kind() != reflect.Pointer {
-		return errors.New("config must be a pointer to a struct")
-	}
-
-	// Read the default configuration from the file.
-	var content []byte
-	var err error
-	content, err = os.ReadFile(filePath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// Do nothing; the tag will be handled later by applyDefaults. (之后由 applyDefaults 取 tag 决定)
-		}
-		return err
-	}
-
-	// Unmarshal the JSON data into the provided config and overwrite the default values.
-	if err = json.Unmarshal(content, cfg); err != nil {
-		return err
-	}
-
-	// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
-	if err = applyDefaults(cfg); err != nil {
-		return err
-	}
-
-	// No error occurred, return nil.
-	return nil
 }
 
 // GetAutoConfig parses and returns the auto-configuration, panicking if parsing fails.

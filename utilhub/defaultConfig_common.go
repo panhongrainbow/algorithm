@@ -12,8 +12,35 @@ import (
 	"strings"
 )
 
+// parseCommon ⛏️ loads the original configuration from the file.
+func parseCommon(filePath string, cfg any) error {
+	// Check if the config is a pointer to a struct.
+	if reflect.ValueOf(cfg).Kind() != reflect.Pointer {
+		return errors.New("config must be a pointer to a struct")
+	}
+
+	// Read the default configuration from the file.
+	var content []byte
+	var err error
+	content, err = os.ReadFile(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Do nothing; the tag will be handled later by applyDefaults. (之后由 applyDefaults 取 tag 决定)
+		}
+		return err
+	}
+
+	// Unmarshal the JSON data into the provided config and overwrite the default values.
+	if err = json.Unmarshal(content, cfg); err != nil {
+		return err
+	}
+
+	// No error occurred, return nil.
+	return nil
+}
+
 // applyDefaults ⛏️ applies the default values from struct tags to the provided config.
-func applyDefaults(cfg interface{}) error {
+func applyDefaults(cfg any) error {
 	// Get the reflect.Value of the passed-in struct and dereference it.
 	v := reflect.ValueOf(cfg).Elem()
 

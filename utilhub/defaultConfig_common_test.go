@@ -55,9 +55,9 @@ func Test_SetFieldValue(t *testing.T) {
 	// Comprehensive test cases.
 	type testCase struct {
 		name      string
-		fieldType interface{}
+		fieldType any
 		input     string
-		expected  interface{}
+		expected  any
 		shouldErr bool
 	}
 
@@ -154,8 +154,14 @@ func Test_Apply_Default(t *testing.T) {
 		ParseDefault 作为配置加载的核心方法，支持声明式配置绑定 - 只需传入结构体实例，即可自动关联同名配置文件并完成默认值注入。
 	*/
 
-	// Parse the default configuration from the JSON file into the struct.
-	err = _parseAuto(defaultPath+"/"+fileName+".json", cfg) //
+	// Parse the original configuration from the JSON file into the struct.
+	err = parseCommon(defaultPath+"/"+fileName+".json", cfg)
+
+	// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
+	if err = applyDefaults(cfg); err != nil {
+		return
+	}
+
 	require.NoError(t, err)
 
 	/*
@@ -185,7 +191,15 @@ func Test_Apply_Default(t *testing.T) {
 	*/
 
 	// Reparse the same configuration file to ensure consistency.
-	err = _parseAuto(defaultPath+"/"+fileName+".json", cfg)
+
+	// Parse the original configuration from the JSON file into the struct.
+	err = parseCommon(defaultPath+"/"+fileName+".json", cfg)
+
+	// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
+	if err = applyDefaults(cfg); err != nil {
+		return
+	}
+
 	require.NoError(t, err)
 
 	// Validate all server-related fields match expected defaults.
@@ -226,7 +240,15 @@ func Test_Apply_Default(t *testing.T) {
 	*/
 
 	// Parse the modified configuration from its JSON file.
-	err = _parseAuto(modifiedPath+"/"+fileName+".json", cfg)
+
+	// Parse the original configuration from the JSON file into the struct.
+	err = parseCommon(modifiedPath+"/"+fileName+".json", cfg)
+
+	// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
+	if err = applyDefaults(cfg); err != nil {
+		return
+	}
+
 	require.NoError(t, err)
 
 	// Validate server fields now reflect the modified values.

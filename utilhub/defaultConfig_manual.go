@@ -1,16 +1,12 @@
 package utilhub
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
-	"reflect"
 )
 
 // ManualConfig ⛏️ is a type constraint for struct types that store default configuration values used in manual testing. (手动预设配置)
-type ManualConfig interface{}
+type ManualConfig any
 
 // ManualConfigType ⛏️ is a struct for manual test configuration.
 type ManualConfigType struct {
@@ -69,10 +65,14 @@ func ParseManual(cfg ManualConfig) error {
 		}
 
 		// Return the result of _parseManual.
-		err = _parseManual(filepath.Join(projectPath, "config", file+".json"), cfg)
-		if err != nil {
-			return
-		}
+		/*
+			err = _parseManual(filepath.Join(projectPath, "config", file+".json"), cfg)
+			if err != nil {
+				return
+			}
+		*/
+
+		err = parseCommon(filepath.Join(projectPath, "config", file+".json"), cfg)
 
 		// If the record is configured to be inside the project directory,
 		// prepend the project path to the test record path
@@ -93,41 +93,6 @@ func ParseManual(cfg ManualConfig) error {
 
 	// Return nil to indicate the operation completed successfully.
 	return err
-}
-
-// _parseManual ⛏️ loads the default configuration from struct tags and applies it to the provided struct.
-// Configuration from the file, if the file exists, and applies and overwrites the struct. (以文件的配置为主,结构体配置为次)
-func _parseManual(filePath string, cfg ManualConfig) error {
-	// Check if the config is a pointer to a struct.
-	if reflect.ValueOf(cfg).Kind() != reflect.Pointer {
-		return errors.New("config must be a pointer to a struct")
-	}
-
-	// Read the default configuration from the file.
-	var content []byte
-	var err error
-	content, err = os.ReadFile(filePath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// Do nothing; the tag will be handled later by applyDefaults. (之后由 applyDefaults 取 tag 决定)
-		}
-		return err
-	}
-
-	// Unmarshal the JSON data into the provided config and overwrite the default values.
-	if err = json.Unmarshal(content, cfg); err != nil {
-		return err
-	}
-
-	// applyDefaults applies the default values from struct tags to the provided config. (主要填入预设值逻辑)
-	/*
-		if err = applyDefaults(cfg); err != nil {
-			return err
-		}
-	*/
-
-	// No error occurred, return nil.
-	return nil
 }
 
 // GetManualConfig parses and returns the auto-configuration, panicking if parsing fails.
