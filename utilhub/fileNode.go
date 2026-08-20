@@ -154,6 +154,34 @@ func (fn FileNode) Touch(filename string) error {
 	return nil
 }
 
+// CheckFile Verifies that the specified file path exists and accumulate the file path in FileNode.
+func (fn FileNode) CheckFile(filename string) (FileNode, error) {
+	// Check if a previous error has occurred and return it immediately.
+	if fn.err != nil {
+		fn.transfer = ""
+		return fn, fn.err
+	}
+
+	// Initialize the file path if it's not already set.
+	if fn.transfer == "" {
+		fn.transfer = filepath.Join("./", filename)
+	} else {
+		fn.transfer = filepath.Join(fn.transfer, filename)
+	}
+
+	// filename cannot be empty.
+	if filename == "" {
+		return fn, fmt.Errorf("filename cannot be empty")
+	}
+
+	// Check if the file exists.
+	if _, err := os.Stat(fn.transfer); os.IsNotExist(err) {
+		return fn, fmt.Errorf("file does not exist: %s", fn.transfer)
+	}
+
+	return fn, nil
+}
+
 // FileTag represents a set of flags for selecting a date and time format.
 type FileTag struct {
 	// yearMonth indicates whether to include the year and month in the date format.
