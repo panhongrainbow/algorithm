@@ -25,6 +25,8 @@ func Test_Check_Manual_Accuracies(t *testing.T) {
 			recordDir = ProjectDir.MkDir(each.Record.ManualRecordDate)
 		)
 
+		// verifyBulkInsertDelete(t, recordDir, each)
+
 		recordFile, err := recordDir.CheckFile(each.Record.ManualRecordFile)
 
 		fmt.Println(recordFile.Path(), err)

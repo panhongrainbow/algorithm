@@ -33,6 +33,11 @@ type TestProcessConfigType struct {
 	CyclicStress struct { // metal fatigue style endurance test.
 		CyclicStressCount int `json:"cyclicStressCount" default:"10"` // 🧪 Number of fatigue test cycles.
 	} `json:"cyclicStress"`
+	ManualTest struct { // 使用手动测试，重现之前的错误
+		EnableBulkInsertDelete   bool `json:"enableBulkInsertDelete" default:"false"`
+		EnableRandomizedBoundary bool `json:"enableRandomizedBoundary" default:"false"`
+		EnableNodeEnduranceTest  bool `json:"enableNodeEnduranceTest" default:"false"`
+	} `json:"manualTest"`
 }
 
 // types for testing is as bellows: (以下是测试用的类型) ===== ===== ===== ===== ===== ===== ===== ===== =====

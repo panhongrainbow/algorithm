@@ -95,14 +95,25 @@ func ParseManual(cfg ManualConfig) error {
 	return err
 }
 
-// GetManualConfig parses and returns the auto-configuration, panicking if parsing fails.
-func GetManualConfig() []ManualConfigType {
-	// Parse the auto-configuration into the global config instance.
+// GetManualConfig parses the manual configuration and returns it as a slice of
+// TestProcessConfigType. It panics if parsing fails.
+func GetManualConfig() []TestProcessConfigType {
+	// Parse the manual configuration into the global configuration instance.
 	if err := ParseManual(&_manualConfig); err != nil {
+		// Log the parsing error before panicking.
 		fmt.Printf("autoParseErr after init: %v\n", err)
 		panic(err)
 	}
 
-	// Return the initialized configuration.
-	return _manualConfig
+	// Create an empty slice to store the converted configuration entries.
+	manualConfig := make([]TestProcessConfigType, 0)
+
+	// Convert each manual configuration entry to TestProcessConfigType.
+	for _, each := range _manualConfig {
+		// Append the converted entry to the result slice.
+		manualConfig = append(manualConfig, TestProcessConfigType(each))
+	}
+
+	// Return the converted manual configuration.
+	return manualConfig
 }
