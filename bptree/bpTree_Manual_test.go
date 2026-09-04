@@ -1,10 +1,11 @@
 package bpTree
 
 import (
-	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/panhongrainbow/go-algorithm/utilhub"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Check_Manual_Accuracies(t *testing.T) {
@@ -25,11 +26,28 @@ func Test_Check_Manual_Accuracies(t *testing.T) {
 			recordDir = ProjectDir.MkDir(each.Record.ManualRecordDate)
 		)
 
-		// verifyBulkInsertDelete(t, recordDir, each)
+		// Verify that the record file exists.
+		if _, err := recordDir.CheckFile(each.Record.ManualRecordFile); err != nil {
+			require.NoError(t, err)
+		}
 
-		recordFile, err := recordDir.CheckFile(each.Record.ManualRecordFile)
+		// fmt.Println(recordFile.Path(), err)
 
-		fmt.Println(recordFile.Path(), err)
+		// Basic test.
+		if strings.Contains(each.Record.ManualRecordFile, "BulkInsertDelete") {
+			verifyBulkInsertDelete(t, recordDir, each)
+		}
+
+		// Boundary test.
+		if strings.Contains(each.Record.ManualRecordFile, "RandomizedBoundary") {
+			verifyRandomizedBoundary(t, recordDir, each)
+		}
+
+		// Endurance test.
+		if strings.Contains(each.Record.ManualRecordFile, "SingleNodeEndurance") {
+			verifySingleNodeEndurance(t, recordDir, each)
+		}
+
 	}
 
 	return
